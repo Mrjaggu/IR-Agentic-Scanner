@@ -94,6 +94,14 @@ def index():
         return f.read()
 
 
+def _topic_recall_pct() -> float | None:
+    try:
+        mean_recall = _cached_holdout()["summary"]["mean_recall"]
+        return round(mean_recall * 100, 1)
+    except Exception:
+        return None
+
+
 # ── Meta / data ─────────────────────────────────────────────────────────────
 @app.get("/api/meta")
 def get_meta():
@@ -134,6 +142,7 @@ def get_meta():
         "latest_reported_quarter": latest.get("quarter_id") if latest else None,
         "latest_call_date": latest.get("call_date") if latest else None,
         "archive_last_refreshed": archive_refreshed,
+        "topic_recall_pct": _topic_recall_pct(),
     }
 
 
@@ -568,14 +577,18 @@ def run_full(req: RunRequest):
 
 
 # ── Evaluation ──────────────────────────────────────────────────────────────
-@app.get("/api/eval/holdout")
-def eval_holdout(with_questions: bool = False, refresh: bool = False):
-    """The headline numbers: q4fy26 and q1fy27 scored separately against a
-    q3fy26 training cutoff, plus the promotion gate."""
+def _cached_holdout(with_questions: bool = False, refresh: bool = False) -> dict:
     key = f"holdout:{with_questions}"
     if refresh or key not in _eval_cache:
         _eval_cache[key] = run_holdout_eval(with_questions=with_questions)
     return _eval_cache[key]
+
+
+@app.get("/api/eval/holdout")
+def eval_holdout(with_questions: bool = False, refresh: bool = False):
+    """The headline numbers: q4fy26 and q1fy27 scored separately against a
+    q3fy26 training cutoff, plus the promotion gate."""
+    return _cached_holdout(with_questions=with_questions, refresh=refresh)
 
 
 class EvalCompareRequest(BaseModel):

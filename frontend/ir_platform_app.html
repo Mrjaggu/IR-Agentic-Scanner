@@ -577,7 +577,7 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
         <div class="landing-status-head"><div><div class="landing-status-title">Product preview</div><div class="landing-status-sub">Question intelligence · earnings-call readiness</div></div><span class="status st-good">● Live</span></div>
         <div class="landing-metrics">
           <div class="landing-metric"><div class="landing-metric-value">6</div><div class="landing-metric-label">priority questions</div></div>
-          <div class="landing-metric"><div class="landing-metric-value">82%</div><div class="landing-metric-label">forecast confidence</div></div>
+          <div class="landing-metric"><div class="landing-metric-value" id="landingRecallValue">&mdash;</div><div class="landing-metric-label">topic recall (held-out)</div></div>
           <div class="landing-metric"><div class="landing-metric-value">12</div><div class="landing-metric-label">source passages</div></div>
         </div>
         <div class="landing-next"><b>Next-call readiness</b><span>Move from disclosure to prioritised analyst questions, source-backed answers, and a focused preparation brief.</span></div>
@@ -593,7 +593,7 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
       </div>
       <div class="card feature-preview" id="featurePreview" aria-live="polite">
         <div class="feature-preview-nav"><p>Product tour</p><button class="active" data-feature-nav="forecast" onclick="previewFeature('forecast')">Question forecast</button><button data-feature-nav="analyst" onclick="previewFeature('analyst')">Analyst intelligence</button><button data-feature-nav="evidence" onclick="previewFeature('evidence')">Evidence search</button></div>
-        <div class="feature-preview-canvas"><div class="preview-topline"><div><div class="preview-eyebrow" id="previewEyebrow">Next-call preparation</div><h3 id="previewTitle">Question forecast</h3><p class="preview-copy" id="previewCopy">A ranked briefing from the upcoming disclosure and historical analyst behavior.</p></div><span class="preview-score" id="previewScore">Forecast ready</span></div><div class="preview-signals"><div class="preview-signal"><b id="previewMetricOne">6</b><span id="previewLabelOne">priority questions</span></div><div class="preview-signal"><b id="previewMetricTwo">82%</b><span id="previewLabelTwo">forecast confidence</span></div><div class="preview-signal"><b id="previewMetricThree">3</b><span id="previewLabelThree">themes rising</span></div></div><div class="preview-insight" id="previewInsight"><b>Signal to prepare:</b> Margin outlook and deposit mix are the most likely follow-up themes.</div></div>
+        <div class="feature-preview-canvas"><div class="preview-topline"><div><div class="preview-eyebrow" id="previewEyebrow">Next-call preparation</div><h3 id="previewTitle">Question forecast</h3><p class="preview-copy" id="previewCopy">A ranked briefing from the upcoming disclosure and historical analyst behavior.</p></div><span class="preview-score" id="previewScore">Forecast ready</span></div><div class="preview-signals"><div class="preview-signal"><b id="previewMetricOne">6</b><span id="previewLabelOne">priority questions</span></div><div class="preview-signal"><b id="previewMetricTwo">&mdash;</b><span id="previewLabelTwo">topic recall (held-out)</span></div><div class="preview-signal"><b id="previewMetricThree">3</b><span id="previewLabelThree">themes rising</span></div></div><div class="preview-insight" id="previewInsight"><b>Signal to prepare:</b> Margin outlook and deposit mix are the most likely follow-up themes.</div></div>
       </div>
     </div>
 
@@ -1013,7 +1013,7 @@ let STATE = { meta: null, analysts: [], selected: null, dossier: null,
 // a customer workspace. Only the explicitly labelled workspace CTA changes
 // product context.
 const FEATURE_PREVIEWS = {
-  forecast: { eyebrow: "Next-call preparation", title: "Question forecast", copy: "A ranked briefing from the upcoming disclosure and historical analyst behavior.", score: "Forecast ready", one: "6", oneLabel: "priority questions", two: "82%", twoLabel: "forecast confidence", three: "3", threeLabel: "themes rising", insight: "<b>Signal to prepare:</b> Margin outlook and deposit mix are the most likely follow-up themes." },
+  forecast: { eyebrow: "Next-call preparation", title: "Question forecast", copy: "A ranked briefing from the upcoming disclosure and historical analyst behavior.", score: "Forecast ready", one: "6", oneLabel: "priority questions", two: "\u2014", twoLabel: "topic recall (held-out)", three: "3", threeLabel: "themes rising", insight: "<b>Signal to prepare:</b> Margin outlook and deposit mix are the most likely follow-up themes." },
   analyst: { eyebrow: "Analyst intelligence", title: "Question trajectory", copy: "See the themes an analyst returns to, how their questions evolve, and what management said last time.", score: "Profile mapped", one: "14", oneLabel: "questions analysed", two: "4", twoLabel: "recurring themes", three: "7", threeLabel: "quarters observed", insight: "<b>Pattern surfaced:</b> The analyst consistently links loan growth to funding costs and margin durability." },
   evidence: { eyebrow: "Evidence search", title: "Transcript-grounded answers", copy: "Search across the archive and move directly from a claim to the underlying management commentary.", score: "Cited results", one: "12", oneLabel: "source passages", two: "4", twoLabel: "quarters matched", three: "0", threeLabel: "ungrounded claims", insight: "<b>Evidence found:</b> Each answer retains its transcript passage and quarter for rapid review." },
 };
@@ -1189,6 +1189,16 @@ async function boot() {
   $("#cAnalysts").textContent = meta.counts.analysts;
   $("#cQuarters").textContent = meta.counts.quarters;
   $("#cCorpus").textContent = meta.counts.corpus_docs;
+  // Real accuracy, not a fabricated "confidence" score: mean topic recall
+  // from the held-out evaluation (same number the Evaluation page shows).
+  if (typeof meta.topic_recall_pct === "number") {
+    const recallText = `${meta.topic_recall_pct}%`;
+    FEATURE_PREVIEWS.forecast.two = recallText;
+    const landingRecall = $("#landingRecallValue");
+    if (landingRecall) landingRecall.textContent = recallText;
+    const activeKey = document.querySelector("[data-feature-nav].active")?.dataset.featureNav || "forecast";
+    if (activeKey === "forecast") previewFeature("forecast");
+  }
   // The landing-page status uses the same source of truth as the workspace,
   // so it never drifts from the archive that is actually available.
   // label follows the selected target: predicting Q1FY27 trains through Q4FY26,
@@ -1999,7 +2009,7 @@ function runDone(stats) {
 }
 
 $("#runOverall").addEventListener("click", () => runTask(async () => {
-  busy("Running the planning agent and Overall layer…", "overall");
+  busy("Running the question planner and Overall layer…", "overall");
   const d = await postJSON("/api/run/overall", runBody());
   renderOverall(d.overall, d.quarter, d.disclosure_conditioned, d.tool_log);
   $("#predictResult").insertAdjacentHTML("afterbegin", runDone(d.llm_stats));
