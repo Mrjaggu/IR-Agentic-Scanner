@@ -470,70 +470,140 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
 
   <!-- ══ HOME / LANDING PAGE ═════════════════════════════════════════════ -->
   <section class="view active" id="view-home">
-    <div class="card hero" style="background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%); margin-bottom: 20px;">
-      <div class="hero-label">Multi-Institutional IR Scanner</div>
-      <h2 style="font-size: 28px; margin: 8px 0 12px; font-weight: 700;">Earnings Call Predictive Question Intelligence</h2>
-      <p class="takeaway" style="font-size: 14.5px; color: var(--ink-2); max-width: 82ch;">
-        An agentic decision cockpit for Investor Relations teams. Combines multi-agent LangGraph predictions, historical Q&amp;A trajectories, and hybrid transcript search to forecast analyst questions before earnings calls.
+    <!-- Hero Banner -->
+    <div class="card pad" style="background: linear-gradient(135deg, rgba(27, 175, 122, 0.08) 0%, rgba(42, 120, 214, 0.05) 100%); border: 1px solid rgba(27, 175, 122, 0.2); border-radius: 16px; text-align: center; padding: 42px 24px; margin-bottom: 28px;">
+      <span class="chip chip-accent" style="margin-bottom: 14px; font-weight: 600; padding: 4px 12px; font-size: 12px;">Next-Gen Financial IR Scanner</span>
+      <h1 style="font-size: 36px; line-height: 1.2; font-weight: 800; letter-spacing: -0.03em; margin: 12px 0 16px; color: var(--ink);">
+        Enterprise Investor Relations with <br><span style="color: var(--s3);">Predictive Question Intelligence.</span>
+      </h1>
+      <p class="takeaway" style="margin: 0 auto 24px; font-size: 15px; color: var(--ink-2); max-width: 68ch; line-height: 1.6;">
+        Anticipate analyst lines of questioning, parse disclosure novelty, and search earnings transcripts using a LangGraph multi-agent decision cockpit.
       </p>
-    </div>
-
-    <h3 style="font-size: 16px; margin: 24px 0 14px;">Select Covered Banking Institution</h3>
-
-    <div class="grid-2" style="margin-bottom: 24px;">
-      <div class="card pad" style="border: 2px solid var(--accent); cursor: pointer; transition: transform .15s;" onclick="show('profiles')">
-        <div class="row" style="justify-content: space-between; margin-bottom: 10px;">
-          <h2 style="font-size: 18px; color: var(--ink);">Axis Bank</h2>
-          <span class="chip chip-accent">Active Coverage</span>
-        </div>
-        <p class="small dim" style="margin-bottom: 12px;">
-          Full earnings transcript archive, analyst dossiers, and LangGraph predictive models enabled.
-        </p>
-        <div class="row xs muted" style="gap: 16px;">
-          <span><b>43</b> Analysts</span>
-          <span><b>21</b> Quarters</span>
-          <span><b>580</b> Passages</span>
-        </div>
-        <button class="btn btn-primary btn-sm" style="margin-top: 14px; width: 100%;">Open Axis Bank Workspace →</button>
+      <div class="row" style="justify-content: center; gap: 12px;">
+        <button class="btn btn-primary" onclick="show('profiles')" style="padding: 10px 22px; font-size: 14px; background: var(--s3); border-color: var(--s3); font-weight: 600;">Explore Active Workspace →</button>
+        <button class="btn" onclick="show('chat')" style="padding: 10px 22px; font-size: 14px; font-weight: 500;">Search Archives</button>
       </div>
 
-      <div class="card pad" style="opacity: 0.75; border-style: dashed;">
-        <div class="row" style="justify-content: space-between; margin-bottom: 10px;">
-          <h2 style="font-size: 18px; color: var(--ink-2);">HDFC Bank</h2>
-          <span class="chip">Expansion Planned</span>
+      <!-- App Mockup Preview Card -->
+      <div style="margin-top: 36px; background: var(--surface); border: 1px solid var(--hairline); border-radius: 14px; padding: 18px; text-align: left; box-shadow: 0 12px 32px rgba(0,0,0,0.06); max-width: 960px; margin-left: auto; margin-right: auto;">
+        <div class="row" style="justify-content: space-between; border-bottom: 1px solid var(--hairline); padding-bottom: 12px; margin-bottom: 16px;">
+          <div class="row" style="gap: 8px;">
+            <span style="width: 10px; height: 10px; border-radius: 50%; background: #ff5f56; display: inline-block;"></span>
+            <span style="width: 10px; height: 10px; border-radius: 50%; background: #ffbd2e; display: inline-block;"></span>
+            <span style="width: 10px; height: 10px; border-radius: 50%; background: #27c93f; display: inline-block;"></span>
+            <span class="small muted" style="margin-left: 8px; font-weight: 600;">IR Intelligence Cockpit — Live Preview</span>
+          </div>
+          <span class="chip chip-accent">Live Graph Model</span>
         </div>
-        <p class="small dim" style="margin-bottom: 12px;">
-          Cross-bank transcript parser and peer salience model ingestion ready for deployment.
-        </p>
-        <div class="row xs muted" style="gap: 16px;">
-          <span>Peer Signal Tagged</span>
-          <span>Coming Soon</span>
+        <div class="tiles" style="margin-bottom: 16px;">
+          <div class="tile" style="background: var(--surface-2);">
+            <div class="tile-label">Indexed Passages</div>
+            <div class="tile-value" style="font-size: 22px; color: var(--s3);">580 Docs</div>
+          </div>
+          <div class="tile" style="background: var(--surface-2);">
+            <div class="tile-label">Analyst Profiles</div>
+            <div class="tile-value" style="font-size: 22px; color: var(--accent);">43 Tracked</div>
+          </div>
+          <div class="tile" style="background: var(--surface-2);">
+            <div class="tile-label">Model Engine</div>
+            <div class="tile-value" style="font-size: 22px; color: var(--s2);">LangGraph</div>
+          </div>
         </div>
-        <button class="btn btn-sm" disabled style="margin-top: 14px; width: 100%;">Pipeline Ingestion Pending</button>
       </div>
     </div>
 
-    <div class="grid-2">
-      <div class="card pad" style="opacity: 0.75; border-style: dashed;">
-        <div class="row" style="justify-content: space-between; margin-bottom: 10px;">
-          <h2 style="font-size: 18px; color: var(--ink-2);">ICICI Bank</h2>
-          <span class="chip">Expansion Planned</span>
+    <!-- Feature Value Cards -->
+    <div style="margin-bottom: 32px;">
+      <h3 style="font-size: 18px; margin-bottom: 6px; font-weight: 700;">Platform Capabilities</h3>
+      <p class="small muted" style="margin-bottom: 16px;">Purpose-built tools for executive investor relations and earnings call prep.</p>
+      
+      <div class="tiles" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;">
+        <div class="card pad" style="background: var(--surface);">
+          <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(27, 175, 122, 0.12); color: var(--s3); display: grid; place-items: center; font-weight: 700; margin-bottom: 12px;">📊</div>
+          <h4 style="font-size: 15px; margin-bottom: 6px;">Analyst Question Forecasting</h4>
+          <p class="small dim" style="line-height: 1.5;">Predicts specific topic vectors and follow-up concerns per analyst using historical persona trajectories.</p>
         </div>
-        <p class="small dim" style="margin-bottom: 12px;">
-          Peer transcript salience and cross-institutional benchmark model integration in progress.
-        </p>
-        <button class="btn btn-sm" disabled style="margin-top: 14px; width: 100%;">Pipeline Ingestion Pending</button>
+
+        <div class="card pad" style="background: var(--surface);">
+          <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(42, 120, 214, 0.12); color: var(--accent); display: grid; place-items: center; font-weight: 700; margin-bottom: 12px;">🔎</div>
+          <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 6px;">
+            <h4 style="font-size: 15px; margin: 0;">Hybrid RAG Search</h4>
+          </div>
+          <p class="small dim" style="line-height: 1.5;">Extractive BM25 + graph reciprocal rank fusion with direct passage citations across all call transcripts.</p>
+        </div>
+
+        <div class="card pad" style="background: var(--surface);">
+          <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(235, 104, 52, 0.12); color: var(--s2); display: grid; place-items: center; font-weight: 700; margin-bottom: 12px;">⚡</div>
+          <h4 style="font-size: 15px; margin-bottom: 6px;">Disclosure Novelty Parsing</h4>
+          <p class="small dim" style="line-height: 1.5;">Ingests upcoming financial disclosures and flags metric anomalies and drill-down risk areas.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Covered Institutions Section -->
+    <div style="margin-bottom: 32px;">
+      <div class="row" style="justify-content: space-between; align-items: flex-end; margin-bottom: 16px;">
+        <div>
+          <h3 style="font-size: 18px; margin-bottom: 4px; font-weight: 700;">Covered Institutions & Workspaces</h3>
+          <p class="small muted">Select an active banking institution workspace to begin analysis.</p>
+        </div>
       </div>
 
-      <div class="card pad" style="opacity: 0.75; border-style: dashed;">
-        <div class="row" style="justify-content: space-between; margin-bottom: 10px;">
-          <h2 style="font-size: 18px; color: var(--ink-2);">Kotak Mahindra Bank</h2>
-          <span class="chip">Expansion Planned</span>
+      <div class="grid-2" style="margin-bottom: 16px;">
+        <div class="card pad" style="border: 2px solid var(--s3); cursor: pointer; background: var(--surface); transition: transform .15s;" onclick="show('profiles')">
+          <div class="row" style="justify-content: space-between; margin-bottom: 10px;">
+            <h2 style="font-size: 19px; color: var(--ink); font-weight: 700;">Axis Bank</h2>
+            <span class="chip" style="background: rgba(27, 175, 122, 0.15); color: var(--s3); border-color: var(--s3); font-weight: 600;">Active Workspace</span>
+          </div>
+          <p class="small dim" style="margin-bottom: 14px; line-height: 1.5;">
+            Fully indexed earnings transcript archive, analyst dossiers, and active LangGraph predictive models.
+          </p>
+          <div class="row xs muted" style="gap: 16px; border-top: 1px solid var(--hairline); padding-top: 10px;">
+            <span><b>43</b> Analysts</span>
+            <span><b>21</b> Quarters</span>
+            <span><b>580</b> Passages</span>
+          </div>
+          <button class="btn btn-sm" style="margin-top: 14px; width: 100%; background: var(--s3); color: #fff; border-color: var(--s3); font-weight: 600;">Launch Axis Bank Workspace →</button>
         </div>
-        <p class="small dim" style="margin-bottom: 12px;">
-          Targeting Q3/Q4 earnings call dataset compilation for cross-bank comparison.
-        </p>
-        <button class="btn btn-sm" disabled style="margin-top: 14px; width: 100%;">Pipeline Ingestion Pending</button>
+
+        <div class="card pad" style="opacity: 0.8; border-style: dashed;">
+          <div class="row" style="justify-content: space-between; margin-bottom: 10px;">
+            <h2 style="font-size: 19px; color: var(--ink-2); font-weight: 700;">HDFC Bank</h2>
+            <span class="chip">Expansion Ready</span>
+          </div>
+          <p class="small dim" style="margin-bottom: 14px; line-height: 1.5;">
+            Cross-bank transcript parser and peer salience model ingestion ready for multi-tenant deployment.
+          </p>
+          <div class="row xs muted" style="gap: 16px; border-top: 1px solid var(--hairline); padding-top: 10px;">
+            <span>Peer Signal Tagged</span>
+            <span>Coming Soon</span>
+          </div>
+          <button class="btn btn-sm" disabled style="margin-top: 14px; width: 100%;">Pipeline Ingestion Pending</button>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card pad" style="opacity: 0.8; border-style: dashed;">
+          <div class="row" style="justify-content: space-between; margin-bottom: 10px;">
+            <h2 style="font-size: 19px; color: var(--ink-2); font-weight: 700;">ICICI Bank</h2>
+            <span class="chip">Expansion Planned</span>
+          </div>
+          <p class="small dim" style="margin-bottom: 14px; line-height: 1.5;">
+            Peer transcript salience and cross-institutional benchmark model integration in progress.
+          </p>
+          <button class="btn btn-sm" disabled style="margin-top: 14px; width: 100%;">Pipeline Ingestion Pending</button>
+        </div>
+
+        <div class="card pad" style="opacity: 0.8; border-style: dashed;">
+          <div class="row" style="justify-content: space-between; margin-bottom: 10px;">
+            <h2 style="font-size: 19px; color: var(--ink-2); font-weight: 700;">Kotak Mahindra Bank</h2>
+            <span class="chip">Expansion Planned</span>
+          </div>
+          <p class="small dim" style="margin-bottom: 14px; line-height: 1.5;">
+            Targeting Q3/Q4 earnings call dataset compilation for cross-bank comparison.
+          </p>
+          <button class="btn btn-sm" disabled style="margin-top: 14px; width: 100%;">Pipeline Ingestion Pending</button>
+        </div>
       </div>
     </div>
   </section>
