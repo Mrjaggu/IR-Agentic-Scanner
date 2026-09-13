@@ -99,6 +99,9 @@ nav{padding:10px 8px; flex:1; overflow-y:auto;}
 .nav-item:hover{background:var(--surface-2); color:var(--ink);}
 .nav-item[aria-current="page"]{background:var(--surface-2); color:var(--ink); font-weight:600;}
 .nav-item svg{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.7;}
+.nav-badge{margin-left:auto; font-size:10.5px; font-weight:700; background:var(--accent); color:#fff;
+  border-radius:999px; padding:1px 6px; min-width:16px; text-align:center; line-height:1.5;}
+.nav-badge:empty{display:none;}
 .nav-sep{margin:12px 10px 6px; font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-muted);}
 .side-foot{padding:12px 14px; border-top:1px solid var(--hairline); font-size:11.5px; color:var(--ink-muted);}
 .side-foot .row{display:flex;justify-content:space-between;gap:8px;padding:2px 0;}
@@ -488,6 +491,9 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
     <button class="nav-item" data-view="predict">
       <svg viewBox="0 0 24 24"><path d="M4 18 9 11l4 3.5L20 6"/><path d="M15 6h5v5"/></svg>
       Prepare next call</button>
+    <button class="nav-item" data-view="brief">
+      <svg viewBox="0 0 24 24"><path d="M9 4h6l3 3v13H6V4z"/><path d="M9 4v0M9 9h6M9 13h6M9 17h4"/></svg>
+      Prep brief<span class="nav-badge" id="briefNavCount"></span></button>
     <div class="nav-sep">Research</div>
     <button class="nav-item" data-view="profiles">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/></svg>
@@ -606,7 +612,15 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
         <div class="status-row"><span class="status-dot ready"></span><div><b>Transcript archive ready</b><span id="wsArchiveDetail">Loading archive status…</span></div></div>
         <div class="status-row"><span class="status-dot waiting" id="wsDisclosureDot"></span><div><b>Upcoming disclosure</b><span id="wsDisclosureDetail">Upload the draft disclosure to condition the forecast on new numbers and narrative.</span></div></div>
         <div class="status-row"><span class="status-dot ready"></span><div><b>Evidence-backed research</b><span>Chat and search return the underlying quarter and speaker for every source passage.</span></div></div>
+        <div class="status-row" style="cursor:pointer;" onclick="show('brief')">
+          <span class="status-dot" id="wsBriefDot"></span>
+          <div><b>Prep brief</b><span id="wsBriefDetail">Loading…</span></div>
+        </div>
       </aside>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Recent activity</h3><span class="muted xs">last actions taken in this workspace</span></div>
+      <div class="pad" id="wsActivity"><div class="empty small">Loading…</div></div>
     </div>
   </section>
 
@@ -742,6 +756,27 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
       </div>
     </div>
     <div id="predictResult"></div>
+  </section>
+
+  <!-- ══ PREP BRIEF ══════════════════════════════════════════════════════ -->
+  <section class="view" id="view-brief">
+    <div class="card">
+      <div class="card-head">
+        <h2>Prep brief</h2>
+        <span class="chip" id="briefCountChip">—</span>
+        <div class="topbar-spacer"></div>
+        <a class="btn btn-sm" id="briefExportBtn" href="/api/brief/export" download>Export as Markdown</a>
+        <button class="btn btn-sm" id="briefClearBtn">Clear all</button>
+      </div>
+      <div class="pad">
+        <p class="small dim" style="max-width:78ch;">
+          Pin an answer, a source passage, or a predicted question from anywhere in the workspace — they collect
+          here so the brief for this call is one place, not scattered across chat history and search results.
+          Pinned items persist on the server, so they survive a reload.
+        </p>
+      </div>
+    </div>
+    <div id="briefResult"></div>
   </section>
 
   <!-- ══ EVAL ═════════════════════════════════════════════════════════════ -->
@@ -942,6 +977,7 @@ const TITLES = {
   profiles: ["Analyst profiles", "Full question threads, management responses, and why each question was asked"],
   chat: ["Research archive", "Grounded retrieval across every transcript in the archive"],
   predict: ["Prepare next call", "Review the disclosure, then forecast the questions your team should prepare for"],
+  brief: ["Prep brief", "Pinned questions, passages and answers — export it before the call"],
   eval: ["Evaluation", "Held-out results, promotion gate, and failure attribution"],
   ingest: ["Ingest transcript", "Parse, inspect extraction quality, then commit to the archive"],
 };
@@ -992,6 +1028,32 @@ function relativeDate(iso) {
   const months = Math.floor(days / 30);
   return `${months} month${months === 1 ? "" : "s"} ago`;
 }
+// Fire-and-forget activity log — never blocks or fails the action it
+// describes; it is a nice-to-have feed, not a critical path.
+function logActivity(kind, label, meta) {
+  postJSON("/api/activity", { kind, label, meta: meta || {} }).catch(() => {});
+}
+
+// Pin one item to the durable, server-persisted prep brief. `btn`, if given,
+// gets a brief "Pinned" confirmation so the click has visible effect.
+async function pinItem(kind, title, body, meta, btn) {
+  try {
+    await postJSON("/api/brief/pin", { kind, title, body, meta: meta || {} });
+    if (btn) {
+      const orig = btn.textContent;
+      btn.textContent = "✓ Pinned"; btn.disabled = true;
+      setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 1800);
+    }
+    if (STATE.briefCount != null) { STATE.briefCount++; renderBriefNavBadge(); }
+  } catch (err) {
+    if (btn) { const orig = btn.textContent; btn.textContent = "Pin failed"; setTimeout(() => btn.textContent = orig, 1800); }
+  }
+}
+function renderBriefNavBadge() {
+  const b = $("#briefNavCount");
+  if (b) b.textContent = STATE.briefCount ? String(STATE.briefCount) : "";
+}
+
 function renderContextBar() {
   const meta = STATE.meta;
   const host = $("#topContext");
@@ -1021,6 +1083,43 @@ function renderWorkspaceOverview() {
     ? `${STATE.disclosure.filename} is parsed and can condition the next forecast.`
     : "Upload the draft disclosure to condition the forecast on new numbers and narrative.";
   $("#wsDisclosureDot").className = `status-dot ${uploaded ? "ready" : "waiting"}`;
+  refreshWorkspaceBriefAndActivity();
+}
+
+const ACTIVITY_LABEL = {
+  chat_question: "Asked", search: "Searched", prepare_call: "Ran prepare-call",
+  ingest_commit: "Committed", ingest_commit_failed: "Commit failed", view_analyst: "Viewed",
+};
+function timeAgo(iso) {
+  const secs = Math.floor((Date.now() - new Date(iso)) / 1000);
+  if (secs < 60) return "just now";
+  if (secs < 3600) return `${Math.floor(secs / 60)}m ago`;
+  if (secs < 86400) return `${Math.floor(secs / 3600)}h ago`;
+  return `${Math.floor(secs / 86400)}d ago`;
+}
+async function refreshWorkspaceBriefAndActivity() {
+  try {
+    const b = await api("/api/brief");
+    const n = (b.brief_items || []).length;
+    STATE.briefCount = n;
+    renderBriefNavBadge();
+    $("#wsBriefDot").className = `status-dot ${n ? "ready" : "waiting"}`;
+    $("#wsBriefDetail").textContent = n
+      ? `${n} item${n === 1 ? "" : "s"} pinned — open the brief →`
+      : "Nothing pinned yet. Pin an answer, passage, or predicted question as you go.";
+  } catch (err) { /* best-effort widget; leave the placeholder text */ }
+
+  try {
+    const activity = await api("/api/activity");
+    const host = $("#wsActivity");
+    if (!activity.length) { host.innerHTML = `<div class="empty small">Nothing yet — actions you take show up here.</div>`; return; }
+    host.innerHTML = `<div>${activity.slice(0, 8).map(a => `
+      <div class="status-row" style="padding:7px 0;">
+        <span class="status-dot ready" style="width:6px;height:6px;"></span>
+        <div><b class="small">${esc(ACTIVITY_LABEL[a.kind] || a.kind)}</b>
+          <span class="xs muted"> · ${esc(a.label || "")} · ${timeAgo(a.at)}</span></div>
+      </div>`).join("")}</div>`;
+  } catch (err) { /* best-effort widget */ }
 }
 
 function show(view, syncRoute = true) {
@@ -1035,6 +1134,7 @@ function show(view, syncRoute = true) {
   $("#pageTitle").textContent = TITLES[view][0];
   $("#pageSub").textContent = TITLES[view][1];
   if (view === "eval" && !STATE.evalData) loadEval();
+  if (view === "brief") loadBrief();
   if (syncRoute) history.pushState({ view }, "", `#/${view}`);
   window.scrollTo(0, 0);
 }
@@ -1153,6 +1253,7 @@ async function selectAnalyst(name, keepFilter) {
       host.innerHTML = `<div class="card"><div class="empty">Could not load: ${esc(err.message)}</div></div>`;
       return;
     }
+    logActivity("view_analyst", name);
   }
   renderProfile();
 }
@@ -1441,9 +1542,18 @@ function passageListHTML(passages) {
         <span class="q-badge">${QU(p.quarter)}</span>
         <b class="small">${esc(p.who)}</b><span class="xs muted">${esc(p.type)}</span>
         ${(p.topics || []).slice(0, 3).map(t => `<span class="chip">${esc(t)}</span>`).join("")}
+        <div class="topbar-spacer"></div>
+        <button class="btn btn-sm pin-passage-btn" data-i="${i}">Pin</button>
       </div>
       <div class="src-body">${esc((p.text || "").slice(0, 700))}${(p.text || "").length > 700 ? "…" : ""}</div>
     </div>`).join("");
+}
+function wirePassagePins(host, passages) {
+  host.querySelectorAll(".pin-passage-btn").forEach(btn => btn.addEventListener("click", () => {
+    const p = passages[+btn.dataset.i];
+    pinItem("passage", `${p.who} · ${QU(p.quarter)}`, p.text || "",
+      { quarter: QU(p.quarter), who: p.who, type: p.type }, btn);
+  }));
 }
 
 async function sendChat() {
@@ -1517,10 +1627,19 @@ async function sendChat() {
   copy.addEventListener("click", () => navigator.clipboard?.writeText(acc));
   bt.querySelector(".sources").prepend(copy);
 
+  if (acc.trim()) {
+    const pin = document.createElement("button");
+    pin.className = "btn btn-sm"; pin.textContent = "Pin to prep brief"; pin.style.marginTop = "10px";
+    pin.addEventListener("click", () => pinItem("chat_answer", msg.slice(0, 90), acc,
+      { quarter: QU(STATE.targetQuarter || STATE.meta?.default_quarter), sources: passages.length }, pin));
+    bt.querySelector(".sources").prepend(pin);
+  }
+
   chatHistory.push({ role: "assistant", content: acc });
   chatAbort = null;
   $("#chatSend").style.display = ""; $("#chatStop").style.display = "none";
   scrollChat();
+  logActivity("chat_question", msg.slice(0, 90));
 }
 $("#chatSend").addEventListener("click", sendChat);
 $("#chatStop").addEventListener("click", () => { chatAbort?.abort(); chatAbort = null; });
@@ -1659,6 +1778,8 @@ async function runSearch(q) {
   html += `<div class="card"><div class="card-head"><h3>Passages</h3><span class="muted xs">${(d.passages || []).length} matches, cited</span></div>
     <div class="pad">${(d.passages || []).length ? passageListHTML(d.passages) : `<div class="empty">No matches.</div>`}</div></div>`;
   host.innerHTML = html;
+  if ((d.passages || []).length) wirePassagePins(host, d.passages);
+  logActivity("search", q.slice(0, 90));
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -1907,20 +2028,31 @@ function renderOverall(overall, quarter, cond, toolLog) {
     </div></div>`;
   activateBars(host);
 }
-function slotHTML(items) {
-  return items.map(it => `<div class="ev" style="margin-bottom:9px;${it.question_text ? "" : "border-left-color:var(--serious);"}">
-      <div class="ev-t">${esc(it.topic)}</div>
+function slotHTML(items, ctxLabel) {
+  return items.map((it, i) => `<div class="ev" style="margin-bottom:9px;${it.question_text ? "" : "border-left-color:var(--serious);"}">
+      <div class="row"><div class="ev-t">${esc(it.topic)}</div><div class="topbar-spacer"></div>
+        ${it.question_text ? `<button class="btn btn-sm pin-question-btn" data-i="${i}">Pin</button>` : ""}
+      </div>
       <div class="ev-q">${it.question_text ? esc(it.question_text)
         : `<span class="status st-warn">${ICON.warn}Bare topic — the verifier rejected the drafted wording twice, so no fabricated question is shown.</span>`}</div>
     </div>`).join("");
 }
+function wireQuestionPins(host, items, ctxLabel) {
+  host.querySelectorAll(".pin-question-btn").forEach(btn => btn.addEventListener("click", () => {
+    const it = items[+btn.dataset.i];
+    pinItem("predicted_question", it.topic, it.question_text,
+      { quarter: QU(STATE.targetQuarter || STATE.meta?.default_quarter), context: ctxLabel || "" }, btn);
+  }));
+}
 function renderAnalystRun(d) {
-  $("#predictResult").innerHTML = `<div class="card"><div class="card-head">
+  const host = $("#predictResult");
+  host.innerHTML = `<div class="card"><div class="card-head">
       <h2>${esc(d.analyst)} — ${QU(d.quarter)}</h2>${condChip(d.disclosure_conditioned)}
     </div><div class="pad">
       ${d.style_note ? `<div class="ev" style="margin-bottom:14px;"><div class="ev-t">Style used</div><div class="ev-q">${esc(d.style_note)}</div></div>` : ""}
       ${slotHTML(d.topics || [])}
     </div></div>`;
+  wireQuestionPins(host, d.topics || [], d.analyst);
 }
 function renderFull(data, cond) {
   const ot = data.overall_topics || {};
@@ -1939,9 +2071,76 @@ function renderFull(data, cond) {
   host.insertAdjacentHTML("beforeend", `<div class="card"><div class="card-head">
     <h2>Per-analyst question sheet</h2><span class="muted xs">${Object.keys(preds).length} analysts</span></div>
     <div class="pad">${Object.entries(preds).map(([a, o]) => `
-      <div style="margin-bottom:18px;"><h4 style="margin-bottom:7px;">${esc(a)}</h4>${slotHTML(o.topics)}</div>`).join("")}
+      <div style="margin-bottom:18px;" data-analyst="${esc(a)}"><h4 style="margin-bottom:7px;">${esc(a)}</h4>${slotHTML(o.topics)}</div>`).join("")}
     </div></div>`);
+  host.querySelectorAll("[data-analyst]").forEach(block =>
+    wireQuestionPins(block, preds[block.dataset.analyst].topics, block.dataset.analyst));
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Prep brief — the saved-work surface: pinned answers, passages and
+   predicted questions, persisted server-side, exportable before the call.
+   ═══════════════════════════════════════════════════════════════════════════ */
+const KIND_LABEL = {
+  chat_answer: "Answer", passage: "Source passage",
+  predicted_question: "Predicted question", search_result: "Search result",
+};
+async function loadBrief() {
+  const host = $("#briefResult");
+  host.innerHTML = `<div class="card"><div class="empty"><span class="spinner"></span> Loading…</div></div>`;
+  let d;
+  try { d = await api("/api/brief"); }
+  catch (err) {
+    host.innerHTML = `<div class="card"><div class="pad">
+        <div class="status st-bad" style="margin-bottom:8px;">${ICON.bad}Could not load the prep brief</div>
+        <div class="small dim" style="margin-bottom:12px;">${esc(err.message)}</div>
+        <button class="btn btn-sm" id="briefRetryBtn">Try again</button>
+      </div></div>`;
+    const rb = $("#briefRetryBtn"); if (rb) rb.addEventListener("click", loadBrief, { once: true });
+    return;
+  }
+  const items = (d.brief_items || []).slice().reverse();   // most recently pinned first
+  STATE.briefCount = items.length;
+  renderBriefNavBadge();
+  $("#briefCountChip").textContent = `${items.length} pinned`;
+  $("#briefExportBtn").href = "/api/brief/export?quarter=" +
+    encodeURIComponent(STATE.targetQuarter || STATE.meta?.default_quarter || "axis");
+
+  if (!items.length) {
+    host.innerHTML = `<div class="card"><div class="empty">
+        Nothing pinned yet. Look for a <b>Pin</b> button on a chat answer, a search passage, or a predicted
+        question — anywhere in the workspace.
+      </div></div>`;
+    return;
+  }
+
+  host.innerHTML = items.map(it => `<div class="card" data-id="${esc(it.id)}"><div class="pad">
+      <div class="row" style="align-items:flex-start;gap:10px;">
+        <div style="flex:1;min-width:0;">
+          <div class="row" style="gap:6px;margin-bottom:6px;">
+            <span class="chip chip-accent">${esc(KIND_LABEL[it.kind] || it.kind)}</span>
+            ${it.meta?.quarter ? `<span class="chip">${esc(it.meta.quarter)}</span>` : ""}
+            ${it.meta?.who ? `<span class="chip">${esc(it.meta.who)}</span>` : ""}
+            ${it.meta?.context ? `<span class="chip">${esc(it.meta.context)}</span>` : ""}
+          </div>
+          <div class="ev-t">${esc(it.title)}</div>
+          <div class="ev-q" style="margin-top:4px;">${it.kind === "chat_answer" ? md(it.body) : esc(it.body)}</div>
+        </div>
+        <button class="btn btn-sm brief-unpin-btn" data-id="${esc(it.id)}">Remove</button>
+      </div>
+    </div></div>`).join("");
+
+  host.querySelectorAll(".brief-unpin-btn").forEach(btn => btn.addEventListener("click", async () => {
+    btn.disabled = true;
+    try { await api(`/api/brief/${btn.dataset.id}`, { method: "DELETE" }); loadBrief(); }
+    catch (err) { btn.disabled = false; btn.textContent = "Failed"; setTimeout(() => btn.textContent = "Remove", 1500); }
+  }));
+}
+$("#briefClearBtn").addEventListener("click", () => runTask(async () => {
+  if (!confirm("Remove every pinned item from the prep brief? This cannot be undone.")) return;
+  await postJSON("/api/brief/clear", {});
+  loadBrief();
+}, { host: $("#briefResult"), onRetry: true }));
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Evaluation
