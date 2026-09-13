@@ -378,6 +378,14 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
 .turn:last-child{border-bottom:0;}
 .turn-head{display:flex; align-items:center; gap:8px; margin-bottom:7px;}
 .avatar{width:20px;height:20px;border-radius:5px;display:grid;place-items:center;font-size:10.5px;font-weight:700;flex:none;}
+.profile-avatar{width:56px;height:56px;border-radius:14px;display:grid;place-items:center;font-size:19px;font-weight:800;letter-spacing:-.02em;color:#fff;background:linear-gradient(135deg,var(--accent),#1954a8);box-shadow:0 5px 12px rgba(42,120,214,.22);flex:none;}
+.career-list{margin:6px 0 0;padding-left:18px;font-size:12.5px;color:var(--ink-2);line-height:1.7;}
+.media-item{padding:8px 0;border-bottom:1px solid var(--hairline);font-size:12.5px;}
+.media-item:last-child{border-bottom:0;}
+.media-item a{color:var(--accent);font-weight:600;text-decoration:none;}
+.media-item a:hover{text-decoration:underline;}
+.enrich-chip{display:inline-block;padding:4px 10px;border-radius:999px;background:var(--surface-2);color:var(--ink-2);font-size:11.5px;font-weight:600;border:1px solid var(--hairline);}
+
 .av-user{background:var(--surface-3); color:var(--ink-2);}
 .av-bot{background:var(--accent); color:#fff;}
 .turn-name{font-size:12.5px; font-weight:650;}
@@ -1295,6 +1303,60 @@ async function selectAnalyst(name, keepFilter) {
   renderProfile();
 }
 
+function initialsFor(name) {
+  const parts = (name || "").trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function avatarHTML(name) {
+  return `<div class="profile-avatar" aria-hidden="true">${esc(initialsFor(name))}</div>`;
+}
+
+function renderEnrichment(e) {
+  const facts = [];
+  if (e.regional_focus) facts.push(e.regional_focus);
+  if (typeof e.years_experience === "number") facts.push(`${e.years_experience}+ yrs experience`);
+  if (e.education) facts.push(e.education);
+  const factsHTML = facts.length
+    ? `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">${
+        facts.map(f => `<span class="enrich-chip">${esc(f)}</span>`).join("")
+      }</div>` : "";
+
+  const career = (e.career_history || []).length ? `
+    <div style="margin-top:14px;">
+      <div class="sec-label">Career history</div>
+      <ul class="career-list">${e.career_history.map(c => `<li>${esc(c)}</li>`).join("")}</ul>
+    </div>` : "";
+
+  const mediaItems = (e.media || []).filter(m => m && m.url);
+  const media = mediaItems.length ? `
+    <div style="margin-top:14px;">
+      <div class="sec-label">Media & mentions</div>
+      ${mediaItems.map(m => `
+        <div class="media-item">
+          <a href="${esc(m.url)}" target="_blank" rel="noopener noreferrer">${esc(m.title || m.url)}</a>
+          ${m.summary ? `<div class="muted xs" style="margin-top:2px;">${esc(m.summary)}</div>` : ""}
+        </div>`).join("")}
+    </div>` : "";
+
+  const linkedin = e.linkedin ? `
+    <div style="margin-top:10px;">
+      <a class="small" href="${esc(e.linkedin)}" target="_blank" rel="noopener noreferrer">LinkedIn profile ↗</a>
+    </div>` : "";
+
+  return `
+    <div style="margin-top:14px;">
+      ${e.sectors ? `<div class="sec-label">Coverage focus</div><div class="ev-q" style="margin-bottom:2px;">${esc(e.sectors)}</div>` : ""}
+      ${factsHTML}
+      ${career}
+      ${media}
+      ${linkedin}
+      ${e.source_note ? `<div class="muted xs" style="margin-top:10px;">${esc(e.source_note)}</div>` : ""}
+    </div>`;
+}
+
 function renderProfile() {
   const d = STATE.dossier;
   if (!d) return;
@@ -1312,14 +1374,21 @@ function renderProfile() {
   const topics = Object.entries(d.topic_counts || {}).sort((a, b) => b[1] - a[1]);
   const top = topics[0];
 
+  const enrichment = d.hand_curated_persona?.enrichment;
+
   let html = `
   <div class="card">
     <div class="pad">
-      <h2>${esc(name)}</h2>
-      <div class="small muted" style="margin-top:4px;">
-        ${esc(meta.firm || "Firm not recorded")} · ${esc(meta.bank || "Axis Bank")} coverage ·
-        ${qs.length} call${qs.length === 1 ? "" : "s"}${qs.length ? ` (${QU(qs[0])} → ${QU(qs[qs.length - 1])})` : ""} ·
-        ${d.n_exchanges} exchange${d.n_exchanges === 1 ? "" : "s"}
+      <div style="display:flex; align-items:flex-start; gap:16px;">
+        ${avatarHTML(name)}
+        <div style="flex:1; min-width:0;">
+          <h2 style="margin:0;">${esc(name)}</h2>
+          <div class="small muted" style="margin-top:4px;">
+            ${esc(enrichment?.current_role || "") }${enrichment?.current_role && enrichment?.organisation ? " · " : ""}${esc(enrichment?.organisation || meta.firm || "Firm not recorded")} · ${esc(meta.bank || "Axis Bank")} coverage ·
+            ${qs.length} call${qs.length === 1 ? "" : "s"}${qs.length ? ` (${QU(qs[0])} → ${QU(qs[qs.length - 1])})` : ""} ·
+            ${d.n_exchanges} exchange${d.n_exchanges === 1 ? "" : "s"}
+          </div>
+        </div>
       </div>
       ${top ? `<div class="takeaway" style="margin-top:14px;">
         Most persistent theme: <b>${esc(top[0])}</b> — raised in ${top[1]} question${top[1] === 1 ? "" : "s"}
@@ -1336,6 +1405,7 @@ function renderProfile() {
           <div class="ev-q">${esc(d.measured_style.style_note)}
             <span class="muted xs">— from ${d.measured_style.n} classified questions</span></div>
         </div>` : ""}
+      ${enrichment ? renderEnrichment(enrichment) : ""}
       <div style="margin-top:14px;">
         <span class="verified"><span class="tick">✓</span> Every exchange below is taken verbatim from the Axis Bank earnings-call transcripts</span>
       </div>
