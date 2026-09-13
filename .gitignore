@@ -46,3 +46,7 @@ Thumbs.db
 
 # Vercel
 .vercel
+
+# Per-user runtime state — pinned prep-brief items and the activity log.
+# Not sample data like the rest of data/outputs/, so it shouldn't be tracked.
+data/outputs/workspace_state.json

@@ -137,6 +137,69 @@ def get_meta():
     }
 
 
+# ── Saved work: prep brief + recent activity ────────────────────────────────
+# The one part of the review's "saved work" gap that is actually
+# infrastructure, not UI: pinned items and activity persist to a JSON file on
+# disk (src/data/workspace_state.py) so a browser reload or a server restart
+# doesn't lose them. This is a single-workspace, single-user tool, so a flat
+# file with a process lock is the right amount of engineering here.
+from src.data.workspace_state import (
+    get_state, pin_item, unpin_item, clear_brief, log_activity, brief_as_markdown,
+)
+
+
+class PinRequest(BaseModel):
+    kind: str
+    title: str
+    body: str
+    meta: dict | None = None
+
+
+class ActivityRequest(BaseModel):
+    kind: str
+    label: str
+    meta: dict | None = None
+
+
+@app.get("/api/brief")
+def api_get_brief():
+    return get_state()
+
+
+@app.post("/api/brief/pin")
+def api_pin(req: PinRequest):
+    return pin_item(req.kind, req.title, req.body, req.meta)
+
+
+@app.delete("/api/brief/{item_id}")
+def api_unpin(item_id: str):
+    return unpin_item(item_id)
+
+
+@app.post("/api/brief/clear")
+def api_clear_brief():
+    return clear_brief()
+
+
+@app.get("/api/brief/export")
+def api_export_brief(quarter: str = ""):
+    from fastapi.responses import PlainTextResponse
+    md = brief_as_markdown(quarter)
+    return PlainTextResponse(md, headers={
+        "Content-Disposition": f'attachment; filename="prep-brief-{quarter or "axis"}.md"'
+    })
+
+
+@app.post("/api/activity")
+def api_log_activity(req: ActivityRequest):
+    return log_activity(req.kind, req.label, req.meta)
+
+
+@app.get("/api/activity")
+def api_get_activity():
+    return get_state()["activity"][::-1]   # newest first
+
+
 @app.get("/api/analysts")
 def get_analysts():
     """Roster for the profile list: enough to render rows without the full
@@ -476,6 +539,7 @@ def run_full(req: RunRequest):
     disclosure = _disclosure(req)
     if not disclosure and not req.holdout:
         run_agentic_full(quarter)
+        log_activity("prepare_call", f"Prepared {quarter}", {"quarter": quarter, "mode": "full"})
         with open(AGENTIC_JSON) as f:
             return {"quarter": quarter, "data": json.load(f), "disclosure_conditioned": False,
                     "llm_stats": llm_stats()}
@@ -496,6 +560,9 @@ def run_full(req: RunRequest):
         "analyst_predictions": {a: {"topics": o["topics"], "verifier_log": o["verifier_log"]}
                                 for a, o in result["analyst_outputs"].items()},
     }
+    log_activity("prepare_call", f"Prepared {quarter}",
+                {"quarter": quarter, "mode": "full", "disclosure_conditioned": bool(disclosure),
+                 "holdout": req.holdout})
     return {"quarter": quarter, "data": data, "disclosure_conditioned": bool(disclosure),
             "holdout": req.holdout, "persisted": False, "llm_stats": llm_stats()}
 
@@ -544,10 +611,20 @@ async def ingest_preview(file: UploadFile = File(...)):
 
 @app.post("/api/ingest/commit")
 async def ingest_commit(file: UploadFile = File(...), overwrite: str = Form("false")):
-    result = commit_ingest(await file.read(), file.filename,
-                           overwrite=overwrite.lower() in ("1", "true", "yes"))
+    was_overwrite = overwrite.lower() in ("1", "true", "yes")
+    result = commit_ingest(await file.read(), file.filename, overwrite=was_overwrite)
     if result.get("status") == "ok":
         _load_live()
+    # Real audit entry for a real write to the archive — this is the one
+    # action in the app that isn't a read, so it is the one that most needs a
+    # record of who/when/what, per the review's governance gap.
+    log_activity(
+        "ingest_commit" if result.get("status") == "ok" else "ingest_commit_failed",
+        f"Committed {file.filename}" if result.get("status") == "ok"
+        else f"Commit failed: {file.filename}",
+        {"quarter": result.get("detected_quarter_id"), "overwrite": was_overwrite,
+         "status": result.get("status")},
+    )
     return result
 
 
