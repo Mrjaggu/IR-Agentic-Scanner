@@ -1,6 +1,6 @@
-# Axis Bank Investor Relations — Decision Cockpit & Agentic Scanner
+# Investor Relations — Decision Cockpit & Agentic Scanner
 
-An intelligent investor relations platform and predictive agentic framework for earnings call question forecasting, transcript search, and analyst dossier analytics.
+An intelligent, multi-tenant capable investor relations platform and predictive agentic framework for earnings call question forecasting, transcript search, and analyst dossier analytics. Built to support banking and enterprise financial institutions.
 
 ---
 
@@ -8,6 +8,7 @@ An intelligent investor relations platform and predictive agentic framework for 
 
 * **Analyst Question Intelligence**: Predicts upcoming earnings call questions per analyst using historical Q&A trajectories, narration novelty, and persona metrics.
 * **Agentic Graph Core (LangGraph)**: Multi-agent execution graph consisting of a **Planning Agent**, **Overall Topic Layer**, **Analyst-Specific Reweighter**, and **Verifier Grounding Gate**.
+* **Multi-Bank & Multi-Quarter Archival Intelligence**: Scalable document parser and graph indexer designed for cross-institutional earnings call indexing and peer comparison.
 * **Interactive Dashboard & Search**: Hybrid search engine (BM25 + graph traversal) over historical earnings call transcripts with citation attribution.
 * **FastAPI Live Application**: REST API backend for live predictions, document ingestion, and transcript archives.
 
@@ -28,8 +29,7 @@ python3 -m venv venv
 source venv/bin/activate
 
 # Install requirements
-pip install -r requirements-agentic.txt
-pip install fastapi uvicorn pypdf
+pip install -r requirements.txt
 ```
 
 ### 2. Environment Configuration
@@ -106,7 +106,7 @@ This repository includes a `vercel.json` configuration and a GitHub Action workf
 │   ├── search/           # Hybrid search & reciprocal rank fusion
 │   └── signals/          # Topic salience & metric extraction
 ├── .env.example          # Sample environment template
-├── requirements-agentic.txt
+├── requirements.txt      # Standard requirements file
 ├── run.py                # Command-line entrypoint
 └── vercel.json           # Vercel deployment configuration
 ```
