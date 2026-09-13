@@ -466,6 +466,17 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
 .landing-actions{display:flex; justify-content:center; flex-wrap:wrap; gap:10px;}
 .landing-actions .btn{padding:12px 22px; border-radius:999px; font-weight:600; font-size:13.5px;}.landing-actions .btn-primary{background:#fff;color:#10315b;border-color:#fff;}.landing-actions .btn-primary:hover:not(:disabled){background:#e9f3ff;color:#10315b;}.landing-actions .btn:not(.btn-primary){background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.34);}.landing-actions .btn:not(.btn-primary):hover:not(:disabled){background:rgba(255,255,255,.16);}
 .landing-status{position:relative; z-index:1; max-width:900px; margin:36px auto 0; padding:20px; text-align:left; background:var(--landing-status-bg); color:var(--ink); border:1px solid var(--landing-status-border); border-radius:var(--r); box-shadow:var(--landing-status-shadow), var(--landing-status-glow);}
+.agent-team{max-width:1180px; margin:0 auto; padding:0 2px 8px;}
+.agent-team-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:14px;}
+.agent-team-row{padding:14px; border:1px solid var(--hairline); border-radius:var(--r); background:var(--surface);}
+.agent-team-dot{display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:7px;}
+.agent-team-row h4{font-size:13px; font-weight:700; letter-spacing:-.01em; display:flex; align-items:center;}
+.agent-team-row p{font-size:12px; color:var(--ink-2); margin:6px 0 0; line-height:1.5;}
+.landing-category{max-width:760px; margin:44px auto; text-align:center;}
+.landing-category h2{font-size:clamp(22px,2.6vw,30px); font-weight:800; letter-spacing:-.03em; margin-bottom:10px;}
+.landing-category p{font-size:14.5px; line-height:1.6; color:var(--ink-2);}
+.landing-category b{color:var(--ink);}
+@media (max-width:760px){.agent-team-grid{grid-template-columns:1fr 1fr;}}
 .landing-status-head{display:flex; justify-content:space-between; gap:10px; align-items:center; padding-bottom:13px; border-bottom:1px solid var(--hairline);}
 .landing-status-title{font-size:13px; font-weight:650;}.landing-status-sub{font-size:11.5px; color:var(--ink-muted);}
 .landing-metrics{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:14px 0;}
@@ -565,16 +576,16 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
     </header>
     <div class="card landing-hero">
       <div>
-        <div class="landing-kicker">Investor relations intelligence, built to scale</div>
-        <h1 class="landing-title">Stay ahead of every earnings-call question.</h1>
-        <p class="landing-copy">One intelligence layer for investor-relations teams: forecast the questions that matter, verify every narrative against the archive, and prepare for the next call with confidence.</p>
+        <div class="landing-kicker">Agent-powered fintech &middot; earnings intelligence</div>
+        <h1 class="landing-title">AI agents for the next earnings call.</h1>
+        <p class="landing-copy">Specialized agents analyze transcripts, analyst behavior and financial disclosures to predict what matters, verify every narrative, and prepare your IR team for what comes next.</p>
         <div class="landing-actions">
-          <button class="btn btn-primary" onclick="document.getElementById('capabilities').scrollIntoView({behavior:'smooth'})">Explore capabilities</button>
+          <button class="btn btn-primary" onclick="document.getElementById('capabilities').scrollIntoView({behavior:'smooth'})">See the agents →</button>
           <button class="btn" onclick="document.getElementById('workspaces').scrollIntoView({behavior:'smooth'})">View workspace coverage</button>
         </div>
       </div>
       <aside class="landing-status" aria-label="Product preview">
-        <div class="landing-status-head"><div><div class="landing-status-title">Product preview</div><div class="landing-status-sub">Question intelligence · earnings-call readiness</div></div><span class="status st-good">● Live</span></div>
+        <div class="landing-status-head"><div><div class="landing-status-title">Agents at work</div><div class="landing-status-sub">Forecast · Analyst · Evidence agents · Axis Bank</div></div><span class="status st-good">● Live</span></div>
         <div class="landing-metrics">
           <div class="landing-metric"><div class="landing-metric-value">6</div><div class="landing-metric-label">priority questions</div></div>
           <div class="landing-metric"><div class="landing-metric-value" id="landingRecallValue">&mdash;</div><div class="landing-metric-label">topic recall (held-out)</div></div>
@@ -584,28 +595,43 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
       </aside>
     </div>
 
+    <div class="agent-team">
+      <div class="landing-section-head"><div><h2>Your earnings intelligence team</h2><p>Four specialized agents, each responsible for one part of call preparation.</p></div></div>
+      <div class="agent-team-grid">
+        <div class="agent-team-row"><h4><span class="agent-team-dot" style="background:var(--accent);"></span>Forecast Agent</h4><p>Predicts priority analyst questions from disclosure and history.</p></div>
+        <div class="agent-team-row"><h4><span class="agent-team-dot" style="background:var(--s3);"></span>Analyst Agent</h4><p>Learns analyst behavior, themes and prior responses.</p></div>
+        <div class="agent-team-row"><h4><span class="agent-team-dot" style="background:var(--s4);"></span>Evidence Agent</h4><p>Grounds every answer in transcripts and disclosures.</p></div>
+        <div class="agent-team-row"><h4><span class="agent-team-dot" style="background:var(--s2);"></span>Brief Agent</h4><p>Turns intelligence into a call-ready preparation brief.</p></div>
+      </div>
+    </div>
+
+    <div class="landing-category">
+      <h2>The agentic layer for Investor Relations.</h2>
+      <p>Traditional IR tools help teams access information. <b>IR Question Intelligence puts agents to work across it</b> — predicting questions, profiling analysts, and verifying every narrative before the call begins.</p>
+    </div>
+
     <div class="landing-section" id="capabilities">
-      <div class="landing-section-head"><div><h2>Intelligence for the full IR workflow</h2><p>Designed for earnings preparation today, with a platform model that supports every covered institution tomorrow.</p></div></div>
+      <div class="landing-section-head"><div><h2>A team of agents working across your IR workflow</h2><p>Specialized agents handle forecasting, analyst research and evidence verification — with a platform model that extends the same architecture to every covered institution tomorrow.</p></div></div>
       <div class="start-grid">
-        <button class="card start-card is-selected" data-feature-card="forecast" onclick="previewFeature('forecast')"><div class="start-card-top"><span class="start-index">01</span><h3>Prepare the next call</h3></div><p>Use the disclosure and analyst history to build a prioritised question brief.</p><span class="start-link">View forecast preview →</span></button>
-        <button class="card start-card" data-feature-card="analyst" onclick="previewFeature('analyst')"><div class="start-card-top"><span class="start-index">02</span><h3>Understand an analyst</h3></div><p>Review question threads, recurring themes, and management’s past responses.</p><span class="start-link">View analyst preview →</span></button>
-        <button class="card start-card" data-feature-card="evidence" onclick="previewFeature('evidence')"><div class="start-card-top"><span class="start-index">03</span><h3>Verify a claim</h3></div><p>Search across the archive and return to the passages behind every answer.</p><span class="start-link">View search preview →</span></button>
+        <button class="card start-card is-selected" data-feature-card="forecast" onclick="previewFeature('forecast')"><div class="start-card-top"><span class="start-index">01</span><h3>Forecast Agent</h3></div><p>Predict what analysts will ask next, using the disclosure and analyst history to build a prioritised question brief.</p><span class="start-link">Explore agent →</span></button>
+        <button class="card start-card" data-feature-card="analyst" onclick="previewFeature('analyst')"><div class="start-card-top"><span class="start-index">02</span><h3>Analyst Agent</h3></div><p>Understand who is asking and why — question threads, recurring themes, and management’s past responses.</p><span class="start-link">Explore agent →</span></button>
+        <button class="card start-card" data-feature-card="evidence" onclick="previewFeature('evidence')"><div class="start-card-top"><span class="start-index">03</span><h3>Evidence Agent</h3></div><p>Never answer without the evidence — search the archive and return to the passages behind every answer.</p><span class="start-link">Explore agent →</span></button>
       </div>
       <div class="card feature-preview" id="featurePreview" aria-live="polite">
-        <div class="feature-preview-nav"><p>Product tour</p><button class="active" data-feature-nav="forecast" onclick="previewFeature('forecast')">Question forecast</button><button data-feature-nav="analyst" onclick="previewFeature('analyst')">Analyst intelligence</button><button data-feature-nav="evidence" onclick="previewFeature('evidence')">Evidence search</button></div>
+        <div class="feature-preview-nav"><p>Meet the agents</p><button class="active" data-feature-nav="forecast" onclick="previewFeature('forecast')">Forecast Agent</button><button data-feature-nav="analyst" onclick="previewFeature('analyst')">Analyst Agent</button><button data-feature-nav="evidence" onclick="previewFeature('evidence')">Evidence Agent</button></div>
         <div class="feature-preview-canvas"><div class="preview-topline"><div><div class="preview-eyebrow" id="previewEyebrow">Next-call preparation</div><h3 id="previewTitle">Question forecast</h3><p class="preview-copy" id="previewCopy">A ranked briefing from the upcoming disclosure and historical analyst behavior.</p></div><span class="preview-score" id="previewScore">Forecast ready</span></div><div class="preview-signals"><div class="preview-signal"><b id="previewMetricOne">6</b><span id="previewLabelOne">priority questions</span></div><div class="preview-signal"><b id="previewMetricTwo">&mdash;</b><span id="previewLabelTwo">topic recall (held-out)</span></div><div class="preview-signal"><b id="previewMetricThree">3</b><span id="previewLabelThree">themes rising</span></div></div><div class="preview-insight" id="previewInsight"><b>Signal to prepare:</b> Margin outlook and deposit mix are the most likely follow-up themes.</div></div>
       </div>
     </div>
 
     <div class="landing-section" id="workspaces">
-      <div class="landing-section-head"><div><h2>Built for multi-bank coverage</h2><p>Axis Bank is live today. The same workspace model is being extended to the institutions your team needs next.</p></div></div>
+      <div class="landing-section-head"><div><h2>One intelligence platform. Every financial institution.</h2><p>Start with earnings intelligence at Axis Bank. Expand across banks and financial institutions with the same agent architecture.</p></div></div>
       <div class="bank-grid">
         <button class="card bank-card active" onclick="show('workspace')"><span class="chip chip-accent">Live workspace</span><h3>Axis Bank</h3><p>Analyst profiles, transcript search, and next-call prediction are ready to use.</p></button>
         <div class="card bank-card hdfc"><span class="chip">Coming soon</span><h3>HDFC Bank</h3><p>Coverage expansion is underway with the same archive and analyst-intelligence workflow.</p></div>
         <div class="card bank-card icici"><span class="chip">Coming soon</span><h3>ICICI Bank</h3><p>Planned workspace for peer-aware preparation and institutional research.</p></div>
         <div class="card bank-card kotak"><span class="chip">Planned</span><h3>Kotak Mahindra Bank</h3><p>Future coverage will bring another leading banking archive into one platform.</p></div>
       </div>
-      <p class="coverage-note">More banks are being added through a repeatable transcript-ingestion and analyst-modeling pipeline.</p>
+      <p class="coverage-note">One agent architecture, multiple institutions — extended through a repeatable transcript-ingestion and analyst-modeling pipeline.</p>
     </div>
   </section>
 
@@ -1009,9 +1035,9 @@ let STATE = { meta: null, analysts: [], selected: null, dossier: null,
 // a customer workspace. Only the explicitly labelled workspace CTA changes
 // product context.
 const FEATURE_PREVIEWS = {
-  forecast: { eyebrow: "Next-call preparation", title: "Question forecast", copy: "A ranked briefing from the upcoming disclosure and historical analyst behavior.", score: "Forecast ready", one: "6", oneLabel: "priority questions", two: "\u2014", twoLabel: "topic recall (held-out)", three: "3", threeLabel: "themes rising", insight: "<b>Signal to prepare:</b> Margin outlook and deposit mix are the most likely follow-up themes." },
-  analyst: { eyebrow: "Analyst intelligence", title: "Question trajectory", copy: "See the themes an analyst returns to, how their questions evolve, and what management said last time.", score: "Profile mapped", one: "14", oneLabel: "questions analysed", two: "4", twoLabel: "recurring themes", three: "7", threeLabel: "quarters observed", insight: "<b>Pattern surfaced:</b> The analyst consistently links loan growth to funding costs and margin durability." },
-  evidence: { eyebrow: "Evidence search", title: "Transcript-grounded answers", copy: "Search across the archive and move directly from a claim to the underlying management commentary.", score: "Cited results", one: "12", oneLabel: "source passages", two: "4", twoLabel: "quarters matched", three: "0", threeLabel: "ungrounded claims", insight: "<b>Evidence found:</b> Each answer retains its transcript passage and quarter for rapid review." },
+  forecast: { eyebrow: "Forecast Agent · next-call preparation", title: "Question forecast", copy: "A ranked briefing from the upcoming disclosure and historical analyst behavior.", score: "Forecast ready", one: "6", oneLabel: "priority questions", two: "\u2014", twoLabel: "topic recall (held-out)", three: "3", threeLabel: "themes rising", insight: "<b>Signal to prepare:</b> Margin outlook and deposit mix are the most likely follow-up themes." },
+  analyst: { eyebrow: "Analyst Agent · question trajectory", title: "Question trajectory", copy: "See the themes an analyst returns to, how their questions evolve, and what management said last time.", score: "Profile mapped", one: "14", oneLabel: "questions analysed", two: "4", twoLabel: "recurring themes", three: "7", threeLabel: "quarters observed", insight: "<b>Pattern surfaced:</b> The analyst consistently links loan growth to funding costs and margin durability." },
+  evidence: { eyebrow: "Evidence Agent · grounded answers", title: "Transcript-grounded answers", copy: "Search across the archive and move directly from a claim to the underlying management commentary.", score: "Cited results", one: "12", oneLabel: "source passages", two: "4", twoLabel: "quarters matched", three: "0", threeLabel: "ungrounded claims", insight: "<b>Evidence found:</b> Each answer retains its transcript passage and quarter for rapid review." },
 };
 function previewFeature(key) {
   const p = FEATURE_PREVIEWS[key];
