@@ -1887,13 +1887,8 @@ function renderCostNote() {
   const e = estimateRun("full");
   if (!e) { host.innerHTML = ""; return; }
   host.innerHTML = `<div class="notice"><span>⏳</span><span>
-    <b>Expect high token use — a full run takes a few minutes.</b>
-    Across ${STATE.meta.active_analysts} active analysts it makes roughly
-    <b>${e.calls[0]}–${e.calls[1]} model calls</b>. On ${e.lim.provider}'s ${e.lim.tier} tier
-    (${e.lim.tpm.toLocaleString()} tokens/min, ${e.lim.rpm}/min) that is about
-    ${e.perMin} calls a minute, so budget <b>~${e.mins[0]}–${e.mins[1]} minutes</b>.
-    Rate limits are handled automatically with backoff — the run continues, it just waits.
-    The Overall layer alone is ${estimateRun("overall").calls.join("–")} calls if you want a quick look first.
+    <b>Expect high token consumption — this run may take a while.</b>
+    Rate limits are handled automatically; the run just waits and continues.
   </span></div>`;
 }
 
