@@ -1,0 +1,177 @@
+{
+  "Abhishek Murarka": {
+    "n": 6,
+    "persona_consistent_rate": 0.5,
+    "narration_triggered_rate": 0.5,
+    "unexplained_rate": 0.0,
+    "style_note": "Mixed style: 50% persona-consistent, 50% narration-triggered, 0% unexplained across 6 tracked questions."
+  },
+  "Chintan Joshi": {
+    "n": 8,
+    "persona_consistent_rate": 0.375,
+    "narration_triggered_rate": 0.625,
+    "unexplained_rate": 0.0,
+    "style_note": "Mixed style: 38% persona-consistent, 62% narration-triggered, 0% unexplained across 8 tracked questions."
+  },
+  "Jai Mundhra": {
+    "n": 3,
+    "persona_consistent_rate": 0.333,
+    "narration_triggered_rate": 0.667,
+    "unexplained_rate": 0.0,
+    "style_note": "Mixed style: 33% persona-consistent, 67% narration-triggered, 0% unexplained across 3 tracked questions."
+  },
+  "Kunal Shah": {
+    "n": 7,
+    "persona_consistent_rate": 0.143,
+    "narration_triggered_rate": 0.857,
+    "unexplained_rate": 0.0,
+    "style_note": "Strongly narration-driven (86% of 7 tracked questions reacted to something specific management just disclosed, not a recurring topic interest). Predict by watching what's NEW in the narration for this analyst, not just their history."
+  },
+  "MB Mahesh": {
+    "n": 6,
+    "persona_consistent_rate": 0.0,
+    "narration_triggered_rate": 0.833,
+    "unexplained_rate": 0.167,
+    "style_note": "Strongly narration-driven (83% of 6 tracked questions reacted to something specific management just disclosed, not a recurring topic interest). Predict by watching what's NEW in the narration for this analyst, not just their history."
+  },
+  "Mahrukh Adajania": {
+    "n": 8,
+    "persona_consistent_rate": 0.25,
+    "narration_triggered_rate": 0.75,
+    "unexplained_rate": 0.0,
+    "style_note": "Strongly narration-driven (75% of 8 tracked questions reacted to something specific management just disclosed, not a recurring topic interest). Predict by watching what's NEW in the narration for this analyst, not just their history."
+  },
+  "Nitin Aggarwal": {
+    "n": 3,
+    "persona_consistent_rate": 0.0,
+    "narration_triggered_rate": 0.667,
+    "unexplained_rate": 0.333,
+    "style_note": "High unexplained rate (33% of 3) \u2014 meaningful share of this analyst's questions don't map to their own history or this quarter's narration. Treat predictions for this analyst with lower confidence."
+  },
+  "Param Subramanian": {
+    "n": 4,
+    "persona_consistent_rate": 0.0,
+    "narration_triggered_rate": 1.0,
+    "unexplained_rate": 0.0,
+    "style_note": "Strongly narration-driven (100% of 4 tracked questions reacted to something specific management just disclosed, not a recurring topic interest). Predict by watching what's NEW in the narration for this analyst, not just their history."
+  },
+  "Suraj Das": {
+    "n": 1,
+    "persona_consistent_rate": 0.0,
+    "narration_triggered_rate": 1.0,
+    "unexplained_rate": 0.0,
+    "style_note": "Only 1 tracked question block(s) \u2014 too little history for a reliable style read."
+  },
+  "Yy Tsai": {
+    "n": 1,
+    "persona_consistent_rate": 0.0,
+    "narration_triggered_rate": 1.0,
+    "unexplained_rate": 0.0,
+    "style_note": "Only 1 tracked question block(s) \u2014 too little history for a reliable style read."
+  },
+  "Ankit Bihani": {
+    "n": 2,
+    "persona_consistent_rate": 0.0,
+    "narration_triggered_rate": 0.5,
+    "unexplained_rate": 0.5,
+    "style_note": "Only 2 tracked question block(s) \u2014 too little history for a reliable style read."
+  },
+  "Piran Engineer": {
+    "n": 3,
+    "persona_consistent_rate": 0.0,
+    "narration_triggered_rate": 1.0,
+    "unexplained_rate": 0.0,
+    "style_note": "Strongly narration-driven (100% of 3 tracked questions reacted to something specific management just disclosed, not a recurring topic interest). Predict by watching what's NEW in the narration for this analyst, not just their history."
+  },
+  "Rikin Shah": {
+    "n": 8,
+    "persona_consistent_rate": 0.25,
+    "narration_triggered_rate": 0.75,
+    "unexplained_rate": 0.0,
+    "style_note": "Strongly narration-driven (75% of 8 tracked questions reacted to something specific management just disclosed, not a recurring topic interest). Predict by watching what's NEW in the narration for this analyst, not just their history."
+  },
+  "Zhixuan Gao": {
+    "n": 1,
+    "persona_consistent_rate": 0.0,
+    "narration_triggered_rate": 1.0,
+    "unexplained_rate": 0.0,
+    "style_note": "Only 1 tracked question block(s) \u2014 too little history for a reliable style read."
+  },
+  "Pranav Gundlapalle": {
+    "n": 2,
+    "persona_consistent_rate": 0.5,
+    "narration_triggered_rate": 0.5,
+    "unexplained_rate": 0.0,
+    "style_note": "Only 2 tracked question block(s) \u2014 too little history for a reliable style read."
+  },
+  "Saurabh Kumar": {
+    "n": 1,
+    "persona_consistent_rate": 0.0,
+    "narration_triggered_rate": 0.0,
+    "unexplained_rate": 1.0,
+    "style_note": "Only 1 tracked question block(s) \u2014 too little history for a reliable style read."
+  },
+  "Adarsh Parasrampuria": {
+    "n": 3,
+    "persona_consistent_rate": 0.333,
+    "narration_triggered_rate": 0.333,
+    "unexplained_rate": 0.333,
+    "style_note": "High unexplained rate (33% of 3) \u2014 meaningful share of this analyst's questions don't map to their own history or this quarter's narration. Treat predictions for this analyst with lower confidence."
+  },
+  "Anand Swaminathan": {
+    "n": 2,
+    "persona_consistent_rate": 0.0,
+    "narration_triggered_rate": 1.0,
+    "unexplained_rate": 0.0,
+    "style_note": "Only 2 tracked question block(s) \u2014 too little history for a reliable style read."
+  },
+  "Harsh Wardhan Modi": {
+    "n": 2,
+    "persona_consistent_rate": 0.0,
+    "narration_triggered_rate": 1.0,
+    "unexplained_rate": 0.0,
+    "style_note": "Only 2 tracked question block(s) \u2014 too little history for a reliable style read."
+  },
+  "Subramanian": {
+    "n": 1,
+    "persona_consistent_rate": 0.0,
+    "narration_triggered_rate": 1.0,
+    "unexplained_rate": 0.0,
+    "style_note": "Only 1 tracked question block(s) \u2014 too little history for a reliable style read."
+  },
+  "Suresh Ganapathy": {
+    "n": 2,
+    "persona_consistent_rate": 0.0,
+    "narration_triggered_rate": 1.0,
+    "unexplained_rate": 0.0,
+    "style_note": "Only 2 tracked question block(s) \u2014 too little history for a reliable style read."
+  },
+  "Prakhar Sharma": {
+    "n": 1,
+    "persona_consistent_rate": 0.0,
+    "narration_triggered_rate": 0.0,
+    "unexplained_rate": 1.0,
+    "style_note": "Only 1 tracked question block(s) \u2014 too little history for a reliable style read."
+  },
+  "Rahul Jain": {
+    "n": 1,
+    "persona_consistent_rate": 0.0,
+    "narration_triggered_rate": 1.0,
+    "unexplained_rate": 0.0,
+    "style_note": "Only 1 tracked question block(s) \u2014 too little history for a reliable style read."
+  },
+  "Akshat Agrawal": {
+    "n": 1,
+    "persona_consistent_rate": 0.0,
+    "narration_triggered_rate": 1.0,
+    "unexplained_rate": 0.0,
+    "style_note": "Only 1 tracked question block(s) \u2014 too little history for a reliable style read."
+  },
+  "Krishnan ASV": {
+    "n": 1,
+    "persona_consistent_rate": 0.0,
+    "narration_triggered_rate": 0.0,
+    "unexplained_rate": 1.0,
+    "style_note": "Only 1 tracked question block(s) \u2014 too little history for a reliable style read."
+  }
+}

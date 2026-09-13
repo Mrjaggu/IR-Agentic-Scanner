@@ -1,0 +1,1067 @@
+{
+  "q1fy22": {},
+  "q2fy22": {
+    "NIM": {
+      "value": 3.39,
+      "value_unit": "%",
+      "delta": 19.0,
+      "delta_unit": "%",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "PAT": {
+      "value": 3133.0,
+      "value_unit": "crore",
+      "delta": 86.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "ROE": {
+      "value": 12.72,
+      "value_unit": "%",
+      "delta": 477.0,
+      "delta_unit": "%",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "CET1": {
+      "value": 15.81,
+      "value_unit": "%",
+      "delta": 43.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "GNPA": {
+      "value": 3.53,
+      "value_unit": "%",
+      "delta": 75.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    }
+  },
+  "q3fy22": {
+    "PAT": {
+      "value": 3614.0,
+      "value_unit": "crore",
+      "delta": 224.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "ROE": {
+      "value": 14.19,
+      "value_unit": "%",
+      "delta": 928.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "GNPA": {
+      "value": 130.0,
+      "value_unit": "%",
+      "delta": 1406.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "PCR": {
+      "value": 72.0,
+      "value_unit": "%",
+      "delta": 186.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "QOQ"
+    }
+  },
+  "q4fy22": {
+    "ROE": {
+      "value": 15.87,
+      "value_unit": "%",
+      "delta": 415.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "GNPA": {
+      "value": 131.69,
+      "value_unit": "%",
+      "delta": 1188.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "NNPA": {
+      "value": 0.73,
+      "value_unit": "%",
+      "delta": 32.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "PAT": {
+      "value": 13025.0,
+      "value_unit": "crore",
+      "delta": 98.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "ROA": {
+      "value": 1.21,
+      "value_unit": "%",
+      "delta": 51.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "Cost_to_Assets": {
+      "value": 2.17,
+      "value_unit": "%",
+      "delta": 21.0,
+      "delta_unit": "bps",
+      "direction": "increase",
+      "period": "YOY"
+    }
+  },
+  "q1fy23": {
+    "ROE": {
+      "value": 9384.0,
+      "value_unit": null,
+      "delta": 21.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "ROA": {
+      "value": 1.48,
+      "value_unit": "%",
+      "delta": 60.0,
+      "delta_unit": "%",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "GNPA": {
+      "value": 133.51,
+      "value_unit": "%",
+      "delta": 1587.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "PAT": {
+      "value": 88.0,
+      "value_unit": "crore",
+      "delta": 20.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "NNPA": {
+      "value": 0.64,
+      "value_unit": "%",
+      "delta": 56.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    }
+  },
+  "q2fy23": {
+    "PAT": {
+      "value": 53.3,
+      "value_unit": null,
+      "delta": 70.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "ROE": {
+      "value": 18.9,
+      "value_unit": "%",
+      "delta": 545.0,
+      "delta_unit": "bps",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "NIM": {
+      "value": 3.96,
+      "value_unit": "%",
+      "delta": 57.0,
+      "delta_unit": "bps",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "ROA": {
+      "value": 1.87,
+      "value_unit": "%",
+      "delta": 59.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "GNPA": {
+      "value": 138.35,
+      "value_unit": "%",
+      "delta": 1454.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    }
+  },
+  "q3fy23": {
+    "PAT": {
+      "value": 5853.0,
+      "value_unit": "crore",
+      "delta": 62.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "NIM": {
+      "value": 4.26,
+      "value_unit": "%",
+      "delta": 73.0,
+      "delta_unit": "bps",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "ROE": {
+      "value": 11459.0,
+      "value_unit": null,
+      "delta": 32.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "ROA": {
+      "value": 2.0,
+      "value_unit": "%",
+      "delta": 57.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "GNPA": {
+      "value": 139.0,
+      "value_unit": "%",
+      "delta": 952.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    }
+  },
+  "q4fy23": {
+    "NIM": {
+      "value": 4.02,
+      "value_unit": "%",
+      "delta": 55.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "Cost_to_Assets": {
+      "value": 2.25,
+      "value_unit": "%",
+      "delta": 8.0,
+      "delta_unit": "bps",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "GNPA": {
+      "value": 2.02,
+      "value_unit": "%",
+      "delta": 80.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "NNPA": {
+      "value": 0.39,
+      "value_unit": "%",
+      "delta": 34.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "PCR": {
+      "value": 81.0,
+      "value_unit": "%",
+      "delta": 613.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "ROA": {
+      "value": 1.82,
+      "value_unit": "%",
+      "delta": 53.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "ROE": {
+      "value": 18.84,
+      "value_unit": null,
+      "delta": 517.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    }
+  },
+  "q1fy24": {
+    "ROE": {
+      "value": 19.44,
+      "value_unit": "%",
+      "delta": 388.0,
+      "delta_unit": "bps",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "NIM": {
+      "value": 4.1,
+      "value_unit": "%",
+      "delta": 50.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "Cost_to_Assets": {
+      "value": 2.32,
+      "value_unit": "%",
+      "delta": 8.0,
+      "delta_unit": "bps",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "Cost_to_Income": {
+      "value": 48.29,
+      "value_unit": "%",
+      "delta": 417.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "PAT": {
+      "value": 5797.0,
+      "value_unit": "crore",
+      "delta": 41.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "GNPA": {
+      "value": 1.96,
+      "value_unit": "%",
+      "delta": 80.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "NNPA": {
+      "value": 0.41,
+      "value_unit": "%",
+      "delta": 23.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "PCR": {
+      "value": 80.0,
+      "value_unit": "%",
+      "delta": 233.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "ROA": {
+      "value": 1.83,
+      "value_unit": "%",
+      "delta": 35.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    }
+  },
+  "q2fy24": {
+    "ROE": {
+      "value": 19.04,
+      "value_unit": "%",
+      "delta": 179.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "ROA": {
+      "value": 1.81,
+      "value_unit": "%",
+      "delta": 15.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "NIM": {
+      "value": 4.11,
+      "value_unit": "%",
+      "delta": 33.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "PAT": {
+      "value": 11661.0,
+      "value_unit": "crore",
+      "delta": 23.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "Cost_to_Assets": {
+      "value": 2.41,
+      "value_unit": "%",
+      "delta": 16.0,
+      "delta_unit": "bps",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "Net_Credit_Cost": {
+      "value": 0.42,
+      "value_unit": "%",
+      "delta": 8.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "QOQ"
+    },
+    "GNPA": {
+      "value": 1.73,
+      "value_unit": "%",
+      "delta": 77.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "NNPA": {
+      "value": 0.36,
+      "value_unit": "%",
+      "delta": 15.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    }
+  },
+  "q3fy24": {
+    "NIM": {
+      "value": 4.01,
+      "value_unit": "%",
+      "delta": 10.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "QOQ"
+    },
+    "Cost_to_Assets": {
+      "value": 2.49,
+      "value_unit": "%",
+      "delta": 25.0,
+      "delta_unit": "bps",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "Net_Credit_Cost": {
+      "value": 0.28,
+      "value_unit": "%",
+      "delta": 14.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "QOQ"
+    },
+    "PAT": {
+      "value": 6071.0,
+      "value_unit": "crore",
+      "delta": 4.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "QOQ"
+    },
+    "GNPA": {
+      "value": 1.58,
+      "value_unit": "%",
+      "delta": 80.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "NNPA": {
+      "value": 0.36,
+      "value_unit": "%",
+      "delta": 11.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    }
+  },
+  "q4fy24": {
+    "NIM": {
+      "value": 4.07,
+      "value_unit": "%",
+      "delta": 5.0,
+      "delta_unit": "bps",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "GNPA": {
+      "value": 1.43,
+      "value_unit": "%",
+      "delta": 59.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "NNPA": {
+      "value": 0.31,
+      "value_unit": "%",
+      "delta": 8.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "PAT": {
+      "value": 24861.0,
+      "value_unit": "crore",
+      "delta": 160.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "ROA": {
+      "value": 1.84,
+      "value_unit": "%",
+      "delta": 99.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "ROE": {
+      "value": 19.29,
+      "value_unit": "%",
+      "delta": 1003.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "Cost_to_Income": {
+      "value": 48.68,
+      "value_unit": "%",
+      "delta": 1803.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "CET1": {
+      "value": 13.74,
+      "value_unit": "%",
+      "delta": 3.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "QOQ"
+    },
+    "Net_Credit_Cost": {
+      "value": 0.32,
+      "value_unit": "%",
+      "delta": 4.0,
+      "delta_unit": "bps",
+      "direction": "increase",
+      "period": "QOQ"
+    }
+  },
+  "q1fy25": {
+    "Cost_to_Assets": {
+      "value": 2.54,
+      "value_unit": "%",
+      "delta": 1.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "QOQ"
+    },
+    "Net_Credit_Cost": {
+      "value": 0.97,
+      "value_unit": "%",
+      "delta": 47.0,
+      "delta_unit": "bps",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "PAT": {
+      "value": 6035.0,
+      "value_unit": "crore",
+      "delta": 4.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "GNPA": {
+      "value": 1.54,
+      "value_unit": "%",
+      "delta": 42.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "NNPA": {
+      "value": 0.34,
+      "value_unit": "%",
+      "delta": 7.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "NIM": {
+      "value": 4.05,
+      "value_unit": "%",
+      "delta": 29.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    }
+  },
+  "q2fy25": {
+    "ROA": {
+      "value": 1.92,
+      "value_unit": "%",
+      "delta": 9.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "ROE": {
+      "value": 18.08,
+      "value_unit": "%",
+      "delta": 140.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "QOQ"
+    },
+    "Cost_to_Income": {
+      "value": 47.21,
+      "value_unit": "%",
+      "delta": 207.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "PAT": {
+      "value": 12952.0,
+      "value_unit": "crore",
+      "delta": 11.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "Cost_to_Assets": {
+      "value": 2.52,
+      "value_unit": "%",
+      "delta": 2.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "QOQ"
+    },
+    "Net_Credit_Cost": {
+      "value": 0.54,
+      "value_unit": "%",
+      "delta": 43.0,
+      "delta_unit": "bps",
+      "direction": "decrease",
+      "period": "QOQ"
+    },
+    "GNPA": {
+      "value": 1.44,
+      "value_unit": "%",
+      "delta": 29.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "NNPA": {
+      "value": 0.34,
+      "value_unit": "%",
+      "delta": 2.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "NIM": {
+      "value": 3.99,
+      "value_unit": "%",
+      "delta": 6.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "QOQ"
+    }
+  },
+  "q3fy25": {
+    "Cost_to_Income": {
+      "value": 47.0,
+      "value_unit": "%",
+      "delta": 247.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "PAT": {
+      "value": 19256.0,
+      "value_unit": "crore",
+      "delta": 9.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "GNPA": {
+      "value": 1.46,
+      "value_unit": "%",
+      "delta": 12.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "NIM": {
+      "value": 4.06,
+      "value_unit": "%",
+      "delta": 6.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "QOQ"
+    },
+    "Net_Credit_Cost": {
+      "value": 80.0,
+      "value_unit": "bps",
+      "delta": 26.0,
+      "delta_unit": "bps",
+      "direction": "increase",
+      "period": "QOQ"
+    }
+  },
+  "q4fy25": {
+    "NIM": {
+      "value": 3.97,
+      "value_unit": "%",
+      "delta": 4.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "QOQ"
+    },
+    "Cost_to_Assets": {
+      "value": 2.46,
+      "value_unit": "%",
+      "delta": 9.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "PAT": {
+      "value": 26373.0,
+      "value_unit": "crore",
+      "delta": 6.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "GNPA": {
+      "value": 1.28,
+      "value_unit": "%",
+      "delta": 15.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "Net_Credit_Cost": {
+      "value": 0.5,
+      "value_unit": "%",
+      "delta": 30.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "QOQ"
+    },
+    "NNPA": {
+      "value": 0.33,
+      "value_unit": "%",
+      "delta": 2.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "QOQ"
+    }
+  },
+  "q1fy26": {
+    "Cost_to_Assets": {
+      "value": 2.41,
+      "value_unit": "%",
+      "delta": 5.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "QOQ"
+    },
+    "Net_Credit_Cost": {
+      "value": 1.38,
+      "value_unit": "%",
+      "delta": 41.0,
+      "delta_unit": "bps",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "GNPA": {
+      "value": 1.57,
+      "value_unit": "%",
+      "delta": 3.0,
+      "delta_unit": "bps",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "NNPA": {
+      "value": 0.45,
+      "value_unit": "%",
+      "delta": 11.0,
+      "delta_unit": "bps",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "PCR": {
+      "value": 71.0,
+      "value_unit": "%",
+      "delta": 308.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "QOQ"
+    },
+    "NIM": {
+      "value": 3.8,
+      "value_unit": "%",
+      "delta": 25.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    }
+  },
+  "q2fy26": {
+    "NIM": {
+      "value": 3.77,
+      "value_unit": "%",
+      "delta": 25.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "Cost_to_Assets": {
+      "value": 2.38,
+      "value_unit": "%",
+      "delta": 14.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "Net_Credit_Cost": {
+      "value": 0.73,
+      "value_unit": "%",
+      "delta": 65.0,
+      "delta_unit": "bps",
+      "direction": "decrease",
+      "period": "QOQ"
+    },
+    "GNPA": {
+      "value": 1.46,
+      "value_unit": "%",
+      "delta": 11.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "QOQ"
+    },
+    "NNPA": {
+      "value": 0.44,
+      "value_unit": "%",
+      "delta": 1.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "QOQ"
+    }
+  },
+  "q3fy26": {
+    "NIM": {
+      "value": 3.72,
+      "value_unit": "%",
+      "delta": 27.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "Cost_to_Assets": {
+      "value": 2.33,
+      "value_unit": "%",
+      "delta": 15.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "Net_Credit_Cost": {
+      "value": 0.76,
+      "value_unit": "%",
+      "delta": 4.0,
+      "delta_unit": "bps",
+      "direction": "decrease",
+      "period": "YOY"
+    },
+    "PAT": {
+      "value": 6490.0,
+      "value_unit": "crore",
+      "delta": 28.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "GNPA": {
+      "value": 1.4,
+      "value_unit": "%",
+      "delta": 6.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "QOQ"
+    },
+    "NNPA": {
+      "value": 0.42,
+      "value_unit": "%",
+      "delta": 2.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "QOQ"
+    },
+    "ROA": {
+      "value": 1.57,
+      "value_unit": "%",
+      "delta": 27.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "QOQ"
+    },
+    "ROE": {
+      "value": 14.15,
+      "value_unit": "%",
+      "delta": 264.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "QOQ"
+    }
+  },
+  "q4fy26": {
+    "GNPA": {
+      "value": 1.23,
+      "value_unit": "%",
+      "delta": 17.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "QOQ"
+    },
+    "Net_Credit_Cost": {
+      "value": 0.37,
+      "value_unit": "%",
+      "delta": 13.0,
+      "delta_unit": "bps",
+      "direction": "decrease",
+      "period": "YOY"
+    },
+    "NIM": {
+      "value": 3.69,
+      "value_unit": "%",
+      "delta": 29.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "PAT": {
+      "value": 7071.0,
+      "value_unit": "crore",
+      "delta": 9.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "QOQ"
+    },
+    "ROE": {
+      "value": 13.59,
+      "value_unit": "%",
+      "delta": 9.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "QOQ"
+    },
+    "Cost_to_Assets": {
+      "value": 2.28,
+      "value_unit": "%",
+      "delta": 18.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "NNPA": {
+      "value": 0.37,
+      "value_unit": "%",
+      "delta": 5.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "QOQ"
+    },
+    "ROA": {
+      "value": 1.64,
+      "value_unit": "%",
+      "delta": 7.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "QOQ"
+    }
+  },
+  "q1fy27": {
+    "GNPA": {
+      "value": 1.28,
+      "value_unit": "%",
+      "delta": 29.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "NNPA": {
+      "value": 0.39,
+      "value_unit": "%",
+      "delta": 6.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "Net_Credit_Cost": {
+      "value": 0.63,
+      "value_unit": "%",
+      "delta": 75.0,
+      "delta_unit": "bps",
+      "direction": "decrease",
+      "period": "YOY"
+    },
+    "Cost_to_Assets": {
+      "value": 2.2,
+      "value_unit": "%",
+      "delta": 21.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    },
+    "PAT": {
+      "value": 7114.0,
+      "value_unit": "crore",
+      "delta": 23.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "NIM": {
+      "value": 3.46,
+      "value_unit": "%",
+      "delta": 34.0,
+      "delta_unit": "bps",
+      "direction": "decline",
+      "period": "YOY"
+    }
+  }
+}

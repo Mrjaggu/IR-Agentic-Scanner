@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IR Question-Intelligence Platform</title>
+<style>
+:root{
+  --bg-main:#0B0F19; --bg-card:#151d30; --bg-card2:#1b263e;
+  --border:#2a3550; --text:#e6ebf5; --text-dim:#93a0bd; --accent:#5fb3ff;
+  --accent2:#7de3b8; --warn:#f0b45c; --bad:#ef7a7a; --mono:'SFMono-Regular',Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg-main);color:var(--text);font-family:-apple-system,Segoe UI,Roboto,sans-serif;font-size:14px;}
+header{padding:18px 24px 0;border-bottom:1px solid var(--border);}
+header h1{margin:0 0 4px;font-size:20px;font-weight:700}
+header p{margin:0 0 14px;color:var(--text-dim);font-size:12.5px}
+.tabs{display:flex;gap:4px}
+.tab-btn{background:transparent;border:1px solid var(--border);border-bottom:none;color:var(--text-dim);
+  padding:9px 18px;border-radius:8px 8px 0 0;cursor:pointer;font-size:13px;font-weight:600}
+.tab-btn.active{background:var(--bg-card);color:var(--text);border-color:var(--border)}
+.tab-panel{display:none;padding:20px 24px;max-width:1400px;margin:0 auto}
+.tab-panel.active{display:block}
+.grid{display:grid;grid-template-columns:280px 1fr;gap:18px}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px}
+.card + .card{margin-top:14px}
+input[type=text]{width:100%;background:var(--bg-card2);border:1px solid var(--border);color:var(--text);
+  padding:9px 12px;border-radius:8px;font-size:13.5px}
+.analyst-list{max-height:76vh;overflow-y:auto;margin-top:10px}
+.analyst-row{padding:8px 10px;border-radius:6px;cursor:pointer;color:var(--text-dim);font-size:13px;display:flex;justify-content:space-between}
+.analyst-row:hover{background:var(--bg-card2)}
+.analyst-row.sel{background:var(--bg-card2);color:var(--text);font-weight:600}
+.badge{display:inline-block;background:var(--bg-card2);border:1px solid var(--border);border-radius:5px;
+  padding:1px 7px;font-size:11px;color:var(--text-dim)}
+h2{font-size:16px;margin:0 0 10px}
+h3{font-size:13.5px;margin:14px 0 6px;color:var(--accent)}
+.bar-row{display:flex;align-items:center;gap:8px;margin:3px 0;font-size:12.5px}
+.bar-label{width:190px;color:var(--text-dim);flex-shrink:0}
+.bar-track{flex:1;background:var(--bg-card2);border-radius:4px;height:9px;overflow:hidden}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.qitem{border-left:2px solid var(--border);padding:6px 0 6px 10px;margin:6px 0;font-size:12.8px;color:var(--text-dim)}
+.qitem b{color:var(--text)}
+.topic-tag{display:inline-block;background:rgba(95,179,255,.12);color:var(--accent);border-radius:5px;
+  padding:1px 6px;font-size:10.5px;margin-right:4px}
+table{width:100%;border-collapse:collapse;font-size:12.8px;margin-top:8px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--border)}
+th{color:var(--text-dim);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em}
+.cite{font-size:11px;color:var(--accent2);font-family:var(--mono)}
+.snippet{background:var(--bg-card2);border-radius:8px;padding:10px 12px;margin:8px 0;font-size:12.8px;line-height:1.5}
+.pill{display:inline-flex;align-items:center;gap:5px;background:var(--bg-card2);border:1px solid var(--border);
+  border-radius:20px;padding:4px 11px;font-size:11.5px;margin:2px 4px 2px 0}
+.status-ok{color:var(--accent2)} .status-bare{color:var(--warn)} .status-bad{color:var(--bad)}
+.muted{color:var(--text-dim);font-size:12px}
+details{margin-top:10px}
+summary{cursor:pointer;color:var(--accent);font-size:12.5px}
+.rationale{color:var(--text-dim);font-size:12px;margin-left:4px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:900px){.grid{grid-template-columns:1fr}.two-col{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <h1>IR Question-Intelligence Platform</h1>
+  <p>Axis Bank IR analytics — Section 9 application layer (Tab 1 direct retrieval · Tab 2 hybrid search · Tab 3 agentic prediction)</p>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="t1">Tab 1 · Analyst Profiles</button>
+    <button class="tab-btn" data-tab="t2">Tab 2 · Advanced Search</button>
+    <button class="tab-btn" data-tab="t3">Tab 3 · Prediction</button>
+    <button class="tab-btn" data-tab="t4">Ingest &amp; Test</button>
+  </div>
+</header>
+
+<!-- ============ TAB 1 ============ -->
+<div class="tab-panel active" id="t1">
+  <div class="grid">
+    <div class="card">
+      <input type="text" id="analystFilter" placeholder="Filter analysts...">
+      <div class="analyst-list" id="analystList"></div>
+    </div>
+    <div id="analystDetail"><div class="card muted">Select an analyst to view their profile.</div></div>
+  </div>
+</div>
+
+<!-- ============ TAB 2 ============ -->
+<div class="tab-panel" id="t2">
+  <div class="card">
+    <input type="text" id="searchBox" placeholder="e.g. What did Mahrukh Adajania ask about NIM? / Who else covers Slippages & Asset Quality? / Compare Credit Cost across quarters">
+    <div class="muted" style="margin-top:8px">
+      Query understanding extracts analyst/quarter filters and detects relational (&quot;who else...&quot;) or comparative (&quot;compare...&quot;) intent.
+      Retrieval fuses BM25 (exact terms) + a TF-IDF cosine semantic proxy (no embedding model available offline — see note) + graph traversal, via reciprocal rank fusion.
+      All results cite their source quarter/analyst/speaker directly from the transcript graph.
+    </div>
+  </div>
+  <div id="searchResults"></div>
+</div>
+
+<!-- ============ TAB 3 ============ -->
+<div class="tab-panel" id="t3">
+  <div id="predictionRoot"></div>
+</div>
+
+<!-- ============ TAB 4 — INGEST & TEST ============ -->
+<div class="tab-panel" id="t4">
+  <div class="card">
+    <h2>Ingest a new quarter's transcript</h2>
+    <div class="muted" style="margin-bottom:10px">
+      Section 2.1 (Ingestion Layer) test harness. <b>Preview</b> parses the PDF and shows what
+      would be extracted — quarter, call date, analyst/firm counts, and the extraction-quality
+      monitor's fuzzy-match flags (Section 2.1's canonical-registry check) — without writing
+      anything. <b>Commit</b> actually saves the file into <code>earnings_transcript/</code> and
+      recompiles <code>dataset.json</code> + <code>graph.json</code>. This tab needs the live
+      server (<code>python3 run.py server</code>, then open <code>http://localhost:8000/platform</code>)
+      — it won't work if you opened this file directly from disk.
+    </div>
+    <input type="file" id="ingestFile" accept="application/pdf">
+    <div style="margin-top:10px">
+      <button class="tab-btn" id="ingestPreviewBtn" style="border-radius:8px">Preview (dry run)</button>
+      <button class="tab-btn" id="ingestCommitBtn" style="border-radius:8px" disabled>Commit to dataset</button>
+      <label class="muted" style="margin-left:10px"><input type="checkbox" id="ingestOverwrite"> overwrite existing transcript for this quarter</label>
+    </div>
+  </div>
+  <div id="ingestResults"></div>
+</div>
+
+<script>
+const DATA = __UI_DATA_JSON__;
+
+// ---------------------------------------------------------------------
+// Shared helpers
+// ---------------------------------------------------------------------
+function el(tag, attrs, children){
+  const e = document.createElement(tag);
+  if(attrs) for(const k in attrs){
+    if(k === 'class') e.className = attrs[k];
+    else if(k === 'html') e.innerHTML = attrs[k];
+    else e.setAttribute(k, attrs[k]);
+  }
+  (children||[]).forEach(c => e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c));
+  return e;
+}
+function pct(n){ return (n*100).toFixed(0) + '%'; }
+
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+  });
+});
+
+// =======================================================================
+// TAB 1 — Analyst Profiles (direct structured retrieval, no agent)
+// =======================================================================
+const profiles = DATA.analyst_profiles;
+const analystListEl = document.getElementById('analystList');
+const analystDetailEl = document.getElementById('analystDetail');
+
+function renderAnalystList(filterText){
+  analystListEl.innerHTML = '';
+  const ft = (filterText||'').toLowerCase();
+  profiles.filter(p => p.analyst.toLowerCase().includes(ft)).forEach(p => {
+    const row = el('div', {class:'analyst-row'}, [
+      p.analyst,
+      el('span', {class:'badge'}, [String(p.questions.length)])
+    ]);
+    row.addEventListener('click', () => selectAnalyst(p.analyst, row));
+    analystListEl.appendChild(row);
+  });
+}
+function selectAnalyst(name, rowEl){
+  document.querySelectorAll('.analyst-row').forEach(r => r.classList.remove('sel'));
+  if(rowEl) rowEl.classList.add('sel');
+  const p = profiles.find(x => x.analyst === name);
+  if(!p) return;
+  const topTopics = Object.entries(p.topic_counts).sort((a,b)=>b[1]-a[1]);
+  const maxCount = topTopics.length ? topTopics[0][1] : 1;
+
+  const wrap = el('div');
+  wrap.appendChild(el('div', {class:'card'}, [
+    el('h2', {}, [p.analyst]),
+    el('div', {class:'muted'}, [`Bank: ${p.bank}  ·  Active ${p.quarters.length} quarters (${p.quarters[0]} → ${p.quarters[p.quarters.length-1]})  ·  ${p.questions.length} tracked questions`]),
+    p.hand_curated_persona ? el('div', {style:'margin-top:8px;font-size:12.8px;color:var(--text-dim)'}, [
+      el('b', {style:'color:var(--text)'}, ['Web-derived style: ']), p.hand_curated_persona.style || ''
+    ]) : null,
+    p.measured_style ? el('div', {style:'margin-top:6px;font-size:12.8px;color:var(--text-dim)'}, [
+      el('b', {style:'color:var(--text)'}, ['Measured style (transcript-derived): ']), p.measured_style.style_note
+    ]) : null,
+  ].filter(Boolean)));
+
+  const topicCard = el('div', {class:'card'}, [el('h3', {}, ['Topic frequency (historical)'])]);
+  topTopics.forEach(([t,c]) => {
+    topicCard.appendChild(el('div', {class:'bar-row'}, [
+      el('div', {class:'bar-label'}, [t]),
+      el('div', {class:'bar-track'}, [el('div', {class:'bar-fill', style:`width:${(c/maxCount)*100}%`})]),
+      el('div', {class:'muted', style:'width:22px;text-align:right'}, [String(c)]),
+    ]));
+  });
+  wrap.appendChild(topicCard);
+
+  const qCard = el('div', {class:'card'}, [el('h3', {}, ['Question history'])]);
+  p.questions.slice().reverse().forEach(q => {
+    qCard.appendChild(el('div', {class:'qitem'}, [
+      el('b', {}, [q.quarter + '  ']),
+      ...q.topics.filter(t=>t!=='General').map(t => el('span', {class:'topic-tag'}, [t])),
+      el('div', {style:'margin-top:3px'}, [q.text.slice(0, 340) + (q.text.length>340?'…':'')])
+    ]));
+  });
+  wrap.appendChild(qCard);
+
+  analystDetailEl.innerHTML = '';
+  analystDetailEl.appendChild(wrap);
+}
+document.getElementById('analystFilter').addEventListener('input', e => renderAnalystList(e.target.value));
+renderAnalystList('');
+if(profiles.length) selectAnalyst(profiles[0].analyst, null);
+
+// =======================================================================
+// TAB 2 — Advanced Search (query understanding + hybrid retrieval + RRF
+// + citation synthesis + table/prose formatting). Runs entirely client-side
+// since the corpus is small (~genuinely small enough to not need a server
+// or a vector DB) and this session had no reachable embedding/LLM API.
+// =======================================================================
+const corpus = DATA.search_corpus;
+const STOPWORDS = new Set(['the','a','an','is','are','was','were','of','on','in','to','for','and','or','what','did',
+  'do','does','about','that','this','with','as','at','by','be','it','their','his','her','which','who','how',
+  'much','many','has','have','had','can','could','would','should','will']);
+function tokenize(s){
+  return (s.toLowerCase().match(/[a-z0-9%&']+/g) || []).filter(t => !STOPWORDS.has(t) && t.length>1);
+}
+
+// ---- BM25 index ----
+const docs = corpus.map(d => ({...d, tokens: tokenize(d.text)}));
+const N = docs.length;
+const df = {};
+docs.forEach(d => { new Set(d.tokens).forEach(t => df[t] = (df[t]||0)+1); });
+const avgdl = docs.reduce((s,d)=>s+d.tokens.length,0) / (N||1);
+function idf(t){ return Math.log(1 + (N - (df[t]||0) + 0.5) / ((df[t]||0) + 0.5)); }
+function bm25Score(qTokens, doc){
+  const k1=1.5, b=0.75;
+  const tf = {};
+  doc.tokens.forEach(t => tf[t]=(tf[t]||0)+1);
+  let score = 0;
+  qTokens.forEach(t => {
+    if(!tf[t]) return;
+    const num = tf[t]*(k1+1);
+    const den = tf[t] + k1*(1-b+b*doc.tokens.length/avgdl);
+    score += idf(t) * num/den;
+  });
+  return score;
+}
+
+// ---- TF-IDF cosine "semantic proxy" (no embedding model reachable offline) ----
+function tfidfVec(tokens){
+  const v = {}; const tf = {};
+  tokens.forEach(t => tf[t]=(tf[t]||0)+1);
+  Object.keys(tf).forEach(t => v[t] = tf[t]*idf(t));
+  return v;
+}
+function cosine(v1, v2){
+  let dot=0, n1=0, n2=0;
+  for(const k in v1){ n1 += v1[k]*v1[k]; if(v2[k]) dot += v1[k]*v2[k]; }
+  for(const k in v2){ n2 += v2[k]*v2[k]; }
+  if(!n1 || !n2) return 0;
+  return dot/(Math.sqrt(n1)*Math.sqrt(n2));
+}
+docs.forEach(d => d.tfidf = tfidfVec(d.tokens));
+
+// ---- Reciprocal Rank Fusion ----
+function rrfFuse(rankLists, k=60){
+  const scores = {};
+  rankLists.forEach(list => {
+    list.forEach((docIdx, rank) => { scores[docIdx] = (scores[docIdx]||0) + 1/(k+rank+1); });
+  });
+  return Object.entries(scores).sort((a,b)=>b[1]-a[1]).map(([idx,s]) => ({idx: +idx, score: s}));
+}
+
+// ---- Query understanding: filter extraction via entity registry ----
+const analystNames = profiles.map(p => p.analyst);
+function extractFilters(query){
+  const ql = query.toLowerCase();
+  const filters = {analyst: null, quarter: null, intent: 'lookup'};
+  for(const name of analystNames){
+    if(ql.includes(name.toLowerCase())){ filters.analyst = name; break; }
+    const last = name.split(' ').pop().toLowerCase();
+    if(last.length>3 && ql.includes(last)){ filters.analyst = name; }
+  }
+  const qm = ql.match(/q([1-4])\s*fy\s*(\d{2})/);
+  if(qm) filters.quarter = `q${qm[1]}fy${qm[2]}`;
+  if(/who (else )?(covers|asks|raised|ask)/.test(ql) || /who else/.test(ql)) filters.intent = 'relational';
+  if(/compare|across quarters|trend|over time/.test(ql)) filters.intent = 'comparative';
+  // topic detection: substring match against taxonomy
+  filters.topic = DATA.topics.find(t => ql.includes(t.toLowerCase().split(' ')[0].replace('&','').trim())) || null;
+  DATA.topics.forEach(t => { if(ql.includes(t.toLowerCase())) filters.topic = t; });
+  return filters;
+}
+
+function runSearch(query){
+  const resultsEl = document.getElementById('searchResults');
+  resultsEl.innerHTML = '';
+  if(!query.trim()) return;
+  const filters = extractFilters(query);
+  const qTokens = tokenize(query);
+  const qVec = tfidfVec(qTokens);
+
+  // candidate pool, respecting extracted filters (graph-level filter, cheap)
+  let candidateIdx = docs.map((_,i)=>i);
+  if(filters.analyst) candidateIdx = candidateIdx.filter(i => docs[i].analyst === filters.analyst);
+  if(filters.quarter) candidateIdx = candidateIdx.filter(i => docs[i].quarter === filters.quarter);
+
+  const bm25Ranked = candidateIdx.map(i => ({i, s: bm25Score(qTokens, docs[i])}))
+    .sort((a,b)=>b.s-a.s).filter(x=>x.s>0).map(x=>x.i);
+  const semRanked = candidateIdx.map(i => ({i, s: cosine(qVec, docs[i].tfidf)}))
+    .sort((a,b)=>b.s-a.s).filter(x=>x.s>0).map(x=>x.i);
+
+  const fused = rrfFuse([bm25Ranked, semRanked]).slice(0, 12);
+
+  // ---- Query-understanding panel ----
+  const qPanel = el('div', {class:'card'}, [el('h3', {}, ['Query understanding'])]);
+  const pills = el('div');
+  pills.appendChild(el('span', {class:'pill'}, [`intent: ${filters.intent}`]));
+  if(filters.analyst) pills.appendChild(el('span', {class:'pill'}, [`analyst: ${filters.analyst}`]));
+  if(filters.quarter) pills.appendChild(el('span', {class:'pill'}, [`quarter: ${filters.quarter}`]));
+  if(filters.topic) pills.appendChild(el('span', {class:'pill'}, [`topic: ${filters.topic}`]));
+  pills.appendChild(el('span', {class:'pill'}, [`${bm25Ranked.length} BM25 hits · ${semRanked.length} semantic hits · fused via RRF`]));
+  qPanel.appendChild(pills);
+  resultsEl.appendChild(qPanel);
+
+  // ---- Relational intent: graph traversal ("who else covers X") ----
+  if(filters.intent === 'relational' && (filters.topic || filters.analyst)){
+    let topic = filters.topic;
+    if(!topic && filters.analyst){
+      const p = profiles.find(x=>x.analyst===filters.analyst);
+      topic = p ? Object.entries(p.topic_counts).sort((a,b)=>b[1]-a[1])[0]?.[0] : null;
+    }
+    if(topic){
+      const counts = profiles.map(p => ({analyst:p.analyst, n:p.topic_counts[topic]||0}))
+        .filter(x=>x.n>0).sort((a,b)=>b.n-a.n);
+      const relCard = el('div', {class:'card'}, [
+        el('h3', {}, [`Graph traversal — analysts who have raised "${topic}"`]),
+      ]);
+      const t = el('table');
+      t.appendChild(el('tr',{},[el('th',{},['Analyst']), el('th',{},['Times raised (historical)'])]));
+      counts.forEach(c => t.appendChild(el('tr',{},[el('td',{},[c.analyst]), el('td',{},[String(c.n)])])));
+      relCard.appendChild(t);
+      relCard.appendChild(el('div',{class:'muted',style:'margin-top:8px'},
+        ['Scoped to Axis Bank\'s own analyst roster — no real cross-bank coverage graph is ingested in this build (Section 8 gap, documented in AGENTIC_ARCHITECTURE.md).']));
+      resultsEl.appendChild(relCard);
+      return;
+    }
+  }
+
+  // ---- Comparative intent: table across quarters ----
+  if(filters.intent === 'comparative' && filters.topic){
+    const byQuarter = {};
+    DATA.quarters.forEach(q => byQuarter[q]=0);
+    docs.forEach(d => { if(d.type==='Question' && d.topics.includes(filters.topic)) byQuarter[d.quarter]=(byQuarter[d.quarter]||0)+1; });
+    const cCard = el('div',{class:'card'},[el('h3',{},[`"${filters.topic}" mentions by quarter`])]);
+    const t = el('table');
+    t.appendChild(el('tr',{},[el('th',{},['Quarter']),el('th',{},['Questions on this topic'])]));
+    Object.entries(byQuarter).forEach(([q,n]) => t.appendChild(el('tr',{},[el('td',{},[q]),el('td',{},[String(n)])])));
+    cCard.appendChild(t);
+    resultsEl.appendChild(cCard);
+  }
+
+  // ---- Default: prose synthesis with cited snippets (multi-row comparable
+  // data -> table above already handled; this is the narrative/citation path) ----
+  const synthCard = el('div', {class:'card'}, [el('h3', {}, ['Synthesis'])]);
+  if(fused.length === 0){
+    synthCard.appendChild(el('div', {class:'muted'}, ['No matching passages found for this query/filter combination.']));
+  } else {
+    synthCard.appendChild(el('div', {class:'muted'}, [
+      `Top ${fused.length} passages, ranked by fused BM25 + semantic-proxy score. Every claim below is a direct quote — nothing paraphrased or invented.`
+    ]));
+    fused.forEach(({idx}) => {
+      const d = docs[idx];
+      const who = d.type==='Question' ? d.analyst : (d.type==='Answer' ? (d.speakers||[]).join(', ') || 'Management' : (d.speaker||'Management'));
+      const cite = `[${d.quarter} · ${d.type} · ${who}]`;
+      synthCard.appendChild(el('div', {class:'snippet'}, [
+        el('div', {class:'cite'}, [cite]),
+        el('div', {style:'margin-top:4px'}, [d.text.slice(0,380) + (d.text.length>380?'…':'')]),
+        el('div', {style:'margin-top:4px'}, d.topics.filter(t=>t!=='General').map(t=>el('span',{class:'topic-tag'},[t])))
+      ]));
+    });
+  }
+  resultsEl.appendChild(synthCard);
+}
+let searchDebounce;
+document.getElementById('searchBox').addEventListener('input', e => {
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(() => runSearch(e.target.value), 180);
+});
+
+// =======================================================================
+// TAB 3 — Prediction (surfaces the Section 3 agentic core's output)
+// =======================================================================
+function renderPrediction(){
+  const root = document.getElementById('predictionRoot');
+  const data = DATA.agentic;
+  if(!data){
+    root.appendChild(el('div', {class:'card'}, [
+      'No agentic prediction output found. Run ',
+      el('code', {}, ['python3 run.py agentic']),
+      ' first, then re-run ',
+      el('code', {}, ['python3 run.py ui']),
+      ' to compile this page.'
+    ]));
+    return;
+  }
+  const overallCard = el('div', {class:'card'}, [
+    el('h2', {}, [`Topic brief — ${data.quarter}`]),
+    el('div', {class:'muted'}, ['Overall (Topic) Layer: Researcher → Analyst → Verifier crew. Ranked independent of any one analyst.'])
+  ]);
+  data.overall_topics.ranked.forEach((t, i) => {
+    const rationale = data.overall_topics.rationale[t];
+    overallCard.appendChild(el('div', {class:'qitem'}, [
+      el('b', {}, [`${i+1}. ${t}`]),
+      rationale ? el('span', {class:'rationale'}, [' — ' + rationale])
+                : el('span', {class:'rationale status-bare'}, [' — bare topic (no grounded rationale survived the verifier)'])
+    ]));
+  });
+  root.appendChild(overallCard);
+
+  if(data.arithmetic_followups && Object.keys(data.arithmetic_followups).length){
+    const arCard = el('div', {class:'card'}, [el('h3', {}, ['In-call arithmetic follow-ups flagged'])]);
+    Object.entries(data.arithmetic_followups).forEach(([a, item]) => {
+      arCard.appendChild(el('div', {class:'qitem'}, [el('b',{},[a+': ']), item.question]));
+    });
+    root.appendChild(arCard);
+  }
+
+  const sheetCard = el('div', {class:'card'}, [
+    el('h2', {}, ['Per-analyst question sheet']),
+    el('div', {class:'muted'}, ['Analyst-Specific Layer output, after the Verifier / Grounding Gate.'])
+  ]);
+  Object.entries(data.analyst_predictions).forEach(([a, out]) => {
+    const box = el('div', {style:'margin:10px 0;padding-bottom:8px;border-bottom:1px solid var(--border)'});
+    box.appendChild(el('b', {}, [a]));
+    out.topics.forEach(item => {
+      if(item.question_text){
+        box.appendChild(el('div', {class:'qitem'}, [
+          el('span',{class:'topic-tag'},[item.topic]), ' ', el('span',{class:'status-ok'},['● grounded ']), item.question_text
+        ]));
+      } else {
+        box.appendChild(el('div', {class:'qitem'}, [
+          el('span',{class:'topic-tag'},[item.topic]), ' ',
+          el('span',{class:'status-bare'},['● bare topic — verifier rejected phrased text after 2 retries'])
+        ]));
+      }
+    });
+    sheetCard.appendChild(box);
+  });
+  root.appendChild(sheetCard);
+
+  const auditCard = el('div', {class:'card'});
+  const details = el('details');
+  details.appendChild(el('summary', {}, ['Audit trail — planning agent tool calls & verifier decisions (full traceability, Section 10 governance requirement)']));
+  const pre1 = el('pre', {style:'white-space:pre-wrap;font-size:11px;color:var(--text-dim);max-height:300px;overflow:auto'});
+  pre1.textContent = JSON.stringify(data.planning_agent_tool_log, null, 2);
+  details.appendChild(el('h3',{},['Planning agent tool log']));
+  details.appendChild(pre1);
+  const pre2 = el('pre', {style:'white-space:pre-wrap;font-size:11px;color:var(--text-dim);max-height:300px;overflow:auto'});
+  pre2.textContent = JSON.stringify(data.overall_topics.verifier_log, null, 2);
+  details.appendChild(el('h3',{},['Overall-layer verifier log']));
+  details.appendChild(pre2);
+  auditCard.appendChild(details);
+  root.appendChild(auditCard);
+}
+renderPrediction();
+
+// =======================================================================
+// TAB 4 — Ingest & Test (Section 2.1 extraction-quality monitor, live)
+// Needs the Python server (server.py) -- fetch() to a file:// origin fails,
+// which we detect and explain rather than showing a raw network error.
+// =======================================================================
+let lastIngestFile = null;
+document.getElementById('ingestFile').addEventListener('change', e => {
+  lastIngestFile = e.target.files[0] || null;
+  document.getElementById('ingestCommitBtn').disabled = true;
+});
+
+function renderIngestResult(kind, data){
+  const box = document.getElementById('ingestResults');
+  box.innerHTML = '';
+  if(data.error){
+    box.appendChild(el('div', {class:'card status-bad'}, [data.error]));
+    return;
+  }
+  if(kind === 'preview'){
+    const card = el('div', {class:'card'}, [
+      el('h3', {}, [`Preview: ${data.detected_quarter_id}`]),
+      el('div', {class:'muted'}, [
+        `Call date: ${data.call_date || 'not detected'}  ·  Narration length: ${data.narration_length_chars} chars  ·  QA turns: ${data.qa_turn_count}`
+      ]),
+      data.quarter_already_in_dataset
+        ? el('div', {class:'status-bare', style:'margin-top:6px'}, [`A transcript for ${data.detected_quarter_id} already exists in the dataset — committing will need "overwrite" checked.`])
+        : el('div', {class:'status-ok', style:'margin-top:6px'}, [`${data.detected_quarter_id} is a new quarter, not yet in the dataset.`]),
+    ]);
+    const t = el('table');
+    t.appendChild(el('tr',{},[el('th',{},['Analyst']),el('th',{},['Firm']),el('th',{},['Turns'])]));
+    data.analysts.forEach(a => t.appendChild(el('tr',{},[el('td',{},[a.name]),el('td',{},[a.firm||'—']),el('td',{},[String(a.turns)])])));
+    card.appendChild(el('h3',{},['Extracted analysts']));
+    card.appendChild(t);
+
+    card.appendChild(el('h3',{},['Extraction-quality monitor']));
+    if(data.extraction_quality_flags.length === 0){
+      card.appendChild(el('div', {class:'status-ok'}, ['No fuzzy-match flags — every extracted name matches the canonical registry.']));
+    } else {
+      data.extraction_quality_flags.forEach(f => {
+        card.appendChild(el('div', {class:'qitem status-bare'}, [
+          `"${f.extracted}" is close to canonical "${f.closest_canonical}" (similarity ${f.similarity}) — possible OCR/parsing split, worth a manual check.`
+        ]));
+      });
+    }
+    box.appendChild(card);
+    document.getElementById('ingestCommitBtn').disabled = false;
+  } else {
+    const ok = data.status === 'ok';
+    const card = el('div', {class:'card'}, [
+      el('h3', {class: ok ? 'status-ok' : 'status-bad'}, [ok ? 'Committed successfully' : `Commit ${data.status}`]),
+      el('div', {class:'muted'}, [data.message || `${data.quarter_id}: ${data.quarters_before} → ${data.quarters_after} quarters in dataset.json`]),
+      data.next_steps ? el('div', {style:'margin-top:8px'}, [data.next_steps]) : null,
+    ].filter(Boolean));
+    box.appendChild(card);
+  }
+}
+
+async function callIngestEndpoint(path, overwrite){
+  if(!lastIngestFile){ alert('Choose a PDF first.'); return; }
+  const fd = new FormData();
+  fd.append('file', lastIngestFile, lastIngestFile.name);
+  if(overwrite) fd.append('overwrite', 'true');
+  document.getElementById('ingestResults').innerHTML = '<div class="card muted">Working…</div>';
+  try{
+    const resp = await fetch(path, {method:'POST', body:fd});
+    const data = await resp.json();
+    renderIngestResult(path.includes('preview') ? 'preview' : 'commit', data);
+  } catch(err){
+    document.getElementById('ingestResults').innerHTML = '';
+    document.getElementById('ingestResults').appendChild(el('div', {class:'card status-bad'}, [
+      'Could not reach the ingest API. This tab needs the live Python server — run ',
+      el('code',{},['python3 run.py server']),
+      ' in your IR folder, then open ',
+      el('code',{},['http://localhost:8000/platform']),
+      ' (not this file directly).'
+    ]));
+  }
+}
+document.getElementById('ingestPreviewBtn').addEventListener('click', () => callIngestEndpoint('/api/ingest/preview', false));
+document.getElementById('ingestCommitBtn').addEventListener('click', () => {
+  const overwrite = document.getElementById('ingestOverwrite').checked;
+  callIngestEndpoint('/api/ingest/commit', overwrite);
+});
+</script>
+</body>
+</html>

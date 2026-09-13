@@ -1,0 +1,487 @@
+{
+  "api_mode": "Groq LLM",
+  "predictions": {
+    "Abhishek Murarka": [
+      {
+        "topic": "NIM & Yields",
+        "question": "What is your NIM guidance given liability repricing pressure and the competitive deposit environment?",
+        "rationale": "Predicted from Abhishek Murarka's historical preference for NIM & Yields and Q4FY26 narration."
+      },
+      {
+        "topic": "Loan & Advances Growth",
+        "question": "What is your credit growth guidance, especially wholesale vs retail, and the strategy for unsecured loans?",
+        "rationale": "Predicted from Abhishek Murarka's historical preference for Loan & Advances Growth and Q4FY26 narration."
+      },
+      {
+        "topic": "Slippages & Asset Quality",
+        "question": "What is the outlook on slippages for the retail and corporate books, and do you expect recoveries to offset them?",
+        "rationale": "Predicted from Abhishek Murarka's historical preference for Slippages & Asset Quality and Q4FY26 narration."
+      },
+      {
+        "topic": "Deposits & CASA",
+        "question": "CASA growth has slowed. What strategies are being deployed to protect the CASA ratio and grow retail liabilities?",
+        "rationale": "Predicted from Abhishek Murarka's historical preference for Deposits & CASA and Q4FY26 narration."
+      }
+    ],
+    "Adarsh Parasrampuria": [
+      {
+        "topic": "Credit Cost & Provisions",
+        "question": "Can you share credit cost guidance for FY27, and do you intend to release any contingency provisions?",
+        "rationale": "Predicted from Adarsh Parasrampuria's historical preference for Credit Cost & Provisions and Q4FY26 narration."
+      },
+      {
+        "topic": "Opex & Cost-to-Income",
+        "question": "What is your opex outlook and when do you expect cost-to-income to trend below 45%?",
+        "rationale": "Predicted from Adarsh Parasrampuria's historical preference for Opex & Cost-to-Income and Q4FY26 narration."
+      }
+    ],
+    "Akshat Agrawal": [
+      {
+        "topic": "Deposits & CASA",
+        "question": "CASA growth has slowed. What strategies are being deployed to protect the CASA ratio and grow retail liabilities?",
+        "rationale": "Predicted from Akshat Agrawal's historical preference for Deposits & CASA and Q4FY26 narration."
+      },
+      {
+        "topic": "Loan & Advances Growth",
+        "question": "What is your credit growth guidance, especially wholesale vs retail, and the strategy for unsecured loans?",
+        "rationale": "Predicted from Akshat Agrawal's historical preference for Loan & Advances Growth and Q4FY26 narration."
+      }
+    ],
+    "Anand Swaminathan": [
+      {
+        "topic": "Credit Cost & Provisions",
+        "question": "Can you share credit cost guidance for FY27, and do you intend to release any contingency provisions?",
+        "rationale": "Predicted from Anand Swaminathan's historical preference for Credit Cost & Provisions and Q4FY26 narration."
+      },
+      {
+        "topic": "Credit Cards & Spends",
+        "question": "Could you give colour on credit card spends and revolver share? Any asset quality concerns?",
+        "rationale": "Predicted from Anand Swaminathan's historical preference for Credit Cards & Spends and Q4FY26 narration."
+      }
+    ],
+    "Ankit Bihani": [
+      {
+        "topic": "NIM & Yields",
+        "question": "What is your NIM guidance given liability repricing pressure and the competitive deposit environment?",
+        "rationale": "Predicted from Ankit Bihani's historical preference for NIM & Yields and Q4FY26 narration."
+      }
+    ],
+    "Chintan Joshi": [
+      {
+        "topic": "Deposits & CASA",
+        "question": "CASA growth has slowed. What strategies are being deployed to protect the CASA ratio and grow retail liabilities?",
+        "rationale": "Predicted from Chintan Joshi's historical preference for Deposits & CASA and Q4FY26 narration."
+      },
+      {
+        "topic": "NIM & Yields",
+        "question": "What is your NIM guidance given liability repricing pressure and the competitive deposit environment?",
+        "rationale": "Predicted from Chintan Joshi's historical preference for NIM & Yields and Q4FY26 narration."
+      }
+    ],
+    "Harsh Modi": [
+      {
+        "topic": "Deposits & CASA",
+        "question": "CASA growth has slowed. What strategies are being deployed to protect the CASA ratio and grow retail liabilities?",
+        "rationale": "Predicted from Harsh Modi's historical preference for Deposits & CASA and Q4FY26 narration."
+      },
+      {
+        "topic": "Credit Cost & Provisions",
+        "question": "Can you share credit cost guidance for FY27, and do you intend to release any contingency provisions?",
+        "rationale": "Predicted from Harsh Modi's historical preference for Credit Cost & Provisions and Q4FY26 narration."
+      }
+    ],
+    "Harsh Wardhan Modi": [
+      {
+        "topic": "Credit Cards & Spends",
+        "question": "Could you give colour on credit card spends and revolver share? Any asset quality concerns?",
+        "rationale": "Predicted from Harsh Wardhan Modi's historical preference for Credit Cards & Spends and Q4FY26 narration."
+      }
+    ],
+    "Jai Mundhra": [
+      {
+        "topic": "Deposits & CASA",
+        "question": "CASA growth has slowed. What strategies are being deployed to protect the CASA ratio and grow retail liabilities?",
+        "rationale": "Predicted from Jai Mundhra's historical preference for Deposits & CASA and Q4FY26 narration."
+      },
+      {
+        "topic": "NIM & Yields",
+        "question": "What is your NIM guidance given liability repricing pressure and the competitive deposit environment?",
+        "rationale": "Predicted from Jai Mundhra's historical preference for NIM & Yields and Q4FY26 narration."
+      },
+      {
+        "topic": "Loan & Advances Growth",
+        "question": "What is your credit growth guidance, especially wholesale vs retail, and the strategy for unsecured loans?",
+        "rationale": "Predicted from Jai Mundhra's historical preference for Loan & Advances Growth and Q4FY26 narration."
+      },
+      {
+        "topic": "Credit Cost & Provisions",
+        "question": "Can you share credit cost guidance for FY27, and do you intend to release any contingency provisions?",
+        "rationale": "Predicted from Jai Mundhra's historical preference for Credit Cost & Provisions and Q4FY26 narration."
+      }
+    ],
+    "Krishnan ASV": [
+      {
+        "topic": "NIM & Yields",
+        "question": "What is your NIM guidance given liability repricing pressure and the competitive deposit environment?",
+        "rationale": "Predicted from Krishnan ASV's historical preference for NIM & Yields and Q4FY26 narration."
+      },
+      {
+        "topic": "Deposits & CASA",
+        "question": "CASA growth has slowed. What strategies are being deployed to protect the CASA ratio and grow retail liabilities?",
+        "rationale": "Predicted from Krishnan ASV's historical preference for Deposits & CASA and Q4FY26 narration."
+      },
+      {
+        "topic": "Credit Cost & Provisions",
+        "question": "Can you share credit cost guidance for FY27, and do you intend to release any contingency provisions?",
+        "rationale": "Predicted from Krishnan ASV's historical preference for Credit Cost & Provisions and Q4FY26 narration."
+      }
+    ],
+    "Kunal Shah": [
+      {
+        "topic": "NIM & Yields",
+        "question": "What is your NIM guidance given liability repricing pressure and the competitive deposit environment?",
+        "rationale": "Predicted from Kunal Shah's historical preference for NIM & Yields and Q4FY26 narration."
+      },
+      {
+        "topic": "Slippages & Asset Quality",
+        "question": "What is the outlook on slippages for the retail and corporate books, and do you expect recoveries to offset them?",
+        "rationale": "Predicted from Kunal Shah's historical preference for Slippages & Asset Quality and Q4FY26 narration."
+      },
+      {
+        "topic": "Deposits & CASA",
+        "question": "CASA growth has slowed. What strategies are being deployed to protect the CASA ratio and grow retail liabilities?",
+        "rationale": "Predicted from Kunal Shah's historical preference for Deposits & CASA and Q4FY26 narration."
+      }
+    ],
+    "MB Mahesh": [
+      {
+        "topic": "NIM & Yields",
+        "question": "What is your NIM guidance given liability repricing pressure and the competitive deposit environment?",
+        "rationale": "Predicted from MB Mahesh's historical preference for NIM & Yields and Q4FY26 narration."
+      },
+      {
+        "topic": "Credit Cost & Provisions",
+        "question": "Can you share credit cost guidance for FY27, and do you intend to release any contingency provisions?",
+        "rationale": "Predicted from MB Mahesh's historical preference for Credit Cost & Provisions and Q4FY26 narration."
+      }
+    ],
+    "Ma hrukh Adajania": [
+      {
+        "topic": "Credit Cost & Provisions",
+        "question": "Can you share credit cost guidance for FY27, and do you intend to release any contingency provisions?",
+        "rationale": "Predicted from Ma hrukh Adajania's historical preference for Credit Cost & Provisions and Q4FY26 narration."
+      },
+      {
+        "topic": "NIM & Yields",
+        "question": "What is your NIM guidance given liability repricing pressure and the competitive deposit environment?",
+        "rationale": "Predicted from Ma hrukh Adajania's historical preference for NIM & Yields and Q4FY26 narration."
+      },
+      {
+        "topic": "Deposits & CASA",
+        "question": "CASA growth has slowed. What strategies are being deployed to protect the CASA ratio and grow retail liabilities?",
+        "rationale": "Predicted from Ma hrukh Adajania's historical preference for Deposits & CASA and Q4FY26 narration."
+      },
+      {
+        "topic": "Slippages & Asset Quality",
+        "question": "What is the outlook on slippages for the retail and corporate books, and do you expect recoveries to offset them?",
+        "rationale": "Predicted from Ma hrukh Adajania's historical preference for Slippages & Asset Quality and Q4FY26 narration."
+      }
+    ],
+    "Mahrukh Adajania": [
+      {
+        "topic": "Deposits & CASA",
+        "question": "CASA growth has slowed. What strategies are being deployed to protect the CASA ratio and grow retail liabilities?",
+        "rationale": "Predicted from Mahrukh Adajania's historical preference for Deposits & CASA and Q4FY26 narration."
+      },
+      {
+        "topic": "Opex & Cost-to-Income",
+        "question": "What is your opex outlook and when do you expect cost-to-income to trend below 45%?",
+        "rationale": "Predicted from Mahrukh Adajania's historical preference for Opex & Cost-to-Income and Q4FY26 narration."
+      },
+      {
+        "topic": "NIM & Yields",
+        "question": "What is your NIM guidance given liability repricing pressure and the competitive deposit environment?",
+        "rationale": "Predicted from Mahrukh Adajania's historical preference for NIM & Yields and Q4FY26 narration."
+      }
+    ],
+    "Nitin Aggarwal": [
+      {
+        "topic": "Credit Cost & Provisions",
+        "question": "Can you share credit cost guidance for FY27, and do you intend to release any contingency provisions?",
+        "rationale": "Predicted from Nitin Aggarwal's historical preference for Credit Cost & Provisions and Q4FY26 narration."
+      },
+      {
+        "topic": "Deposits & CASA",
+        "question": "CASA growth has slowed. What strategies are being deployed to protect the CASA ratio and grow retail liabilities?",
+        "rationale": "Predicted from Nitin Aggarwal's historical preference for Deposits & CASA and Q4FY26 narration."
+      }
+    ],
+    "Param Subramanian": [
+      {
+        "topic": "NIM & Yields",
+        "question": "What is your NIM guidance given liability repricing pressure and the competitive deposit environment?",
+        "rationale": "Predicted from Param Subramanian's historical preference for NIM & Yields and Q4FY26 narration."
+      },
+      {
+        "topic": "Deposits & CASA",
+        "question": "CASA growth has slowed. What strategies are being deployed to protect the CASA ratio and grow retail liabilities?",
+        "rationale": "Predicted from Param Subramanian's historical preference for Deposits & CASA and Q4FY26 narration."
+      },
+      {
+        "topic": "Loan & Advances Growth",
+        "question": "What is your credit growth guidance, especially wholesale vs retail, and the strategy for unsecured loans?",
+        "rationale": "Predicted from Param Subramanian's historical preference for Loan & Advances Growth and Q4FY26 narration."
+      }
+    ],
+    "Piran Engineer": [
+      {
+        "topic": "NIM & Yields",
+        "question": "What is your NIM guidance given liability repricing pressure and the competitive deposit environment?",
+        "rationale": "Predicted from Piran Engineer's historical preference for NIM & Yields and Q4FY26 narration."
+      },
+      {
+        "topic": "Credit Cards & Spends",
+        "question": "Could you give colour on credit card spends and revolver share? Any asset quality concerns?",
+        "rationale": "Predicted from Piran Engineer's historical preference for Credit Cards & Spends and Q4FY26 narration."
+      },
+      {
+        "topic": "Deposits & CASA",
+        "question": "CASA growth has slowed. What strategies are being deployed to protect the CASA ratio and grow retail liabilities?",
+        "rationale": "Predicted from Piran Engineer's historical preference for Deposits & CASA and Q4FY26 narration."
+      }
+    ],
+    "Pra khar Sharma": [
+      {
+        "topic": "Slippages & Asset Quality",
+        "question": "What is the outlook on slippages for the retail and corporate books, and do you expect recoveries to offset them?",
+        "rationale": "Predicted from Pra khar Sharma's historical preference for Slippages & Asset Quality and Q4FY26 narration."
+      },
+      {
+        "topic": "Credit Cost & Provisions",
+        "question": "Can you share credit cost guidance for FY27, and do you intend to release any contingency provisions?",
+        "rationale": "Predicted from Pra khar Sharma's historical preference for Credit Cost & Provisions and Q4FY26 narration."
+      },
+      {
+        "topic": "Loan & Advances Growth",
+        "question": "What is your credit growth guidance, especially wholesale vs retail, and the strategy for unsecured loans?",
+        "rationale": "Predicted from Pra khar Sharma's historical preference for Loan & Advances Growth and Q4FY26 narration."
+      },
+      {
+        "topic": "Credit Cards & Spends",
+        "question": "Could you give colour on credit card spends and revolver share? Any asset quality concerns?",
+        "rationale": "Predicted from Pra khar Sharma's historical preference for Credit Cards & Spends and Q4FY26 narration."
+      }
+    ],
+    "Pranav Gundlapalle": [
+      {
+        "topic": "NIM & Yields",
+        "question": "What is your NIM guidance given liability repricing pressure and the competitive deposit environment?",
+        "rationale": "Predicted from Pranav Gundlapalle's historical preference for NIM & Yields and Q4FY26 narration."
+      },
+      {
+        "topic": "Credit Cost & Provisions",
+        "question": "Can you share credit cost guidance for FY27, and do you intend to release any contingency provisions?",
+        "rationale": "Predicted from Pranav Gundlapalle's historical preference for Credit Cost & Provisions and Q4FY26 narration."
+      }
+    ],
+    "Rahul Jain": [
+      {
+        "topic": "Loan & Advances Growth",
+        "question": "What is your credit growth guidance, especially wholesale vs retail, and the strategy for unsecured loans?",
+        "rationale": "Predicted from Rahul Jain's historical preference for Loan & Advances Growth and Q4FY26 narration."
+      },
+      {
+        "topic": "Capital Adequacy",
+        "question": "Given RWA changes, what is your CAR outlook and do you plan any capital raising?",
+        "rationale": "Predicted from Rahul Jain's historical preference for Capital Adequacy and Q4FY26 narration."
+      }
+    ],
+    "Rikin Shah": [
+      {
+        "topic": "NIM & Yields",
+        "question": "What is your NIM guidance given liability repricing pressure and the competitive deposit environment?",
+        "rationale": "Predicted from Rikin Shah's historical preference for NIM & Yields and Q4FY26 narration."
+      },
+      {
+        "topic": "Deposits & CASA",
+        "question": "CASA growth has slowed. What strategies are being deployed to protect the CASA ratio and grow retail liabilities?",
+        "rationale": "Predicted from Rikin Shah's historical preference for Deposits & CASA and Q4FY26 narration."
+      },
+      {
+        "topic": "Opex & Cost-to-Income",
+        "question": "What is your opex outlook and when do you expect cost-to-income to trend below 45%?",
+        "rationale": "Predicted from Rikin Shah's historical preference for Opex & Cost-to-Income and Q4FY26 narration."
+      },
+      {
+        "topic": "Slippages & Asset Quality",
+        "question": "What is the outlook on slippages for the retail and corporate books, and do you expect recoveries to offset them?",
+        "rationale": "Predicted from Rikin Shah's historical preference for Slippages & Asset Quality and Q4FY26 narration."
+      }
+    ],
+    "Saurabh Kumar": [
+      {
+        "topic": "Deposits & CASA",
+        "question": "CASA growth has slowed. What strategies are being deployed to protect the CASA ratio and grow retail liabilities?",
+        "rationale": "Predicted from Saurabh Kumar's historical preference for Deposits & CASA and Q4FY26 narration."
+      }
+    ],
+    "Subramanian": [
+      {
+        "topic": "NIM & Yields",
+        "question": "What is your NIM guidance given liability repricing pressure and the competitive deposit environment?",
+        "rationale": "Predicted from Subramanian's historical preference for NIM & Yields and Q4FY26 narration."
+      }
+    ],
+    "Suraj Das": [
+      {
+        "topic": "Slippages & Asset Quality",
+        "question": "What is the outlook on slippages for the retail and corporate books, and do you expect recoveries to offset them?",
+        "rationale": "Predicted from Suraj Das's historical preference for Slippages & Asset Quality and Q4FY26 narration."
+      },
+      {
+        "topic": "Credit Cost & Provisions",
+        "question": "Can you share credit cost guidance for FY27, and do you intend to release any contingency provisions?",
+        "rationale": "Predicted from Suraj Das's historical preference for Credit Cost & Provisions and Q4FY26 narration."
+      }
+    ],
+    "Suresh Ganapathy": [
+      {
+        "topic": "Credit Cost & Provisions",
+        "question": "Can you share credit cost guidance for FY27, and do you intend to release any contingency provisions?",
+        "rationale": "Predicted from Suresh Ganapathy's historical preference for Credit Cost & Provisions and Q4FY26 narration."
+      },
+      {
+        "topic": "NIM & Yields",
+        "question": "What is your NIM guidance given liability repricing pressure and the competitive deposit environment?",
+        "rationale": "Predicted from Suresh Ganapathy's historical preference for NIM & Yields and Q4FY26 narration."
+      },
+      {
+        "topic": "Deposits & CASA",
+        "question": "CASA growth has slowed. What strategies are being deployed to protect the CASA ratio and grow retail liabilities?",
+        "rationale": "Predicted from Suresh Ganapathy's historical preference for Deposits & CASA and Q4FY26 narration."
+      },
+      {
+        "topic": "Slippages & Asset Quality",
+        "question": "What is the outlook on slippages for the retail and corporate books, and do you expect recoveries to offset them?",
+        "rationale": "Predicted from Suresh Ganapathy's historical preference for Slippages & Asset Quality and Q4FY26 narration."
+      }
+    ],
+    "Yy Tsai": [
+      {
+        "topic": "Deposits & CASA",
+        "question": "CASA growth has slowed. What strategies are being deployed to protect the CASA ratio and grow retail liabilities?",
+        "rationale": "Predicted from Yy Tsai's historical preference for Deposits & CASA and Q4FY26 narration."
+      },
+      {
+        "topic": "Credit Cost & Provisions",
+        "question": "Can you share credit cost guidance for FY27, and do you intend to release any contingency provisions?",
+        "rationale": "Predicted from Yy Tsai's historical preference for Credit Cost & Provisions and Q4FY26 narration."
+      },
+      {
+        "topic": "Opex & Cost-to-Income",
+        "question": "What is your opex outlook and when do you expect cost-to-income to trend below 45%?",
+        "rationale": "Predicted from Yy Tsai's historical preference for Opex & Cost-to-Income and Q4FY26 narration."
+      }
+    ]
+  },
+  "validation_metrics": {
+    "validated_analysts_count": 6,
+    "average_precision": 0.5,
+    "average_recall": 0.7222222222222223,
+    "average_f1_score": 0.5714285714285715,
+    "analyst_reports": [
+      {
+        "analyst": "Abhishek Murarka",
+        "predicted_topics": [
+          "Deposits & CASA",
+          "Loan & Advances Growth",
+          "NIM & Yields",
+          "Slippages & Asset Quality"
+        ],
+        "actual_topics": [
+          "Deposits & CASA",
+          "Opex & Cost-to-Income"
+        ],
+        "precision": 0.25,
+        "recall": 0.5,
+        "f1_score": 0.3333333333333333
+      },
+      {
+        "analyst": "Chintan Joshi",
+        "predicted_topics": [
+          "Deposits & CASA",
+          "NIM & Yields"
+        ],
+        "actual_topics": [
+          "NIM & Yields"
+        ],
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1_score": 0.6666666666666666
+      },
+      {
+        "analyst": "Kunal Shah",
+        "predicted_topics": [
+          "Deposits & CASA",
+          "NIM & Yields",
+          "Slippages & Asset Quality"
+        ],
+        "actual_topics": [
+          "Credit Cards & Spends",
+          "Deposits & CASA",
+          "Loan & Advances Growth",
+          "NIM & Yields"
+        ],
+        "precision": 0.6666666666666666,
+        "recall": 0.5,
+        "f1_score": 0.5714285714285715
+      },
+      {
+        "analyst": "MB Mahesh",
+        "predicted_topics": [
+          "Credit Cost & Provisions",
+          "NIM & Yields"
+        ],
+        "actual_topics": [
+          "Credit Cost & Provisions"
+        ],
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1_score": 0.6666666666666666
+      },
+      {
+        "analyst": "Mahrukh Adajania",
+        "predicted_topics": [
+          "Deposits & CASA",
+          "NIM & Yields",
+          "Opex & Cost-to-Income"
+        ],
+        "actual_topics": [
+          "Credit Cost & Provisions",
+          "Deposits & CASA",
+          "Loan & Advances Growth"
+        ],
+        "precision": 0.3333333333333333,
+        "recall": 0.3333333333333333,
+        "f1_score": 0.3333333333333333
+      },
+      {
+        "analyst": "Rikin Shah",
+        "predicted_topics": [
+          "Deposits & CASA",
+          "NIM & Yields",
+          "Opex & Cost-to-Income",
+          "Slippages & Asset Quality"
+        ],
+        "actual_topics": [
+          "Deposits & CASA",
+          "NIM & Yields",
+          "Slippages & Asset Quality"
+        ],
+        "precision": 0.75,
+        "recall": 1.0,
+        "f1_score": 0.8571428571428571
+      }
+    ]
+  }
+}

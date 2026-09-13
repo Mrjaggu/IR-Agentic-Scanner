@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -m json.tool)",
+      "Bash(python3 run.py novelty --quarter q1fy27)",
+      "Bash(cp data/outputs/predictions.json /tmp/predictions_q1fy27_baseline.json)",
+      "Bash(python3 run.py predict)",
+      "Bash(tee /tmp/predict_q1fy27_v2.log)",
+      "Bash(cat /tmp/predict_q1fy27_v2.log)",
+      "Bash(tee /tmp/predict_q1fy27_boost_only.log)",
+      "Bash(find /Users/ajayjangid/Desktop/IR -iname \"*hdfc*\" -o -iname \"*icici*\" -o -iname \"*kotak*\" -o -iname \"*peer*\" 2>/dev/null | grep -v __pycache__ *)",
+      "WebSearch",
+      "WebFetch(domain:www.kotak.bank.in)",
+      "WebFetch(domain:www.hdfc.bank.in)",
+      "WebFetch(domain:www.icici.bank.in)",
+      "WebFetch(domain:www.stocktitan.net)",
+      "Bash(curl -sL -o earnings_transcript/peers/kotak-q1fy27-earnings-call-transcript.pdf \"https://www.kotak.bank.in/content/dam/Kotak/investor-relation/Financial-Result/QuarterlyReport/FY-2027/q1/transcript/Q1FY27-Transcript.pdf\")",
+      "Bash(curl -sL -o earnings_transcript/peers/indusind-q1fy27-earnings-call-transcript.pdf \"https://www.indusind.bank.in/content/dam/indusind-corporate/investors/QuarterFinancialResults/FY2026-2027/Quarter1/IndusInd-Bank_Analyst-Call_Q1FY27_20260722.pdf\")",
+      "Bash(file earnings_transcript/peers/*.pdf)",
+      "WebFetch(domain:www.bseindia.com)",
+      "Bash(python3 -c ' *)",
+      "Bash(python3 run.py compile --dataset)",
+      "Bash(python3 run.py peers --quarter q1fy27)",
+      "Bash(tee /tmp/predict_q1fy27_peer.log)",
+      "Bash(ps -p 63285 -o pid,etime,time,stat,command)",
+      "Bash(python3 -u run.py predict)",
+      "Bash(echo \"launched pid $!\")",
+      "Bash(ps -p 63584 -o etime=)",
+      "Bash(kill -9 63584)",
+      "Bash(GROQ_API_KEY=\"\" GEMINI_API_KEY=\"\" python3 -u run.py predict)",
+      "Bash(pkill -9 -f \"run.py predict\")",
+      "Bash(echo \"exit code: $?\")"
+    ]
+  }
+}
