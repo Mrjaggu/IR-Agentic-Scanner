@@ -1,0 +1,13 @@
+fastapi==0.141.1
+uvicorn==0.52.4
+pypdf==6.18.1
+python-multipart==0.0.32
+starlette==1.6.0
+pydantic==2.13.5
+pydantic_core==2.46.5
+langchain-core==1.6.3
+langchain-protocol==0.0.19
+langgraph==1.2.11
+langgraph-checkpoint==4.2.0
+langgraph-prebuilt==1.1.0
+langgraph-sdk==0.4.4
