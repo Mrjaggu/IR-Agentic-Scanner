@@ -57,6 +57,12 @@ body{
   -webkit-font-smoothing:antialiased;
   display:grid; grid-template-columns:236px 1fr;
 }
+body.home-view{
+  grid-template-columns: 1fr;
+}
+body.home-view .sidebar{
+  display: none !important;
+}
 h1,h2,h3,h4{margin:0; font-weight:600; letter-spacing:-.01em;}
 h1{font-size:21px;} h2{font-size:17px;} h3{font-size:14px;} h4{font-size:13px;}
 p{margin:0 0 .7em;}
@@ -463,7 +469,10 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
 
 <main>
   <div class="topbar">
-    <div><h1 id="pageTitle">Analyst profiles</h1><div class="sub" id="pageSub">—</div></div>
+    <div class="row" style="gap: 12px;">
+      <button class="btn btn-sm" id="backHomeBtn" style="display:none;" onclick="show('home')">← All Institutions</button>
+      <div><h1 id="pageTitle">Analyst profiles</h1><div class="sub" id="pageSub">—</div></div>
+    </div>
     <div class="topbar-spacer"></div>
     <div class="row" id="topContext"></div>
   </div>
@@ -936,6 +945,10 @@ let STATE = { meta: null, analysts: [], selected: null, dossier: null,
               quarterFilter: "all", disclosure: null, evalData: null };
 
 function show(view) {
+  document.body.classList.toggle("home-view", view === "home");
+  const backBtn = $("#backHomeBtn");
+  if (backBtn) backBtn.style.display = (view === "home") ? "none" : "inline-flex";
+  
   document.querySelectorAll(".nav-item").forEach(b =>
     b.dataset.view === view ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
   document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", v.id === "view-" + view));
