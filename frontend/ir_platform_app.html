@@ -401,9 +401,20 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
 @media (max-width:1080px){ .split,.grid-2{grid-template-columns:1fr;} .pane-list{position:static;} }
 @media (max-width:820px){
-  body{grid-template-columns:1fr;}
-  .sidebar{position:static;height:auto;}
-  nav{display:flex;overflow-x:auto;padding:8px;} .nav-item{white-space:nowrap;} .nav-sep,.side-foot{display:none;}
+  body{grid-template-columns:1fr; height:auto; overflow-y:auto;}
+  main{height:auto; overflow-y:visible;}
+  .sidebar{position:sticky; top:0; z-index:30; height:auto;}
+  .brand{padding:12px 16px;}
+  nav{display:flex; overflow-x:auto; padding:6px 8px; border-bottom:1px solid var(--hairline);}
+  .nav-item{white-space:nowrap; padding:6px 10px; font-size:12.5px;}
+  .nav-sep,.side-foot{display:none;}
+  .topbar{padding:10px 14px;}
+  .view{padding:14px 14px 48px;}
+  .toolbar{gap:10px;}
+  .field select,.field{width:100%; min-width:0 !important;}
+  .hero-value{font-size:36px;}
+  .hero{padding:14px 16px;}
+  .table-responsive{overflow-x:auto; -webkit-overflow-scrolling:touch;}
 }
 </style>
 </head>
