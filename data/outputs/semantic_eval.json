@@ -1,0 +1,15 @@
+{
+  "q4fy26": {
+    "topic_f1": 0.594,
+    "topic_recall": 0.611,
+    "boost_recall": 0.65,
+    "semantic_f1": 0.5532,
+    "judge": "Claude (concern-level)",
+    "taxonomy": "12 topics"
+  },
+  "crossval": {
+    "topic_f1": 0.40530336745289985,
+    "topic_f1_boost": 0.45078151339833566,
+    "n_calls": 107
+  }
+}

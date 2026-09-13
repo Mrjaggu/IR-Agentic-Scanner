@@ -1,0 +1,146 @@
+[
+  {
+    "analyst": "Abhishek Murarka",
+    "instructions": "Rate each (predicted_question, actual_question) pair for semantic overlap: 1.0=same topic/angle, 0.5=related but different angle, 0.0=unrelated.",
+    "pairs": [
+      {
+        "predicted": "What is your NIM guidance given liability repricing pressure and the competitive deposit environment?",
+        "actuals": [
+          "Hi. Good evening. Thanks for taking my question. So my first question is again on growth. So now since we are seeing a pretty strong pickup in retail disbursements and SME looks good as well, do you see a need to calibrate your corporate deposit growth just from a RAROC or ROA perspective, that chan"
+        ]
+      },
+      {
+        "predicted": "What is your credit growth guidance, especially wholesale vs retail, and the strategy for unsecured loans?",
+        "actuals": [
+          "Hi. Good evening. Thanks for taking my question. So my first question is again on growth. So now since we are seeing a pretty strong pickup in retail disbursements and SME looks good as well, do you see a need to calibrate your corporate deposit growth just from a RAROC or ROA perspective, that chan"
+        ]
+      },
+      {
+        "predicted": "What is the outlook on slippages for the retail and corporate books, and do you expect recoveries to offset them?",
+        "actuals": [
+          "Hi. Good evening. Thanks for taking my question. So my first question is again on growth. So now since we are seeing a pretty strong pickup in retail disbursements and SME looks good as well, do you see a need to calibrate your corporate deposit growth just from a RAROC or ROA perspective, that chan"
+        ]
+      },
+      {
+        "predicted": "CASA growth has slowed. What strategies are being deployed to protect the CASA ratio and grow retail liabilities?",
+        "actuals": [
+          "Hi. Good evening. Thanks for taking my question. So my first question is again on growth. So now since we are seeing a pretty strong pickup in retail disbursements and SME looks good as well, do you see a need to calibrate your corporate deposit growth just from a RAROC or ROA perspective, that chan"
+        ]
+      }
+    ]
+  },
+  {
+    "analyst": "Chintan Joshi",
+    "instructions": "Rate each (predicted_question, actual_question) pair for semantic overlap: 1.0=same topic/angle, 0.5=related but different angle, 0.0=unrelated.",
+    "pairs": [
+      {
+        "predicted": "CASA growth has slowed. What strategies are being deployed to protect the CASA ratio and grow retail liabilities?",
+        "actuals": [
+          "Hi, good evening. Thank you for taking my question. Can I start with NII and NIMs? Could you remind us if there is any day -count convention benefit in your NIMs? Secondly, if the full 25 bps rate cut from December has been passed on your EBLR book? And thirdly, if there's any residual TD repricing "
+        ]
+      },
+      {
+        "predicted": "What is your NIM guidance given liability repricing pressure and the competitive deposit environment?",
+        "actuals": [
+          "Hi, good evening. Thank you for taking my question. Can I start with NII and NIMs? Could you remind us if there is any day -count convention benefit in your NIMs? Secondly, if the full 25 bps rate cut from December has been passed on your EBLR book? And thirdly, if there's any residual TD repricing "
+        ]
+      }
+    ]
+  },
+  {
+    "analyst": "Kunal Shah",
+    "instructions": "Rate each (predicted_question, actual_question) pair for semantic overlap: 1.0=same topic/angle, 0.5=related but different angle, 0.0=unrelated.",
+    "pairs": [
+      {
+        "predicted": "What is your NIM guidance given liability repricing pressure and the competitive deposit environment?",
+        "actuals": [
+          "Yeah. So again touching upon the same question in terms of NII optimization. Last time we indicated that maybe irrespective of the NIM profile, we will still look at NII growth maybe as our -- maybe the target. And this quarter compared to that of the overall loan growth, it appears to be relatively"
+        ]
+      },
+      {
+        "predicted": "What is the outlook on slippages for the retail and corporate books, and do you expect recoveries to offset them?",
+        "actuals": [
+          "Yeah. So again touching upon the same question in terms of NII optimization. Last time we indicated that maybe irrespective of the NIM profile, we will still look at NII growth maybe as our -- maybe the target. And this quarter compared to that of the overall loan growth, it appears to be relatively"
+        ]
+      },
+      {
+        "predicted": "CASA growth has slowed. What strategies are being deployed to protect the CASA ratio and grow retail liabilities?",
+        "actuals": [
+          "Yeah. So again touching upon the same question in terms of NII optimization. Last time we indicated that maybe irrespective of the NIM profile, we will still look at NII growth maybe as our -- maybe the target. And this quarter compared to that of the overall loan growth, it appears to be relatively"
+        ]
+      }
+    ]
+  },
+  {
+    "analyst": "MB Mahesh",
+    "instructions": "Rate each (predicted_question, actual_question) pair for semantic overlap: 1.0=same topic/angle, 0.5=related but different angle, 0.0=unrelated.",
+    "pairs": [
+      {
+        "predicted": "What is your NIM guidance given liability repricing pressure and the competitive deposit environment?",
+        "actuals": [
+          "Puneet, just two questions. One is on that RAROC argument that you presented. Since we can't observe segmental RAROCs for the company and we can kind of see only the ROE side of it, if you were to kind of triangulate and see what the ROEs look like, is it  meaningfully lower than a number like 15% o"
+        ]
+      },
+      {
+        "predicted": "Can you share credit cost guidance for FY27, and do you intend to release any contingency provisions?",
+        "actuals": [
+          "Puneet, just two questions. One is on that RAROC argument that you presented. Since we can't observe segmental RAROCs for the company and we can kind of see only the ROE side of it, if you were to kind of triangulate and see what the ROEs look like, is it  meaningfully lower than a number like 15% o"
+        ]
+      }
+    ]
+  },
+  {
+    "analyst": "Mahrukh Adajania",
+    "instructions": "Rate each (predicted_question, actual_question) pair for semantic overlap: 1.0=same topic/angle, 0.5=related but different angle, 0.0=unrelated.",
+    "pairs": [
+      {
+        "predicted": "CASA growth has slowed. What strategies are being deployed to protect the CASA ratio and grow retail liabilities?",
+        "actuals": [
+          "Hi. Good evening. I just had two questions. You talked about your buffer provision you created this quarter quoting $150 oil price. So does that mean that if indeed the situation gets worse from here on, you would actually be drawing down on these provisions this year itself because you've not drawn"
+        ]
+      },
+      {
+        "predicted": "What is your opex outlook and when do you expect cost-to-income to trend below 45%?",
+        "actuals": [
+          "Hi. Good evening. I just had two questions. You talked about your buffer provision you created this quarter quoting $150 oil price. So does that mean that if indeed the situation gets worse from here on, you would actually be drawing down on these provisions this year itself because you've not drawn"
+        ]
+      },
+      {
+        "predicted": "What is your NIM guidance given liability repricing pressure and the competitive deposit environment?",
+        "actuals": [
+          "Hi. Good evening. I just had two questions. You talked about your buffer provision you created this quarter quoting $150 oil price. So does that mean that if indeed the situation gets worse from here on, you would actually be drawing down on these provisions this year itself because you've not drawn"
+        ]
+      }
+    ]
+  },
+  {
+    "analyst": "Rikin Shah",
+    "instructions": "Rate each (predicted_question, actual_question) pair for semantic overlap: 1.0=same topic/angle, 0.5=related but different angle, 0.0=unrelated.",
+    "pairs": [
+      {
+        "predicted": "What is your NIM guidance given liability repricing pressure and the competitive deposit environment?",
+        "actuals": [
+          "Hi, good evening. I had three questions. The first one is, you know, the strategy of NII maximization has translated into growth acceleration, but with the sharp rise in the wholesale deposit rates that we have seen, do you think it warrants a focus movin g back to margins? Just trying to understand"
+        ]
+      },
+      {
+        "predicted": "CASA growth has slowed. What strategies are being deployed to protect the CASA ratio and grow retail liabilities?",
+        "actuals": [
+          "Hi, good evening. I had three questions. The first one is, you know, the strategy of NII maximization has translated into growth acceleration, but with the sharp rise in the wholesale deposit rates that we have seen, do you think it warrants a focus movin g back to margins? Just trying to understand"
+        ]
+      },
+      {
+        "predicted": "What is your opex outlook and when do you expect cost-to-income to trend below 45%?",
+        "actuals": [
+          "Hi, good evening. I had three questions. The first one is, you know, the strategy of NII maximization has translated into growth acceleration, but with the sharp rise in the wholesale deposit rates that we have seen, do you think it warrants a focus movin g back to margins? Just trying to understand"
+        ]
+      },
+      {
+        "predicted": "What is the outlook on slippages for the retail and corporate books, and do you expect recoveries to offset them?",
+        "actuals": [
+          "Hi, good evening. I had three questions. The first one is, you know, the strategy of NII maximization has translated into growth acceleration, but with the sharp rise in the wholesale deposit rates that we have seen, do you think it warrants a focus movin g back to margins? Just trying to understand"
+        ]
+      }
+    ]
+  }
+]

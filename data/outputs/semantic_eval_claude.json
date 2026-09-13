@@ -1,0 +1,142 @@
+{
+  "evaluation_mode": "Claude LLM judge (in-session, concern-level decomposition)",
+  "judged_predictions": "predictions.json (improved engine, blind heuristic question text)",
+  "rubric": "1.0 same financial concern / 0.5 same broad topic different angle / 0.0 different; recall computed per actual concern incl. concerns outside the 10-topic taxonomy",
+  "q4fy26": {
+    "analysts": 6,
+    "avg_semantic_p": 0.5486,
+    "avg_semantic_r": 0.5694,
+    "avg_semantic_f1": 0.5534,
+    "details": [
+      {
+        "analyst": "Abhishek Murarka",
+        "semantic_p": 0.5,
+        "semantic_r": 0.5,
+        "semantic_f1": 0.5,
+        "actual_concerns": [
+          "growth mix / corporate deposit calibration (RAROC)",
+          "opex & cost-to-income"
+        ],
+        "per_pred_max_score": [
+          0.5,
+          0.5,
+          0.0,
+          1.0
+        ],
+        "per_concern_max_score": [
+          1.0,
+          0.0
+        ],
+        "judge_notes": "P4 (growth mix wholesale-vs-retail) matches the RAROC/mix concern well; opex question fully missed."
+      },
+      {
+        "analyst": "Chintan Joshi",
+        "semantic_p": 0.5,
+        "semantic_r": 0.5,
+        "semantic_f1": 0.5,
+        "actual_concerns": [
+          "NIM mechanics: day-count, EBLR pass-through, TD repricing",
+          "corporate loan growth 34% / ROA opportunity"
+        ],
+        "per_pred_max_score": [
+          1.0,
+          0.0
+        ],
+        "per_concern_max_score": [
+          1.0,
+          0.0
+        ],
+        "judge_notes": "P1 (NIM guidance incl. TD repricing) = same concern as actual NIM block. Corporate-growth concern (untagged in taxonomy) missed."
+      },
+      {
+        "analyst": "Kunal Shah",
+        "semantic_p": 0.5,
+        "semantic_r": 0.5,
+        "semantic_f1": 0.5,
+        "actual_concerns": [
+          "NII optimization vs NIM",
+          "loan growth weakness / rebalance",
+          "deposit rates & mix",
+          "credit cards"
+        ],
+        "per_pred_max_score": [
+          1.0,
+          0.0,
+          0.5
+        ],
+        "per_concern_max_score": [
+          1.0,
+          0.5,
+          0.5,
+          0.0
+        ],
+        "judge_notes": "P1 covers NII/NIM strategy directly; deposit angle partially covered; cards fully missed."
+      },
+      {
+        "analyst": "MB Mahesh",
+        "semantic_p": 0.5,
+        "semantic_r": 0.3333,
+        "semantic_f1": 0.4,
+        "actual_concerns": [
+          "RAROC/ROE triangulation",
+          "FY27 credit cost outlook",
+          "incremental disbursement clarification"
+        ],
+        "per_pred_max_score": [
+          1.0,
+          0.0
+        ],
+        "per_concern_max_score": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "judge_notes": "P1 (FY27 credit cost + contingency release) is a near-exact hit; RAROC/ROE concern outside taxonomy."
+      },
+      {
+        "analyst": "Mahrukh Adajania",
+        "semantic_p": 0.6667,
+        "semantic_r": 0.75,
+        "semantic_f1": 0.7059,
+        "actual_concerns": [
+          "buffer/contingency provision drawdown",
+          "deposit tightness & rate direction"
+        ],
+        "per_pred_max_score": [
+          0.5,
+          0.5,
+          1.0
+        ],
+        "per_concern_max_score": [
+          1.0,
+          0.5
+        ],
+        "judge_notes": "P3 (contingency release) matches the oil-price buffer question; deposit concern covered at 'same topic, different angle'."
+      },
+      {
+        "analyst": "Rikin Shah",
+        "semantic_p": 0.625,
+        "semantic_r": 0.8333,
+        "semantic_f1": 0.7143,
+        "actual_concerns": [
+          "NIM focus / 3.8% through-cycle guidance",
+          "net technical slippages",
+          "deposits (third question)"
+        ],
+        "per_pred_max_score": [
+          1.0,
+          0.5,
+          0.0,
+          1.0
+        ],
+        "per_concern_max_score": [
+          1.0,
+          1.0,
+          0.5
+        ],
+        "judge_notes": "NIM guidance and slippages both direct hits; credit-cost prediction unused."
+      }
+    ]
+  },
+  "comparison_note": "Earlier 'semantic' numbers were keyword-based with a topic-label bonus and are not comparable. This judge is STRICTER on recall: it counts sub-questions the taxonomy cannot represent (e.g. RAROC/ROE)."
+}

@@ -1,0 +1,335 @@
+{
+  "evaluation_mode": "Groq LLM",
+  "q4fy26": {
+    "analysts": 6,
+    "avg_topic_f1": 0.5944444444444444,
+    "avg_semantic_p": 0.4305611111166667,
+    "avg_semantic_r": 0.7361111111166667,
+    "avg_semantic_f1": 0.532545932235489,
+    "details": [
+      {
+        "analyst": "Abhishek Murarka",
+        "topic_f1": 0.5714285714285715,
+        "semantic_p": 0.5,
+        "semantic_r": 0.75,
+        "semantic_f1": 0.6,
+        "pred_topics": [
+          "Deposits & CASA",
+          "NIM & Yields",
+          "Profitability & Returns",
+          "Slippages & Asset Quality"
+        ],
+        "actual_topics": [
+          "Deposits & CASA",
+          "Opex & Cost-to-Income",
+          "Profitability & Returns"
+        ],
+        "matched_topics": [
+          "Deposits & CASA",
+          "Profitability & Returns"
+        ],
+        "pair_scores": [
+          {
+            "pred_idx": 1,
+            "actual_idx": 1,
+            "score": 0.5,
+            "reason": "both discuss retail vs corporate mix and its impact on profitability, though P1 focuses on NIM and funding while A1 focuses on loan mix and RAROC"
+          },
+          {
+            "pred_idx": 1,
+            "actual_idx": 2,
+            "score": 0.0,
+            "reason": "NIM/yield drivers unrelated to opex clarification"
+          },
+          {
+            "pred_idx": 2,
+            "actual_idx": 1,
+            "score": 0.0,
+            "reason": "cost\u2011to\u2011income ratio not addressed in A1's deposit/loan mix question"
+          },
+          {
+            "pred_idx": 2,
+            "actual_idx": 2,
+            "score": 1.0,
+            "reason": "both pertain to operating expense clarification and cost impact"
+          },
+          {
+            "pred_idx": 3,
+            "actual_idx": 1,
+            "score": 0.0,
+            "reason": "NPA/slippage topic unrelated to deposit/loan mix"
+          },
+          {
+            "pred_idx": 3,
+            "actual_idx": 2,
+            "score": 0.0,
+            "reason": "NPA discussion unrelated to opex"
+          },
+          {
+            "pred_idx": 4,
+            "actual_idx": 1,
+            "score": 0.5,
+            "reason": "both mention deposit mix (CASA vs corporate deposits) though angles differ"
+          },
+          {
+            "pred_idx": 4,
+            "actual_idx": 2,
+            "score": 0.0,
+            "reason": "deposit mix question unrelated to opex clarification"
+          }
+        ]
+      },
+      {
+        "analyst": "Chintan Joshi",
+        "topic_f1": 0.4,
+        "semantic_p": 0.5,
+        "semantic_r": 1.0,
+        "semantic_f1": 0.6666666666666666,
+        "pred_topics": [
+          "Deposits & CASA",
+          "NIM & Yields"
+        ],
+        "actual_topics": [
+          "NIM & Yields",
+          "Profitability & Returns",
+          "Strategy & Competitive Positioning"
+        ],
+        "matched_topics": [
+          "NIM & Yields"
+        ],
+        "pair_scores": [
+          {
+            "pred_idx": 1,
+            "actual_idx": 1,
+            "score": 1.0,
+            "reason": "Both focus on NIM trajectory and repricing of assets/liabilities"
+          },
+          {
+            "pred_idx": 2,
+            "actual_idx": 1,
+            "score": 0.0,
+            "reason": "Predicted CASA ratio question not addressed in actual"
+          }
+        ]
+      },
+      {
+        "analyst": "Kunal Shah",
+        "topic_f1": 0.5714285714285715,
+        "semantic_p": 0.1667,
+        "semantic_r": 0.5,
+        "semantic_f1": 0.25003749812509374,
+        "pred_topics": [
+          "Deposits & CASA",
+          "NIM & Yields",
+          "Slippages & Asset Quality"
+        ],
+        "actual_topics": [
+          "Credit Cards & Spends",
+          "Deposits & CASA",
+          "Loan & Advances Growth",
+          "NIM & Yields"
+        ],
+        "matched_topics": [
+          "Deposits & CASA",
+          "NIM & Yields"
+        ],
+        "pair_scores": [
+          {
+            "pred_idx": 1,
+            "actual_idx": 1,
+            "score": 0.0,
+            "reason": "P1 asks about technical slippages and provisioning, A1 discusses NII/NIM and retail growth, no overlap."
+          },
+          {
+            "pred_idx": 2,
+            "actual_idx": 1,
+            "score": 0.5,
+            "reason": "P2 focuses on NIM guidance, yield curve and funding mix; A1 talks about NII optimization, NIM profile and deposit repricing\u2014same broad interest\u2011margin theme."
+          },
+          {
+            "pred_idx": 3,
+            "actual_idx": 1,
+            "score": 0.0,
+            "reason": "P3 queries CASA ratio and cost\u2011to\u2011income; A1 does not mention CASA or related cost metrics."
+          }
+        ]
+      },
+      {
+        "analyst": "MB Mahesh",
+        "topic_f1": 0.5,
+        "semantic_p": 0.75,
+        "semantic_r": 1.0,
+        "semantic_f1": 0.8571428571428571,
+        "pred_topics": [
+          "Credit Cost & Provisions",
+          "Slippages & Asset Quality"
+        ],
+        "actual_topics": [
+          "Credit Cost & Provisions",
+          "Profitability & Returns"
+        ],
+        "matched_topics": [
+          "Credit Cost & Provisions"
+        ],
+        "pair_scores": [
+          {
+            "pred_idx": 1,
+            "actual_idx": 1,
+            "score": 1.0,
+            "reason": "both discuss credit cost"
+          },
+          {
+            "pred_idx": 2,
+            "actual_idx": 1,
+            "score": 0.5,
+            "reason": "both mention slippage trends"
+          }
+        ]
+      },
+      {
+        "analyst": "Mahrukh Adajania",
+        "topic_f1": 0.6666666666666666,
+        "semantic_p": 0.1666666667,
+        "semantic_r": 0.5,
+        "semantic_f1": 0.2500000000375,
+        "pred_topics": [
+          "Credit Cost & Provisions",
+          "Deposits & CASA",
+          "NIM & Yields"
+        ],
+        "actual_topics": [
+          "Credit Cost & Provisions",
+          "Deposits & CASA",
+          "Loan & Advances Growth"
+        ],
+        "matched_topics": [
+          "Credit Cost & Provisions",
+          "Deposits & CASA"
+        ],
+        "pair_scores": [
+          {
+            "pred_idx": 1,
+            "actual_idx": 1,
+            "score": 0.0,
+            "reason": "different topic"
+          },
+          {
+            "pred_idx": 2,
+            "actual_idx": 1,
+            "score": 0.5,
+            "reason": "same broad topic (provisioning) but different angle"
+          },
+          {
+            "pred_idx": 3,
+            "actual_idx": 1,
+            "score": 0.0,
+            "reason": "different topic"
+          }
+        ]
+      },
+      {
+        "analyst": "Rikin Shah",
+        "topic_f1": 0.8571428571428571,
+        "semantic_p": 0.5,
+        "semantic_r": 0.6666666667,
+        "semantic_f1": 0.5714285714408164,
+        "pred_topics": [
+          "Credit Cost & Provisions",
+          "Deposits & CASA",
+          "NIM & Yields",
+          "Slippages & Asset Quality"
+        ],
+        "actual_topics": [
+          "Deposits & CASA",
+          "NIM & Yields",
+          "Slippages & Asset Quality"
+        ],
+        "matched_topics": [
+          "Deposits & CASA",
+          "NIM & Yields",
+          "Slippages & Asset Quality"
+        ],
+        "pair_scores": [
+          {
+            "pred_idx": 1,
+            "actual_idx": 1,
+            "score": 1.0,
+            "reason": "NIM outlook matches"
+          },
+          {
+            "pred_idx": 1,
+            "actual_idx": 2,
+            "score": 0.0,
+            "reason": "different topic"
+          },
+          {
+            "pred_idx": 1,
+            "actual_idx": 3,
+            "score": 0.0,
+            "reason": "different topic"
+          },
+          {
+            "pred_idx": 2,
+            "actual_idx": 1,
+            "score": 0.0,
+            "reason": "different topic"
+          },
+          {
+            "pred_idx": 2,
+            "actual_idx": 2,
+            "score": 0.0,
+            "reason": "different topic"
+          },
+          {
+            "pred_idx": 2,
+            "actual_idx": 3,
+            "score": 0.0,
+            "reason": "different topic"
+          },
+          {
+            "pred_idx": 3,
+            "actual_idx": 1,
+            "score": 0.0,
+            "reason": "different topic"
+          },
+          {
+            "pred_idx": 3,
+            "actual_idx": 2,
+            "score": 0.0,
+            "reason": "different topic"
+          },
+          {
+            "pred_idx": 3,
+            "actual_idx": 3,
+            "score": 0.0,
+            "reason": "different topic"
+          },
+          {
+            "pred_idx": 4,
+            "actual_idx": 1,
+            "score": 0.0,
+            "reason": "different topic"
+          },
+          {
+            "pred_idx": 4,
+            "actual_idx": 2,
+            "score": 1.0,
+            "reason": "slippage trends match"
+          },
+          {
+            "pred_idx": 4,
+            "actual_idx": 3,
+            "score": 0.0,
+            "reason": "different topic"
+          }
+        ]
+      }
+    ]
+  },
+  "crossval": {
+    "quarters": 14,
+    "total_calls": 107,
+    "avg_topic_f1_base": 0.40530336745289985,
+    "avg_topic_f1_boost": 0.45078151339833566
+  }
+}

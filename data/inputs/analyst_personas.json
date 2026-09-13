@@ -1,0 +1,178 @@
+{
+  "note": "Web-derived analyst personas. topic_prior values are coarse 0-3 weights (normalized at load). Used as a weak prior that shrinks as the analyst's own transcript history grows. Sources: public research coverage, media appearances, LinkedIn/registry profiles (July 2026).",
+  "personas": [
+    {
+      "analyst": "Kunal Shah",
+      "firm": "ICICI Securities (later Citigroup)",
+      "style": "High-frequency, multi-part questions; margin mechanics and growth mix; asks for guidance numbers.",
+      "topic_prior": {
+        "NIM & Yields": 3.0,
+        "Loan & Advances Growth": 2.0,
+        "Deposits & CASA": 2.0,
+        "Credit Cards & Spends": 1.5,
+        "Credit Cost & Provisions": 1.0
+      }
+    },
+    {
+      "analyst": "MB Mahesh",
+      "firm": "Kotak Institutional Equities",
+      "style": "One sharp question per call, usually asset-quality or credit-cycle oriented; rotates topics.",
+      "topic_prior": {
+        "Slippages & Asset Quality": 3.0,
+        "Credit Cost & Provisions": 2.5,
+        "Loan & Advances Growth": 1.0,
+        "NIM & Yields": 1.0,
+        "Profitability & Returns": 2.0
+      }
+    },
+    {
+      "analyst": "Mahrukh Adajania",
+      "firm": "Elara Capital / Nuvama",
+      "style": "Margins and deposit dynamics; slippage detail requests; asks about rate-cycle impact.",
+      "topic_prior": {
+        "NIM & Yields": 3.0,
+        "Deposits & CASA": 2.5,
+        "Slippages & Asset Quality": 2.0,
+        "Credit Cost & Provisions": 1.5,
+        "Strategy & Competitive Positioning": 0.5
+      }
+    },
+    {
+      "analyst": "Suresh Ganapathy",
+      "firm": "Macquarie Capital",
+      "style": "Head of financials research; strategy, regulation, growth and profitability framing.",
+      "topic_prior": {
+        "Loan & Advances Growth": 2.0,
+        "NIM & Yields": 2.0,
+        "Capital Adequacy": 1.5,
+        "Subsidiaries' Performance": 1.0,
+        "Strategy & Competitive Positioning": 1.5
+      }
+    },
+    {
+      "analyst": "Chintan Joshi",
+      "firm": "Autonomous Research",
+      "style": "Cost structure, capital and profitability deep dives; European-banks background, model-driven.",
+      "topic_prior": {
+        "Opex & Cost-to-Income": 2.5,
+        "NIM & Yields": 2.0,
+        "Capital Adequacy": 2.0,
+        "Credit Cost & Provisions": 1.5,
+        "Profitability & Returns": 1.5,
+        "Strategy & Competitive Positioning": 1.0
+      }
+    },
+    {
+      "analyst": "Pranav Gundlapalle",
+      "firm": "Bernstein",
+      "style": "RoE, loan growth and valuation-cycle framing; strategic positioning questions.",
+      "topic_prior": {
+        "Loan & Advances Growth": 2.5,
+        "NIM & Yields": 2.0,
+        "Capital Adequacy": 1.5,
+        "Profitability & Returns": 2.0,
+        "Strategy & Competitive Positioning": 1.5
+      }
+    },
+    {
+      "analyst": "Abhishek Murarka",
+      "firm": "HSBC",
+      "style": "Deposit franchise and margin mechanics; occasionally cost ratios; detailed follow-ups.",
+      "topic_prior": {
+        "Deposits & CASA": 2.5,
+        "NIM & Yields": 2.0,
+        "Opex & Cost-to-Income": 1.5,
+        "Loan & Advances Growth": 1.5,
+        "Profitability & Returns": 1.0
+      }
+    },
+    {
+      "analyst": "Nitin Aggarwal",
+      "firm": "Motilal Oswal",
+      "style": "Head of BFSI research; guidance-seeking on margins, credit cost and growth.",
+      "topic_prior": {
+        "NIM & Yields": 2.0,
+        "Credit Cost & Provisions": 2.0,
+        "Loan & Advances Growth": 2.0,
+        "Deposits & CASA": 1.5
+      }
+    },
+    {
+      "analyst": "Jai Mundhra",
+      "firm": "ICICI Securities / B&K",
+      "style": "Broad coverage; asset quality detail, opex and capital housekeeping questions.",
+      "topic_prior": {
+        "Slippages & Asset Quality": 2.0,
+        "Opex & Cost-to-Income": 1.5,
+        "Capital Adequacy": 1.5,
+        "NIM & Yields": 1.5
+      }
+    },
+    {
+      "analyst": "Rikin Shah",
+      "firm": "IIFL",
+      "style": "Margin trajectory and credit cost; deposit repricing mechanics.",
+      "topic_prior": {
+        "NIM & Yields": 2.5,
+        "Credit Cost & Provisions": 2.0,
+        "Deposits & CASA": 1.5,
+        "Loan & Advances Growth": 1.5
+      }
+    },
+    {
+      "analyst": "Adarsh Parasrampuria",
+      "firm": "CLSA",
+      "style": "Margins, unsecured retail / cards mix, growth quality.",
+      "topic_prior": {
+        "NIM & Yields": 2.0,
+        "Credit Cards & Spends": 2.0,
+        "Loan & Advances Growth": 2.0,
+        "Credit Cost & Provisions": 1.5
+      }
+    },
+    {
+      "analyst": "Saurabh Kumar",
+      "firm": "J.P. Morgan",
+      "style": "Cards business, asset quality and cost items; subsidiary color.",
+      "topic_prior": {
+        "Credit Cards & Spends": 2.0,
+        "Slippages & Asset Quality": 2.0,
+        "Opex & Cost-to-Income": 1.5,
+        "Subsidiaries' Performance": 1.0
+      }
+    },
+    {
+      "analyst": "Param Subramanian",
+      "firm": "Nomura / Investec",
+      "style": "Cards and fees, deposit costs, Citi integration mechanics.",
+      "topic_prior": {
+        "Credit Cards & Spends": 2.0,
+        "Deposits & CASA": 2.0,
+        "NIM & Yields": 1.5,
+        "Citibank Integration": 1.5
+      }
+    },
+    {
+      "analyst": "Piran Engineer",
+      "firm": "CLSA India",
+      "style": "Cards and fee income, opex, subsidiaries; granular retail questions.",
+      "topic_prior": {
+        "Credit Cards & Spends": 2.0,
+        "Opex & Cost-to-Income": 1.5,
+        "Subsidiaries' Performance": 1.5,
+        "Slippages & Asset Quality": 1.5
+      }
+    },
+    {
+      "analyst": "Anand Dama",
+      "firm": "Emkay Global",
+      "style": "Asset quality, Citi integration, deposit and capital housekeeping.",
+      "topic_prior": {
+        "Slippages & Asset Quality": 2.0,
+        "Citibank Integration": 1.5,
+        "Deposits & CASA": 1.5,
+        "Capital Adequacy": 1.5
+      }
+    }
+  ]
+}

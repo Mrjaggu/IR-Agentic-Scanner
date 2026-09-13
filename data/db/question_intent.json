@@ -1,0 +1,810 @@
+[
+  {
+    "quarter": "q1fy26",
+    "analyst": "Abhishek Murarka",
+    "topics": [
+      "NIM & Yields",
+      "Loan & Advances Growth",
+      "Deposits & CASA",
+      "Profitability & Returns"
+    ],
+    "intent": "persona_consistent",
+    "evidence": "Corporate-vs-retail growth mix question matches his prior 'Loan & Advances Growth' and 'NIM & Yields' focus."
+  },
+  {
+    "quarter": "q1fy26",
+    "analyst": "Chintan Joshi",
+    "topics": [
+      "NIM & Yields",
+      "Credit Cost & Provisions"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly references 'even after removing the technical impact, the credit costs are quite high' -- reacting to the new technical-classification disclosure this quarter."
+  },
+  {
+    "quarter": "q1fy26",
+    "analyst": "Jai Mundhra",
+    "topics": [],
+    "intent": "narration_triggered",
+    "evidence": "Cites exact disclosed figures 'INR8200 crores minus 2100 crores... INR6053 crores of net slippages' -- direct narration citation despite empty auto-tag."
+  },
+  {
+    "quarter": "q1fy26",
+    "analyst": "Kunal Shah",
+    "topics": [
+      "Slippages & Asset Quality",
+      "Credit Cards & Spends"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Asks 'what has happened with the policies... was it identified during regulatory inspections' -- continuing the same technical-classification disclosure thread."
+  },
+  {
+    "quarter": "q1fy26",
+    "analyst": "MB Mahesh",
+    "topics": [
+      "Slippages & Asset Quality"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "'clarification on the technical one' -- continuing the same fresh disclosure thread; 'Slippages & Asset Quality' not previously in his history."
+  },
+  {
+    "quarter": "q1fy26",
+    "analyst": "Mahrukh Adajania",
+    "topics": [
+      "Slippages & Asset Quality",
+      "Credit Cost & Provisions"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Entire question is about the newly-disclosed 'technical classification' of accounts this quarter."
+  },
+  {
+    "quarter": "q1fy26",
+    "analyst": "Nitin Aggarwal",
+    "topics": [
+      "Credit Cost & Provisions",
+      "Deposits & CASA",
+      "Strategy & Competitive Positioning"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Cites the specific disclosed action 'cut like 50 basis points, even for deposits above INR50 lakh'."
+  },
+  {
+    "quarter": "q1fy26",
+    "analyst": "Param Subramanian",
+    "topics": [
+      "Credit Cost & Provisions",
+      "Profitability & Returns",
+      "Strategy & Competitive Positioning"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly continues 'you clarified that it's not regulatory driven, this technical recognition' -- same live narration thread."
+  },
+  {
+    "quarter": "q1fy26",
+    "analyst": "Suraj Das",
+    "topics": [
+      "Slippages & Asset Quality",
+      "Credit Cost & Provisions"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "First appearance; explicitly 'harping on this technical thing' -- same disclosed narration theme."
+  },
+  {
+    "quarter": "q1fy26",
+    "analyst": "Yy Tsai",
+    "topics": [
+      "Credit Cost & Provisions",
+      "Opex & Cost-to-Income",
+      "Deposits & CASA"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "First appearance; cites the specific disclosed figure 'net cost of about INR800 crores on credit costs from this adjustment'."
+  },
+  {
+    "quarter": "q1fy27",
+    "analyst": "Abhishek Murarka",
+    "topics": [
+      "NIM & Yields"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly references 'FCNR balances' and 'structural NIM guidance... of 3.8%' -- verified against the actual transcript this session."
+  },
+  {
+    "quarter": "q1fy27",
+    "analyst": "Ankit Bihani",
+    "topics": [
+      "NIM & Yields",
+      "Credit Cost & Provisions"
+    ],
+    "intent": "unexplained",
+    "evidence": "First appearance (no prior history); investment-yield question doesn't cite a specific narration figure or match a prior pattern."
+  },
+  {
+    "quarter": "q1fy27",
+    "analyst": "Chintan Joshi",
+    "topics": [
+      "NIM & Yields",
+      "Loan & Advances Growth",
+      "Deposits & CASA"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly cites '9 basis points of pricing of loans... in the quarter-on-quarter NIM bridge' -- exact narration figure."
+  },
+  {
+    "quarter": "q1fy27",
+    "analyst": "Kunal Shah",
+    "topics": [
+      "NIM & Yields"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly references 'ex of FCNR benefit' -- the FCNR deposit theme newly emphasized in this quarter's narration."
+  },
+  {
+    "quarter": "q1fy27",
+    "analyst": "MB Mahesh",
+    "topics": [
+      "NIM & Yields",
+      "Loan & Advances Growth"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "References the disclosed corporate-vs-retail growth-mix rationale ('pushed the corporate loan growth on the argument that the return was slightly better')."
+  },
+  {
+    "quarter": "q1fy27",
+    "analyst": "Mahrukh Adajania",
+    "topics": [
+      "NIM & Yields",
+      "Opex & Cost-to-Income"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly references 'the structural NIM target of 3.8%' and 'you've called out and given many details' on opex -- narration citations."
+  },
+  {
+    "quarter": "q1fy27",
+    "analyst": "Piran Engineer",
+    "topics": [
+      "Slippages & Asset Quality",
+      "NIM & Yields",
+      "Credit Cost & Provisions",
+      "Opex & Cost-to-Income",
+      "Profitability & Returns"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly cites 'NIM had declined 16 basis points... average interest-earning assets... grew 3%, 4%' -- exact narration figures."
+  },
+  {
+    "quarter": "q1fy27",
+    "analyst": "Rikin Shah",
+    "topics": [
+      "Slippages & Asset Quality",
+      "NIM & Yields",
+      "Opex & Cost-to-Income",
+      "Subsidiaries' Performance"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly cites '34 basis points of NIM expansion in next 12 to 15 months basis your guidance'."
+  },
+  {
+    "quarter": "q1fy27",
+    "analyst": "Zhixuan Gao",
+    "topics": [
+      "NIM & Yields",
+      "Loan & Advances Growth"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "First appearance; cites exact disclosed figures '16 basis point mix change... 38% wholesale growth and then 8% of retail growth'."
+  },
+  {
+    "quarter": "q2fy25",
+    "analyst": "Chintan Joshi",
+    "topics": [
+      "Loan & Advances Growth"
+    ],
+    "intent": "persona_consistent",
+    "evidence": "Question is really about unsecured slippage vintages and NIM rate transmission (auto-tag mislabeled as Loan Growth) -- both 'Slippages & Asset Quality' and 'NIM & Yields' are in his prior topics."
+  },
+  {
+    "quarter": "q2fy25",
+    "analyst": "Jai Mundhra",
+    "topics": [],
+    "intent": "persona_consistent",
+    "evidence": "Retail slippage ratio calculation (2.7-2.9%) is a Slippages & Asset Quality question (auto-tag missed it) matching his prior topic history."
+  },
+  {
+    "quarter": "q2fy25",
+    "analyst": "Kunal Shah",
+    "topics": [
+      "NIM & Yields",
+      "Loan & Advances Growth",
+      "Deposits & CASA"
+    ],
+    "intent": "persona_consistent",
+    "evidence": "Loan growth segment mix question matches his prior 'Loan & Advances Growth' and 'Deposits & CASA' history."
+  },
+  {
+    "quarter": "q2fy25",
+    "analyst": "MB Mahesh",
+    "topics": [
+      "Credit Cost & Provisions"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly cites the Rs 520 crore contingent-provision figure just disclosed in narration, asking to reconcile it against the Rs 11,700cr->11,800cr buffer movement."
+  },
+  {
+    "quarter": "q2fy25",
+    "analyst": "Mahrukh Adajania",
+    "topics": [
+      "Loan & Advances Growth",
+      "Deposits & CASA",
+      "Strategy & Competitive Positioning"
+    ],
+    "intent": "persona_consistent",
+    "evidence": "Deposit growth trajectory question matches her prior 'Deposits & CASA' focus."
+  },
+  {
+    "quarter": "q2fy25",
+    "analyst": "Nitin Aggarwal",
+    "topics": [],
+    "intent": "unexplained",
+    "evidence": "CD ratio/LCR threshold and headcount decline question -- untagged topic, doesn't clearly map to his prior pattern or a specific narration figure."
+  },
+  {
+    "quarter": "q2fy25",
+    "analyst": "Param Subramanian",
+    "topics": [
+      "Credit Cost & Provisions",
+      "Deposits & CASA",
+      "Profitability & Returns"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly cites the same Rs 520 crore contingent provision figure just disclosed in narration, questioning why it was made."
+  },
+  {
+    "quarter": "q2fy25",
+    "analyst": "Pranav Gundlapalle",
+    "topics": [
+      "NIM & Yields",
+      "Loan & Advances Growth"
+    ],
+    "intent": "persona_consistent",
+    "evidence": "Comparative loan-growth-vs-system question; 'NIM & Yields' is in his prior topics (Loan Growth is a new addition)."
+  },
+  {
+    "quarter": "q2fy25",
+    "analyst": "Rikin Shah",
+    "topics": [
+      "Slippages & Asset Quality",
+      "Deposits & CASA",
+      "Subsidiaries' Performance"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly quotes management: 'you've called out, Puneet, that the gross slippages are largely from retail' -- reacting to that specific narration disclosure."
+  },
+  {
+    "quarter": "q2fy25",
+    "analyst": "Saurabh Kumar",
+    "topics": [
+      "Deposits & CASA"
+    ],
+    "intent": "unexplained",
+    "evidence": "CASA rate-sensitivity question -- 'Deposits & CASA' is NOT in his prior topics (Citibank Integration, Credit Cost, NIM, Slippages, Subsidiaries), and no specific narration figure is cited. Genuine off-pattern question."
+  },
+  {
+    "quarter": "q2fy26",
+    "analyst": "Adarsh Parasrampuria",
+    "topics": [
+      "Credit Cost & Provisions",
+      "Opex & Cost-to-Income"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly cites 'Rs. 900 odd crores cost that you mentioned on PSLC certificates' -- same crop-loan disclosure thread."
+  },
+  {
+    "quarter": "q2fy26",
+    "analyst": "Anand Swaminathan",
+    "topics": [
+      "Credit Cost & Provisions",
+      "Credit Cards & Spends"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Cites specific disclosed figures 'LDRs... highest since 2018... PCR... lowest since 2018'."
+  },
+  {
+    "quarter": "q2fy26",
+    "analyst": "Chintan Joshi",
+    "topics": [
+      "NIM & Yields",
+      "Credit Cost & Provisions",
+      "Deposits & CASA"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly cites 'the credit risk draft circular... your comment on ECL from the media briefing' -- narration/media citation."
+  },
+  {
+    "quarter": "q2fy26",
+    "analyst": "Harsh Wardhan Modi",
+    "topics": [
+      "Credit Cost & Provisions",
+      "Deposits & CASA",
+      "Strategy & Competitive Positioning"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Cites the specific disclosed figure 'risk-weighted asset as a percentage of asset that has gone up... to 75%'; none of his thin prior history (Cards only) matches otherwise."
+  },
+  {
+    "quarter": "q2fy26",
+    "analyst": "Kunal Shah",
+    "topics": [
+      "NIM & Yields"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Live follow-up on margin question citing the 'CRR cut benefit' discussed in narration."
+  },
+  {
+    "quarter": "q2fy26",
+    "analyst": "Mahrukh Adajania",
+    "topics": [
+      "Slippages & Asset Quality",
+      "NIM & Yields",
+      "Credit Cost & Provisions",
+      "Deposits & CASA"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Cites exact disclosed figures 'technical slippage has come down... to Rs. 280 crore... credit cost is 270 odd'."
+  },
+  {
+    "quarter": "q2fy26",
+    "analyst": "Pranav Gundlapalle",
+    "topics": [
+      "Credit Cost & Provisions"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "References the recurring pattern of disclosed one-off credit costs across recent quarters (technical classification, crop loan) -- 'Credit Cost & Provisions' not previously in his history."
+  },
+  {
+    "quarter": "q2fy26",
+    "analyst": "Rikin Shah",
+    "topics": [
+      "Slippages & Asset Quality",
+      "NIM & Yields",
+      "Credit Cost & Provisions",
+      "Loan & Advances Growth"
+    ],
+    "intent": "persona_consistent",
+    "evidence": "Corporate loan growth and NII question matches his prior 'Loan & Advances Growth' and 'NIM & Yields' focus."
+  },
+  {
+    "quarter": "q2fy26",
+    "analyst": "Subramanian",
+    "topics": [
+      "NIM & Yields"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Continues the same crop-loan/PSLC theme and references 'a letter of caution from RBI last week' discussed on the call."
+  },
+  {
+    "quarter": "q2fy26",
+    "analyst": "Suresh Ganapathy",
+    "topics": [
+      "Slippages & Asset Quality",
+      "Credit Cost & Provisions"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Live follow-up ('which of course Mahesh had asked') citing exact disclosed figures on the crop-loan PSLC classification theme (25bps/40bps/5% provisioning)."
+  },
+  {
+    "quarter": "q3fy25",
+    "analyst": "Abhishek Murarka",
+    "topics": [
+      "Slippages & Asset Quality",
+      "NIM & Yields",
+      "Credit Cost & Provisions",
+      "Loan & Advances Growth",
+      "Deposits & CASA",
+      "Credit Cards & Spends"
+    ],
+    "intent": "persona_consistent",
+    "evidence": "Explicit 'continuation on the deposit growth question' (live follow-up on Chintan Joshi) but content matches his own rich prior history across Deposits, NIM, Credit Cost, Loan Growth."
+  },
+  {
+    "quarter": "q3fy25",
+    "analyst": "Chintan Joshi",
+    "topics": [
+      "Deposits & CASA",
+      "Strategy & Competitive Positioning"
+    ],
+    "intent": "persona_consistent",
+    "evidence": "Deposit growth lagging peers question matches his prior 'Deposits & CASA' focus."
+  },
+  {
+    "quarter": "q3fy25",
+    "analyst": "MB Mahesh",
+    "topics": [
+      "Loan & Advances Growth"
+    ],
+    "intent": "unexplained",
+    "evidence": "Explicitly a live cross-analyst follow-up ('this question which Abhishek had asked earlier') -- not explained by his own prior pattern or a narration citation; driven by another analyst's question in the same call, a category our 3-way schema doesn't capture."
+  },
+  {
+    "quarter": "q3fy25",
+    "analyst": "Mahrukh Adajania",
+    "topics": [
+      "NIM & Yields",
+      "Deposits & CASA",
+      "Strategy & Competitive Positioning"
+    ],
+    "intent": "persona_consistent",
+    "evidence": "Explicit 'follow-up question on deposits' -- matches her prior Deposits & CASA and NIM & Yields history."
+  },
+  {
+    "quarter": "q3fy25",
+    "analyst": "Nitin Aggarwal",
+    "topics": [
+      "NIM & Yields",
+      "Credit Cost & Provisions",
+      "Credit Cards & Spends"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly cites the specific figure 'tightened the provision policy... resulted in 15%-20% higher provisions' just disclosed in narration."
+  },
+  {
+    "quarter": "q3fy25",
+    "analyst": "Param Subramanian",
+    "topics": [
+      "Slippages & Asset Quality",
+      "Loan & Advances Growth",
+      "Deposits & CASA"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly cites 'Puneet, you made a comment saying that we don't see any extraneous constraint on LDR' -- quoting management's narration remark."
+  },
+  {
+    "quarter": "q3fy25",
+    "analyst": "Prakhar Sharma",
+    "topics": [
+      "Slippages & Asset Quality",
+      "Credit Cost & Provisions",
+      "Loan & Advances Growth",
+      "Credit Cards & Spends",
+      "Profitability & Returns"
+    ],
+    "intent": "unexplained",
+    "evidence": "First-time analyst (no prior history to compare against) asking a general forward-looking asset-quality-cycle question with no precise narration citation."
+  },
+  {
+    "quarter": "q3fy25",
+    "analyst": "Rikin Shah",
+    "topics": [
+      "Slippages & Asset Quality",
+      "NIM & Yields",
+      "Citibank Integration",
+      "Opex & Cost-to-Income",
+      "Deposits & CASA"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly references 'you indicated it during the margin comments and the interest reversals' -- quoting management's own narration remarks."
+  },
+  {
+    "quarter": "q3fy25",
+    "analyst": "Rikin Shah",
+    "topics": [
+      "Credit Cards & Spends"
+    ],
+    "intent": "persona_consistent",
+    "evidence": "Fee income question matches his prior 'Credit Cards & Spends' history."
+  },
+  {
+    "quarter": "q3fy25",
+    "analyst": "Suresh Ganapathy",
+    "topics": [
+      "NIM & Yields",
+      "Credit Cost & Provisions",
+      "Loan & Advances Growth",
+      "Deposits & CASA",
+      "Strategy & Competitive Positioning"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly synthesizes this quarter's disclosed results: 'multi-quarter low of loan/deposit growth... slippages at multi-quarter high... credit costs highest since COVID... margins lowest in several quarters' -- all figures from this quarter's narration."
+  },
+  {
+    "quarter": "q3fy26",
+    "analyst": "Abhishek Murarka",
+    "topics": [
+      "Slippages & Asset Quality",
+      "NIM & Yields",
+      "Profitability & Returns"
+    ],
+    "intent": "persona_consistent",
+    "evidence": "Inorganic-growth/capital strategy question matches his prior broad 'NIM & Yields' and 'Profitability & Returns' focus; no specific figure cited."
+  },
+  {
+    "quarter": "q3fy26",
+    "analyst": "Adarsh Parasrampuria",
+    "topics": [
+      "Credit Cost & Provisions",
+      "Strategy & Competitive Positioning"
+    ],
+    "intent": "persona_consistent",
+    "evidence": "Credit-cost-gap-vs-peers question matches his prior 'Credit Cost & Provisions' focus; general continuation, no sharp figure citation."
+  },
+  {
+    "quarter": "q3fy26",
+    "analyst": "Adarsh Parasrampuria",
+    "topics": [],
+    "intent": "unexplained",
+    "evidence": "Closing courtesy remark ('Perfect. Thanks, Amitabh and thanks, Puneet.'), not a substantive analytical question."
+  },
+  {
+    "quarter": "q3fy26",
+    "analyst": "Chintan Joshi",
+    "topics": [
+      "NIM & Yields",
+      "Loan & Advances Growth",
+      "Deposits & CASA"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly cites 'the 3.8 NIM guidance. Thank you for reiterating that' -- specific disclosed guidance figure."
+  },
+  {
+    "quarter": "q3fy26",
+    "analyst": "Jai Mundhra",
+    "topics": [
+      "Deposits & CASA",
+      "Strategy & Competitive Positioning"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Cites the specific disclosed figure 'RIDF outstanding... now down to 100 billion'."
+  },
+  {
+    "quarter": "q3fy26",
+    "analyst": "Kunal Shah",
+    "topics": [
+      "Slippages & Asset Quality"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Cites specific disclosed figures 'recovery side... 2800-2900 range... from the technical slippages'."
+  },
+  {
+    "quarter": "q3fy26",
+    "analyst": "Mahrukh Adajania",
+    "topics": [
+      "Opex & Cost-to-Income",
+      "Deposits & CASA"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly references 'your LCR has dropped' and 'we've beaten the sector over the last two quarters' -- narration-disclosed movement."
+  },
+  {
+    "quarter": "q3fy26",
+    "analyst": "Param Subramanian",
+    "topics": [
+      "NIM & Yields",
+      "Loan & Advances Growth"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Cites the exact disclosed figures 'down nine basis point quarter-on-quarter... NII at 4% quarter on quarter'."
+  },
+  {
+    "quarter": "q3fy26",
+    "analyst": "Piran Engineer",
+    "topics": [
+      "NIM & Yields",
+      "Credit Cards & Spends",
+      "Profitability & Returns"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly cites 'what you said that the focus on LDR as a metric is different today from what it was a year back' -- quoting management's remark."
+  },
+  {
+    "quarter": "q3fy26",
+    "analyst": "Rahul Jain",
+    "topics": [
+      "Loan & Advances Growth",
+      "Profitability & Returns",
+      "Strategy & Competitive Positioning"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Cites the specific disclosed growth pattern 'growing in a very narrow band... between 1% to 2% quarter on quarter'."
+  },
+  {
+    "quarter": "q3fy26",
+    "analyst": "Rikin Shah",
+    "topics": [
+      "NIM & Yields",
+      "Credit Cost & Provisions",
+      "Opex & Cost-to-Income",
+      "Deposits & CASA"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Cites the specific disclosed figure 'borrowings... now back to 15% of IBL'."
+  },
+  {
+    "quarter": "q4fy25",
+    "analyst": "Abhishek Murarka",
+    "topics": [
+      "NIM & Yields",
+      "Loan & Advances Growth",
+      "Deposits & CASA",
+      "Credit Cards & Spends",
+      "Profitability & Returns"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly cites 'excess SLR, which you called out' -- quoting a specific narration disclosure."
+  },
+  {
+    "quarter": "q4fy25",
+    "analyst": "Akshat Agrawal",
+    "topics": [
+      "Loan & Advances Growth",
+      "Deposits & CASA"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "First appearance; cites the specific disclosed CD ratio figure 'improved to below 90% at 88.7%'."
+  },
+  {
+    "quarter": "q4fy25",
+    "analyst": "Anand Swaminathan",
+    "topics": [
+      "Credit Cost & Provisions",
+      "Citibank Integration"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "First appearance (no prior history); cites specific disclosed figures ('the 1,316 number would have been 2,100') from narration."
+  },
+  {
+    "quarter": "q4fy25",
+    "analyst": "Ankit Bihani",
+    "topics": [],
+    "intent": "narration_triggered",
+    "evidence": "First appearance (no prior history); cites the specific disclosed figure 'NIMs have improved 4 bps Q-o-Q' from narration."
+  },
+  {
+    "quarter": "q4fy25",
+    "analyst": "Chintan Joshi",
+    "topics": [
+      "Deposits & CASA"
+    ],
+    "intent": "persona_consistent",
+    "evidence": "Rate-cut/NIM transmission question matches his prior 'Deposits & CASA' and NIM interest."
+  },
+  {
+    "quarter": "q4fy25",
+    "analyst": "Harsh Wardhan Modi",
+    "topics": [
+      "Credit Cards & Spends"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "First appearance (no prior history); cites the specific disclosed risk-weight figure change 'up from 70 to 72'."
+  },
+  {
+    "quarter": "q4fy25",
+    "analyst": "Krishnan ASV",
+    "topics": [
+      "NIM & Yields",
+      "Credit Cost & Provisions",
+      "Deposits & CASA"
+    ],
+    "intent": "unexplained",
+    "evidence": "Asks about 'the savings rate cut that's happened across the system' -- an external, industry-wide macro event (RBI-driven), not a citation of Axis's own narration and only weakly matching his prior topics (NIM only). Likely an external-event trigger our narration+persona-only schema can't capture."
+  },
+  {
+    "quarter": "q4fy25",
+    "analyst": "Kunal Shah",
+    "topics": [
+      "NIM & Yields",
+      "Loan & Advances Growth",
+      "Deposits & CASA",
+      "Credit Cards & Spends"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Explicitly references 'your comment on personal loans and credit cards... mentioned there is stabilization' -- quoting management's remark."
+  },
+  {
+    "quarter": "q4fy25",
+    "analyst": "MB Mahesh",
+    "topics": [
+      "NIM & Yields",
+      "Credit Cost & Provisions"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Explicit live callback 'again, just coming back on that, it's provisioning... discussing for FY26' -- direct continuation of fresh in-call disclosure."
+  },
+  {
+    "quarter": "q4fy25",
+    "analyst": "Mahrukh Adajania",
+    "topics": [
+      "Credit Cost & Provisions",
+      "Deposits & CASA"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly cites 'You said that you have tightened provisioning policy and that could impact FY26' -- quoting narration disclosure."
+  },
+  {
+    "quarter": "q4fy25",
+    "analyst": "Piran Engineer",
+    "topics": [
+      "NIM & Yields",
+      "Loan & Advances Growth",
+      "Deposits & CASA",
+      "Credit Cards & Spends"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly cites 'on Slide 22, you've explained it well' -- explicit narration/slide reference."
+  },
+  {
+    "quarter": "q4fy25",
+    "analyst": "Rikin Shah",
+    "topics": [
+      "Slippages & Asset Quality",
+      "NIM & Yields"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly references 'did I hear correctly that the implications... would be visible in upgrades and recoveries in FY26' -- quoting narration guidance."
+  },
+  {
+    "quarter": "q4fy26",
+    "analyst": "Abhishek Murarka",
+    "topics": [
+      "Opex & Cost-to-Income",
+      "Deposits & CASA",
+      "Profitability & Returns"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly references the RAROC/ROA framework just presented in narration ('from a RAROC or ROA perspective')."
+  },
+  {
+    "quarter": "q4fy26",
+    "analyst": "Chintan Joshi",
+    "topics": [
+      "NIM & Yields",
+      "Profitability & Returns",
+      "Strategy & Competitive Positioning"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Cites specific disclosed figures 'the full 25 bps rate cut from December... corporate growth. At 34% year-on-year' -- direct narration citation."
+  },
+  {
+    "quarter": "q4fy26",
+    "analyst": "Kunal Shah",
+    "topics": [
+      "NIM & Yields",
+      "Loan & Advances Growth",
+      "Deposits & CASA",
+      "Credit Cards & Spends"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Live continuation citing 'Last time we indicated...' and the specific disclosed figure 'relatively weak at 1-odd-percent'."
+  },
+  {
+    "quarter": "q4fy26",
+    "analyst": "MB Mahesh",
+    "topics": [
+      "Credit Cost & Provisions",
+      "Profitability & Returns"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly cites 'that RAROC argument that you presented' -- verified earlier this session as a direct narration reaction (management's RAROC slide)."
+  },
+  {
+    "quarter": "q4fy26",
+    "analyst": "Mahrukh Adajania",
+    "topics": [
+      "Credit Cost & Provisions",
+      "Loan & Advances Growth",
+      "Deposits & CASA"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly cites 'your buffer provision you created this quarter quoting $150 oil price'."
+  },
+  {
+    "quarter": "q4fy26",
+    "analyst": "Rikin Shah",
+    "topics": [
+      "Slippages & Asset Quality",
+      "NIM & Yields",
+      "Deposits & CASA"
+    ],
+    "intent": "narration_triggered",
+    "evidence": "Directly cites 'this 3.8 through the cycle NIM guidance that we have earlier provided'."
+  }
+]

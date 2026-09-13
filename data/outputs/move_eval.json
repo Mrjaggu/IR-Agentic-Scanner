@@ -1,0 +1,247 @@
+{
+  "q4fy26": {
+    "n_move_bearing_questions": 8,
+    "n_move_instances": 11,
+    "n_predicted_slots": 84,
+    "move_recall": 0.455,
+    "move_recall_on_taxonomy": 1.0,
+    "per_move": {
+      "absence_probe": {
+        "n": 1,
+        "hit": 0,
+        "recall": 0.0
+      },
+      "forward_trajectory": {
+        "n": 4,
+        "hit": 3,
+        "recall": 0.75
+      },
+      "guidance_callback": {
+        "n": 4,
+        "hit": 2,
+        "recall": 0.5
+      },
+      "normalized_run_rate": {
+        "n": 1,
+        "hit": 0,
+        "recall": 0.0
+      },
+      "quantification_demand": {
+        "n": 1,
+        "hit": 0,
+        "recall": 0.0
+      }
+    },
+    "attribution": {
+      "off_taxonomy": 6,
+      "hit": 5
+    },
+    "owner_of_next_fix": [
+      {
+        "verdict": "off_taxonomy",
+        "n": 6,
+        "owner": "taxonomy \u2014 the bucket list itself is short"
+      }
+    ],
+    "misses": [
+      {
+        "analyst": "Rikin Shah",
+        "topic": null,
+        "move": "guidance_callback",
+        "verdict": "off_taxonomy",
+        "text": "Fair enough, Amitabh. But any comment on when do we think this -- we can achieve this 3.8%? Is it like any timeframe that we would like to define?"
+      },
+      {
+        "analyst": "Rikin Shah",
+        "topic": null,
+        "move": "absence_probe",
+        "verdict": "off_taxonomy",
+        "text": "Fair enough, Amitabh. But any comment on when do we think this -- we can achieve this 3.8%? Is it like any timeframe that we would like to define?"
+      },
+      {
+        "analyst": "Rikin Shah",
+        "topic": null,
+        "move": "quantification_demand",
+        "verdict": "off_taxonomy",
+        "text": "And then just the last question, Puneet, to your earlier opening remarks that PSL full compliance has been achieved. So just wanted to clarify whether it is including the PSLC purc"
+      },
+      {
+        "analyst": "Abhishek Murarka",
+        "topic": null,
+        "move": "forward_trajectory",
+        "verdict": "off_taxonomy",
+        "text": "And by when do you start recalibration? Because it's been a while since retail picked up, but now it seems to have picked up quite strongly."
+      },
+      {
+        "analyst": "MB Mahesh",
+        "topic": null,
+        "move": "guidance_callback",
+        "verdict": "off_taxonomy",
+        "text": "All right. Just one clarification on the incremental disbursements that you're doing, one of the conversations that we've had previously is that there was significant tightening of"
+      },
+      {
+        "analyst": "MB Mahesh",
+        "topic": null,
+        "move": "normalized_run_rate",
+        "verdict": "off_taxonomy",
+        "text": "All right. Just one clarification on the incremental disbursements that you're doing, one of the conversations that we've had previously is that there was significant tightening of"
+      }
+    ],
+    "quarter": "q4fy26",
+    "train_cutoff": "q3fy26",
+    "n_train_quarters": 19,
+    "reachability": {
+      "quantification_demand": 1,
+      "guidance_callback": 7,
+      "one_off_vs_steady_state": 2,
+      "normalized_run_rate": 8,
+      "cross_line_bridge": 7,
+      "absence_probe": 0,
+      "forward_trajectory": 12
+    }
+  },
+  "q1fy27": {
+    "n_move_bearing_questions": 14,
+    "n_move_instances": 17,
+    "n_predicted_slots": 126,
+    "move_recall": 0.471,
+    "move_recall_on_taxonomy": 0.571,
+    "per_move": {
+      "absence_probe": {
+        "n": 1,
+        "hit": 0,
+        "recall": 0.0
+      },
+      "cross_line_bridge": {
+        "n": 2,
+        "hit": 0,
+        "recall": 0.0
+      },
+      "forward_trajectory": {
+        "n": 3,
+        "hit": 3,
+        "recall": 1.0
+      },
+      "guidance_callback": {
+        "n": 2,
+        "hit": 2,
+        "recall": 1.0
+      },
+      "normalized_run_rate": {
+        "n": 2,
+        "hit": 0,
+        "recall": 0.0
+      },
+      "one_off_vs_steady_state": {
+        "n": 3,
+        "hit": 3,
+        "recall": 1.0
+      },
+      "quantification_demand": {
+        "n": 4,
+        "hit": 0,
+        "recall": 0.0
+      }
+    },
+    "attribution": {
+      "slot_not_allocated": 1,
+      "hit": 8,
+      "input_missing": 5,
+      "off_taxonomy": 3
+    },
+    "owner_of_next_fix": [
+      {
+        "verdict": "input_missing",
+        "n": 5,
+        "owner": "data layer \u2014 add the missing input; do NOT touch prompts"
+      },
+      {
+        "verdict": "off_taxonomy",
+        "n": 3,
+        "owner": "taxonomy \u2014 the bucket list itself is short"
+      },
+      {
+        "verdict": "slot_not_allocated",
+        "n": 1,
+        "owner": "ranking \u2014 slot budget / move propensity / per-topic cap"
+      }
+    ],
+    "misses": [
+      {
+        "analyst": "Chintan Joshi",
+        "topic": "NIM & Yields",
+        "move": "cross_line_bridge",
+        "verdict": "slot_not_allocated",
+        "text": "Can I get some color on the 9 basis points of pricing of loans that you gave in the quarter -on-quarter NIM bridge. What is this exactly , is this kind of incremental pressure on l"
+      },
+      {
+        "analyst": "Mahrukh Adajania",
+        "topic": "Opex & Cost-to-Income",
+        "move": "normalized_run_rate",
+        "verdict": "input_missing",
+        "text": "And then my second question is on opex. So obviously, you've called out and you've given many details on opex. But what would be a normalized run rate for opex, because you are see"
+      },
+      {
+        "analyst": "Mahrukh Adajania",
+        "topic": null,
+        "move": "absence_probe",
+        "verdict": "off_taxonomy",
+        "text": "Also, just one last thing on your foreign loans. They've grown quite sharply, so if you could comment on that as well?"
+      },
+      {
+        "analyst": "Rikin Shah",
+        "topic": "NIM & Yields",
+        "move": "quantification_demand",
+        "verdict": "input_missing",
+        "text": "Had a few questions. The first one again on margins. So this 34 basis points of NIM expansion in next 12 to 15 months basis your guidance, could you just provide a walk of how much"
+      },
+      {
+        "analyst": "Zhixuan Gao",
+        "topic": "NIM & Yields",
+        "move": "quantification_demand",
+        "verdict": "input_missing",
+        "text": "Hey, thank you for the opportunity. First to hop on the margin part. You talked about the potential reversal of that 16 basis point mix change in the last 1 year. But that's as a r"
+      },
+      {
+        "analyst": "Piran Engineer",
+        "topic": "Credit Cost & Provisions",
+        "move": "quantification_demand",
+        "verdict": "input_missing",
+        "text": "And just secondly, how much of this 9 bps can be offset by lower opex and credit cost? Because obviously, if you're giving it to better quality customers or AAA rated corporate, th"
+      },
+      {
+        "analyst": "Ankit Bihani",
+        "topic": "Credit Cost & Provisions",
+        "move": "normalized_run_rate",
+        "verdict": "input_missing",
+        "text": "Second is on the ECL front, if we can tell the onetime impact, and what could be the increase or impact on the run rate, the credit cost run rate going forward?"
+      },
+      {
+        "analyst": "Ankit Bihani",
+        "topic": null,
+        "move": "cross_line_bridge",
+        "verdict": "off_taxonomy",
+        "text": "So basically, I'm looking at the period-end figure, maybe that is why the discrepancy."
+      },
+      {
+        "analyst": "MB Mahesh",
+        "topic": null,
+        "move": "quantification_demand",
+        "verdict": "off_taxonomy",
+        "text": "Are you able to quantify how much of ECLGS requests have come in and you've accepted it?"
+      }
+    ],
+    "quarter": "q1fy27",
+    "train_cutoff": "q4fy26",
+    "n_train_quarters": 20,
+    "reachability": {
+      "quantification_demand": 3,
+      "guidance_callback": 7,
+      "one_off_vs_steady_state": 4,
+      "normalized_run_rate": 2,
+      "cross_line_bridge": 7,
+      "absence_probe": 0,
+      "forward_trajectory": 11
+    }
+  }
+}

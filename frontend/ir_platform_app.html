@@ -1,0 +1,1825 @@
+<!DOCTYPE html>
+<html lang="en" data-palette="#2a78d6,#eb6834,#1baf7a,#eda100">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IR Question-Intelligence Platform</title>
+<style>
+/* ───────────────────────────────────────────────────────────────────────────
+   Design tokens. Light is the base; dark is a selected set of steps for the
+   dark surface, declared under both the OS media query and the explicit
+   theme stamp so the toggle wins in either direction.
+   ─────────────────────────────────────────────────────────────────────────── */
+:root{
+  color-scheme: light;
+  --page:#f9f9f7; --surface:#fcfcfb; --surface-2:#f2f1ee; --surface-3:#eae9e4;
+  --ink:#0b0b0b; --ink-2:#52514e; --ink-muted:#898781;
+  --hairline:#e1e0d9; --baseline:#c3c2b7; --ring:rgba(11,11,11,.10);
+  --accent:#2a78d6; --accent-soft:#cde2fb; --accent-track:#e4eefc;
+  --s2:#eb6834; --s3:#1baf7a; --s4:#eda100;
+  --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+  --good-ink:#006300;
+  --r:10px; --r-sm:6px;
+  --shadow:0 1px 2px rgba(11,11,11,.04), 0 1px 8px rgba(11,11,11,.03);
+}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])){
+    color-scheme: dark;
+    --page:#0d0d0d; --surface:#1a1a19; --surface-2:#232322; --surface-3:#2c2c2a;
+    --ink:#ffffff; --ink-2:#c3c2b7; --ink-muted:#898781;
+    --hairline:#2c2c2a; --baseline:#383835; --ring:rgba(255,255,255,.10);
+    --accent:#3987e5; --accent-soft:#184f95; --accent-track:#1e2a3a;
+    --s2:#d95926; --s3:#199e70; --s4:#c98500;
+    --good-ink:#0ca30c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 1px 8px rgba(0,0,0,.2);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --page:#0d0d0d; --surface:#1a1a19; --surface-2:#232322; --surface-3:#2c2c2a;
+  --ink:#ffffff; --ink-2:#c3c2b7; --ink-muted:#898781;
+  --hairline:#2c2c2a; --baseline:#383835; --ring:rgba(255,255,255,.10);
+  --accent:#3987e5; --accent-soft:#184f95; --accent-track:#1e2a3a;
+  --s2:#d95926; --s3:#199e70; --s4:#c98500;
+  --good-ink:#0ca30c;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 1px 8px rgba(0,0,0,.2);
+}
+
+*{box-sizing:border-box;}
+/* `hidden` must beat any author display rule. Without this, an element styled
+   `display:flex` renders even while the attribute is set, because [hidden] is
+   only display:none in the UA stylesheet. */
+[hidden]{display:none !important;}
+html,body{height:100%;}
+body{
+  margin:0; background:var(--page); color:var(--ink);
+  font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;
+  display:grid; grid-template-columns:236px 1fr;
+}
+h1,h2,h3,h4{margin:0; font-weight:600; letter-spacing:-.01em;}
+h1{font-size:21px;} h2{font-size:17px;} h3{font-size:14px;} h4{font-size:13px;}
+p{margin:0 0 .7em;}
+a{color:var(--accent);}
+button{font:inherit; cursor:pointer;}
+::selection{background:var(--accent-soft);}
+
+/* ── Sidebar ─────────────────────────────────────────────────────────────── */
+.sidebar{
+  background:var(--surface); border-right:1px solid var(--hairline);
+  display:flex; flex-direction:column; height:100vh; position:sticky; top:0;
+}
+.brand{padding:18px 18px 14px; border-bottom:1px solid var(--hairline);}
+.brand-mark{display:flex; align-items:center; gap:9px;}
+.brand-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);flex:none;}
+.brand-name{font-size:13.5px;font-weight:650;letter-spacing:-.01em;}
+.brand-sub{margin-top:3px;font-size:11.5px;color:var(--ink-muted);}
+nav{padding:10px 8px; flex:1; overflow-y:auto;}
+.nav-item{
+  display:flex; align-items:center; gap:10px; width:100%;
+  padding:8px 10px; margin-bottom:2px; border:0; border-radius:var(--r-sm);
+  background:transparent; color:var(--ink-2); font-size:13.5px; text-align:left;
+}
+.nav-item:hover{background:var(--surface-2); color:var(--ink);}
+.nav-item[aria-current="page"]{background:var(--surface-2); color:var(--ink); font-weight:600;}
+.nav-item svg{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.7;}
+.nav-sep{margin:12px 10px 6px; font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-muted);}
+.side-foot{padding:12px 14px; border-top:1px solid var(--hairline); font-size:11.5px; color:var(--ink-muted);}
+.side-foot .row{display:flex;justify-content:space-between;gap:8px;padding:2px 0;}
+.theme-btn{margin-top:9px;width:100%;padding:6px;border:1px solid var(--hairline);border-radius:var(--r-sm);background:var(--surface);color:var(--ink-2);font-size:12px;}
+.theme-btn:hover{background:var(--surface-2);}
+
+/* ── Main ────────────────────────────────────────────────────────────────── */
+main{min-width:0; height:100vh; overflow-y:auto;}
+.topbar{
+  position:sticky; top:0; z-index:20; background:var(--surface);
+  border-bottom:1px solid var(--hairline); padding:14px 24px;
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+}
+.topbar .sub{font-size:12.5px;color:var(--ink-muted);margin-top:2px;}
+.topbar-spacer{flex:1;}
+.view{display:none; padding:22px 24px 64px; max-width:1240px;}
+.view.active{display:block;}
+
+/* ── Primitives ──────────────────────────────────────────────────────────── */
+.card{background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r); box-shadow:var(--shadow);}
+.card + .card{margin-top:14px;}
+.pad{padding:16px 18px;}
+.card-head{padding:14px 18px; border-bottom:1px solid var(--hairline); display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+.card-head h2,.card-head h3{flex:none;}
+.muted{color:var(--ink-muted);}
+.dim{color:var(--ink-2);}
+.small{font-size:12.5px;}
+.xs{font-size:11.5px;}
+.chip{
+  display:inline-flex; align-items:center; gap:5px; padding:2px 8px;
+  border:1px solid var(--hairline); border-radius:20px; background:var(--surface-2);
+  font-size:11.5px; color:var(--ink-2); white-space:nowrap;
+}
+.chip-accent{border-color:var(--accent); color:var(--accent); background:transparent;}
+.q-badge{
+  display:inline-flex; align-items:center; padding:2px 8px; border-radius:var(--r-sm);
+  background:var(--surface-3); color:var(--ink-2); font-size:11.5px; font-weight:600;
+  letter-spacing:.02em; text-transform:uppercase; font-variant-numeric:tabular-nums;
+}
+.btn{
+  padding:7px 14px; border:1px solid var(--hairline); border-radius:var(--r-sm);
+  background:var(--surface); color:var(--ink); font-size:13px; font-weight:500;
+}
+.btn:hover:not(:disabled){background:var(--surface-2);}
+.btn:disabled{opacity:.45; cursor:not-allowed;}
+.btn-primary{background:var(--accent); border-color:var(--accent); color:#fff;}
+.btn-primary:hover:not(:disabled){filter:brightness(1.07); background:var(--accent);}
+.btn-sm{padding:4px 10px; font-size:12px;}
+input[type=text],input[type=search],select,textarea{
+  width:100%; padding:8px 11px; border:1px solid var(--hairline); border-radius:var(--r-sm);
+  background:var(--surface); color:var(--ink); font:inherit; font-size:13.5px;
+}
+input:focus-visible,select:focus-visible,textarea:focus-visible,.btn:focus-visible,.nav-item:focus-visible{
+  outline:2px solid var(--accent); outline-offset:1px;
+}
+select{cursor:pointer;}
+.row{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+table{width:100%; border-collapse:collapse; font-size:13px;}
+th,td{text-align:left; padding:8px 10px; border-bottom:1px solid var(--hairline);}
+th{font-size:11px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-muted);}
+td.num,th.num{text-align:right; font-variant-numeric:tabular-nums;}
+tbody tr:last-child td{border-bottom:0;}
+details>summary{cursor:pointer; font-size:12.5px; color:var(--accent); list-style:none;}
+details>summary::-webkit-details-marker{display:none;}
+details>summary::before{content:"▸"; display:inline-block; margin-right:6px;}
+details[open]>summary::before{content:"▾";}
+.status{display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600;}
+.status svg{width:13px;height:13px;stroke-width:2.2;fill:none;stroke:currentColor;}
+.st-good{color:var(--good-ink);} .st-warn{color:var(--serious);} .st-bad{color:var(--critical);}
+.empty{padding:34px 18px; text-align:center; color:var(--ink-muted); font-size:13px;}
+.spinner{width:14px;height:14px;border:2px solid var(--accent-track);border-top-color:var(--accent);border-radius:50%;display:inline-block;animation:spin .7s linear infinite;vertical-align:-2px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── Charts: bars ≤24px thick, 4px rounded data-end square at baseline,
+      hairline solid gridlines, direct value labels, hover tooltip. ──────── */
+.hbar{display:grid; grid-template-columns:minmax(90px,190px) 1fr auto; gap:10px; align-items:center; padding:3px 0;}
+.hbar-label{font-size:12.5px; color:var(--ink-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.hbar-track{height:10px; background:var(--surface-3); border-radius:0 2px 2px 0; position:relative;}
+.hbar-track.meter{background:var(--accent-track);}
+.hbar-fill{height:100%; background:var(--accent); border-radius:0 4px 4px 0; min-width:2px;}
+.hbar-fill.tone-good{background:var(--good);} .hbar-fill.tone-warn{background:var(--warning);}
+.hbar-fill.tone-serious{background:var(--serious);} .hbar-fill.tone-critical{background:var(--critical);}
+.hbar-value{font-size:12px; color:var(--ink-2); font-variant-numeric:tabular-nums; min-width:34px; text-align:right;}
+#tip{
+  position:fixed; z-index:100; pointer-events:none; opacity:0; transition:opacity .1s;
+  background:var(--ink); color:var(--page); padding:5px 9px; border-radius:var(--r-sm);
+  font-size:11.5px; max-width:260px; box-shadow:0 2px 10px rgba(0,0,0,.25);
+}
+
+/* ── Stat tiles / hero ───────────────────────────────────────────────────── */
+.tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(168px,1fr)); gap:12px;}
+.tile{background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r); padding:14px 16px;}
+.tile-label{font-size:11.5px; color:var(--ink-muted); margin-bottom:6px;}
+.tile-value{font-size:26px; font-weight:600; letter-spacing:-.02em; line-height:1.1;}
+.tile-delta{font-size:11.5px; margin-top:5px; color:var(--ink-2);}
+.hero{padding:20px 22px;}
+.hero-value{font-size:52px; font-weight:650; letter-spacing:-.03em; line-height:1;}
+.hero-label{font-size:12.5px; color:var(--ink-muted); margin-bottom:8px;}
+
+/* ── Toolbar: analyst picker + quarter chips ─────────────────────────────── */
+.toolbar{display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;}
+.field{display:flex; flex-direction:column; gap:6px; min-width:0;}
+.field.grow{flex:1; min-width:280px;}
+.field>label{font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-muted);}
+.field select{min-width:260px;}
+.chips-row{display:flex; gap:6px; flex-wrap:wrap; align-items:center;}
+.chip-btn{
+  padding:5px 11px; border:1px solid var(--hairline); border-radius:20px;
+  background:var(--surface); color:var(--ink-2); font-size:12px; font-variant-numeric:tabular-nums;
+}
+.chip-btn:hover{border-color:var(--accent); color:var(--ink);}
+.chip-btn[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600;}
+.verified{
+  display:inline-flex; align-items:center; gap:7px; padding:5px 11px;
+  border:1px solid var(--hairline); border-radius:var(--r-sm); background:var(--surface-2);
+  font-size:11.5px; color:var(--ink-2);
+}
+.verified .tick{color:var(--good-ink); font-weight:700;}
+.sec-label{font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); margin:0 0 9px;}
+.takeaway{font-size:15.5px; line-height:1.55; color:var(--ink); max-width:74ch;}
+.takeaway b{font-weight:650;}
+.starters{margin-top:14px;}
+.starters-head{display:flex; align-items:center; gap:10px; margin-bottom:8px;}
+.starter-list{display:grid; gap:8px;}
+.starter{
+  display:flex; align-items:center; gap:10px; text-align:left; width:100%;
+  padding:10px 13px; border:1px solid var(--hairline); border-radius:var(--r-sm);
+  background:var(--surface); color:var(--ink-2); font-size:13.5px; line-height:1.4;
+  transition:border-color .12s, color .12s;
+}
+.starter:hover{border-color:var(--accent); color:var(--ink);}
+.starter .kind{
+  flex:none; font-size:10px; letter-spacing:.06em; text-transform:uppercase;
+  padding:2px 7px; border-radius:4px; background:var(--accent-track); color:var(--accent); font-weight:650;
+}
+.starter .arrow{margin-left:auto; color:var(--ink-muted); flex:none;}
+.icon-btn{
+  display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border:1px solid var(--hairline);
+  border-radius:var(--r-sm); background:var(--surface); color:var(--ink-2); font-size:12px;
+}
+.icon-btn:hover{border-color:var(--accent); color:var(--ink);}
+.icon-btn svg{width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:2;}
+
+.prompt-group{margin-top:14px;}
+.prompt-group>.sec-label{margin-bottom:7px;}
+.prompt-row{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+.prompt-pill{
+  display:flex; align-items:flex-start; gap:8px; text-align:left; padding:9px 13px;
+  border:1px solid var(--hairline); border-radius:20px; background:var(--surface);
+  color:var(--ink-2); font-size:13px; line-height:1.4;
+}
+.prompt-pill::before{content:"•"; color:var(--accent); font-size:15px; line-height:1.1; flex:none;}
+.prompt-pill:hover{border-color:var(--accent); color:var(--ink);}
+@media (max-width:760px){.prompt-row{grid-template-columns:1fr;}}
+
+/* ── Two-pane (profiles) ─────────────────────────────────────────────────── */
+.split{display:grid; grid-template-columns:292px 1fr; gap:16px; align-items:start;}
+.pane-list{position:sticky; top:78px;}
+.list-scroll{max-height:calc(100vh - 190px); overflow-y:auto;}
+.a-row{
+  display:block; width:100%; text-align:left; border:0; background:transparent;
+  padding:9px 12px; border-bottom:1px solid var(--hairline); color:var(--ink-2);
+}
+.a-row:hover{background:var(--surface-2);}
+.a-row[aria-selected="true"]{background:var(--surface-2); box-shadow:inset 2px 0 0 var(--accent);}
+.a-row .nm{font-size:13.5px; color:var(--ink); font-weight:500;}
+.a-row[aria-selected="true"] .nm{font-weight:650;}
+.a-row .mt{font-size:11.5px; color:var(--ink-muted); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+/* ── Conversation thread ─────────────────────────────────────────────────── */
+.exchange{margin-top:14px;}
+.ex-head{padding:12px 18px; border-bottom:1px solid var(--hairline); display:flex; gap:9px; align-items:center; flex-wrap:wrap;}
+.thread{padding:6px 18px 14px;}
+.msg{padding:13px 0; border-bottom:1px solid var(--hairline);}
+.msg:last-child{border-bottom:0;}
+.msg-head{display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;}
+.msg-who{font-size:12.5px; font-weight:650;}
+.role-tag{font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-muted);}
+.role-tag.is-followup{color:var(--accent);}
+.msg-analyst .msg-who{color:var(--accent);}
+.msg-body{font-size:14px; line-height:1.62; color:var(--ink-2); max-width:74ch;}
+.msg-mgmt .msg-body{padding-left:12px; border-left:2px solid var(--hairline);}
+.clamped{max-height:10.5em; overflow:hidden; position:relative;}
+.clamped::after{
+  content:""; position:absolute; left:0; right:0; bottom:0; height:3.2em;
+  background:linear-gradient(to bottom,transparent,var(--surface));
+}
+.more-btn{margin-top:6px; border:0; background:transparent; color:var(--accent); font-size:12.5px; padding:0;}
+
+/* ── Why-panel ───────────────────────────────────────────────────────────── */
+.why{margin:4px 18px 16px; border:1px solid var(--hairline); border-radius:var(--r-sm); background:var(--surface-2);}
+.why>summary{padding:10px 14px;}
+.why-body{padding:4px 14px 14px; display:grid; gap:12px;}
+.ev{border-left:2px solid var(--accent); padding:2px 0 2px 11px;}
+.ev-t{font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-muted); margin-bottom:4px;}
+.ev-q{font-size:13px; color:var(--ink-2); line-height:1.55; max-width:74ch;}
+blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseline); color:var(--ink-2); font-size:12.5px; line-height:1.55;}
+
+/* ── Chat ────────────────────────────────────────────────────────────────── */
+.chat-shell{display:flex; gap:16px; align-items:stretch;}
+.chat-wrap{display:flex; flex-direction:column; height:calc(100vh - 150px); min-height:460px; flex:1; min-width:0;}
+
+/* User turns sit right, assistant turns left — the usual conversation shape. */
+.turn.is-user{display:flex; justify-content:flex-end; border-bottom:0; padding:10px 0 4px;}
+.bubble-user{
+  background:var(--accent); color:#fff; padding:10px 14px;
+  border-radius:14px 14px 4px 14px; max-width:min(76%, 58ch);
+  font-size:14.5px; line-height:1.55; white-space:pre-wrap; word-break:break-word;
+}
+.turn.is-assistant{padding-top:10px;}
+
+/* Citation panel: docked beside the conversation on desktop, an overlay below it. */
+.cite-panel{
+  width:390px; flex:none; display:flex; flex-direction:column;
+  background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r);
+  box-shadow:var(--shadow); height:calc(100vh - 150px); min-height:460px;
+}
+.cite-head{
+  display:flex; align-items:center; gap:9px; padding:12px 14px;
+  border-bottom:1px solid var(--hairline); flex-wrap:wrap;
+}
+.cite-head #citeWho{
+  flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.cite-body{padding:14px; overflow-y:auto; flex:1;}
+.cite-quote{
+  font-size:13.5px; line-height:1.65; color:var(--ink-2);
+  padding-left:12px; border-left:2px solid var(--accent); white-space:pre-wrap;
+}
+.cite-nav{display:inline-flex; gap:4px;}
+.cite-nav button, .cite-x{
+  width:26px; height:26px; display:grid; place-items:center; padding:0;
+  border:1px solid var(--hairline); border-radius:var(--r-sm);
+  background:var(--surface); color:var(--ink-2); font-size:15px; line-height:1;
+}
+.cite-nav button:hover, .cite-x:hover{border-color:var(--accent); color:var(--ink);}
+.cite-nav button:disabled{opacity:.35; cursor:not-allowed;}
+.src-btn{
+  display:inline-flex; align-items:center; gap:7px; margin-top:11px; padding:5px 11px;
+  border:1px solid var(--hairline); border-radius:20px; background:var(--surface);
+  color:var(--ink-2); font-size:12px;
+}
+.src-btn:hover{border-color:var(--accent); color:var(--ink);}
+@media (max-width:1000px){
+  .cite-panel{
+    position:fixed; top:0; right:0; bottom:0; z-index:60; height:100vh;
+    width:min(420px, 94vw); border-radius:0; border-right:0;
+  }
+}
+.chat-log{flex:1; overflow-y:auto; padding:6px 2px 10px;}
+.turn{padding:14px 0; border-bottom:1px solid var(--hairline);}
+.turn:last-child{border-bottom:0;}
+.turn-head{display:flex; align-items:center; gap:8px; margin-bottom:7px;}
+.avatar{width:20px;height:20px;border-radius:5px;display:grid;place-items:center;font-size:10.5px;font-weight:700;flex:none;}
+.av-user{background:var(--surface-3); color:var(--ink-2);}
+.av-bot{background:var(--accent); color:#fff;}
+.turn-name{font-size:12.5px; font-weight:650;}
+.turn-body{font-size:14.5px; line-height:1.65; max-width:76ch;}
+.turn-body>*:last-child{margin-bottom:0;}
+.turn-body h3{margin:14px 0 6px; font-size:14.5px;}
+.turn-body ul,.turn-body ol{margin:0 0 .7em; padding-left:20px;}
+.turn-body li{margin:3px 0;}
+.turn-body code{background:var(--surface-2); padding:1px 5px; border-radius:4px; font-size:12.5px; font-family:ui-monospace,SFMono-Regular,Consolas,monospace;}
+.turn-body pre{background:var(--surface-2); padding:11px 13px; border-radius:var(--r-sm); overflow-x:auto; font-size:12.5px;}
+.turn-body pre code{background:none; padding:0;}
+.turn-body table{margin:8px 0; font-size:12.5px;}
+.turn-body blockquote{margin:7px 0;}
+.cite-chip{
+  display:inline-block; min-width:17px; height:17px; padding:0 4px; margin:0 1px;
+  border:1px solid var(--accent); border-radius:4px; background:transparent;
+  color:var(--accent); font-size:10.5px; font-weight:650; line-height:15px; text-align:center;
+  vertical-align:1px;
+}
+.cite-chip:hover,.cite-chip[aria-expanded="true"]{background:var(--accent); color:#fff;}
+.caret{display:inline-block; width:7px; height:15px; background:var(--accent); vertical-align:-3px; animation:blink 1s steps(2) infinite;}
+@keyframes blink{50%{opacity:0;}}
+.sources{margin-top:11px;}
+.src{padding:10px 12px; border:1px solid var(--hairline); border-radius:var(--r-sm); background:var(--surface-2); margin-top:7px;}
+.src.hl{border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-track);}
+.src-head{display:flex; gap:8px; align-items:center; margin-bottom:5px; flex-wrap:wrap;}
+.src-n{width:17px;height:17px;border-radius:4px;background:var(--accent);color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center;flex:none;}
+.src-body{font-size:12.5px; line-height:1.55; color:var(--ink-2); max-width:74ch;}
+.composer{border-top:1px solid var(--hairline); padding:12px 0 0;}
+.composer-box{display:flex; gap:9px; align-items:flex-end; border:1px solid var(--hairline); border-radius:var(--r); background:var(--surface); padding:9px 10px;}
+.composer-box:focus-within{border-color:var(--accent);}
+.composer textarea{border:0; background:transparent; resize:none; max-height:150px; padding:2px 0; font-size:14px;}
+.composer textarea:focus-visible{outline:none;}
+.prompt-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(228px,1fr)); gap:10px; margin-top:14px;}
+.prompt-card{
+  text-align:left; padding:12px 14px; border:1px solid var(--hairline); border-radius:var(--r);
+  background:var(--surface); color:var(--ink-2); font-size:13px; line-height:1.45;
+}
+.prompt-card:hover{border-color:var(--accent); color:var(--ink);}
+.prompt-card b{display:block; color:var(--ink); font-size:12px; font-weight:650; margin-bottom:3px;}
+.seg{display:inline-flex; border:1px solid var(--hairline); border-radius:var(--r-sm); overflow:hidden;}
+.seg button{border:0; background:var(--surface); color:var(--ink-2); padding:6px 15px; font-size:13px;}
+.seg button[aria-pressed="true"]{background:var(--accent); color:#fff; font-weight:600;}
+
+/* ── Misc ────────────────────────────────────────────────────────────────── */
+.notice{
+  display:flex; gap:9px; align-items:flex-start; padding:9px 12px; margin-top:10px;
+  border:1px solid var(--hairline); border-left:3px solid var(--warning);
+  border-radius:var(--r-sm); background:var(--surface-2); font-size:12.5px;
+  line-height:1.5; color:var(--ink-2);
+}
+.notice.calm{border-left-color:var(--accent);}
+.notice b{color:var(--ink);}
+.run-progress{display:grid; gap:5px; margin-top:12px; font-size:12.5px; color:var(--ink-2);}
+.run-progress .bigline{font-size:13.5px; color:var(--ink);}
+
+.drop{border:1.5px dashed var(--baseline); border-radius:var(--r); padding:22px; text-align:center; background:var(--surface-2);}
+.drop.over{border-color:var(--accent); background:var(--accent-track);}
+.flag{padding:11px 13px; border:1px solid var(--hairline); border-left:3px solid var(--serious); border-radius:var(--r-sm); background:var(--surface-2); margin-top:8px;}
+.flag-q{font-size:12.5px; line-height:1.55; color:var(--ink-2); margin-top:5px; max-width:78ch;}
+.grid-2{display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:start;}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+@media (max-width:1080px){ .split,.grid-2{grid-template-columns:1fr;} .pane-list{position:static;} }
+@media (max-width:820px){
+  body{grid-template-columns:1fr;}
+  .sidebar{position:static;height:auto;}
+  nav{display:flex;overflow-x:auto;padding:8px;} .nav-item{white-space:nowrap;} .nav-sep,.side-foot{display:none;}
+}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark"><span class="brand-dot"></span><span class="brand-name">IR Question Intelligence</span></div>
+    <div class="brand-sub">Axis Bank · analyst-relations</div>
+  </div>
+  <nav id="nav">
+    <div class="nav-sep">Research</div>
+    <button class="nav-item" data-view="profiles" aria-current="page">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/></svg>
+      Analyst profiles</button>
+    <button class="nav-item" data-view="chat">
+      <svg viewBox="0 0 24 24"><path d="M20 14.5c0 1.4-1.1 2.5-2.5 2.5H9l-4 3v-3H6.5A2.5 2.5 0 0 1 4 14.5v-7A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5z"/></svg>
+      Search &amp; chat</button>
+    <div class="nav-sep">Prediction</div>
+    <button class="nav-item" data-view="predict">
+      <svg viewBox="0 0 24 24"><path d="M4 18 9 11l4 3.5L20 6"/><path d="M15 6h5v5"/></svg>
+      Run prediction</button>
+    <button class="nav-item" data-view="eval">
+      <svg viewBox="0 0 24 24"><path d="M5 20V10M12 20V5M19 20v-7"/></svg>
+      Evaluation</button>
+    <div class="nav-sep">Data</div>
+    <button class="nav-item" data-view="ingest">
+      <svg viewBox="0 0 24 24"><path d="M12 15V4"/><path d="M8 8l4-4 4 4"/><path d="M4 16v2.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V16"/></svg>
+      Ingest transcript</button>
+  </nav>
+  <div class="side-foot">
+    <div class="row" style="gap:6px;margin-bottom:8px;">
+      <span id="llmDot" style="width:7px;height:7px;border-radius:50%;background:var(--ink-muted);flex:none;"></span>
+      <span id="llmLabel" class="xs">checking…</span>
+    </div>
+    <div class="row"><span>Analysts</span><span class="dim" id="cAnalysts">—</span></div>
+    <div class="row"><span>Quarters</span><span class="dim" id="cQuarters">—</span></div>
+    <div class="row"><span>Indexed passages</span><span class="dim" id="cCorpus">—</span></div>
+    <button class="theme-btn" id="themeBtn">Switch theme</button>
+  </div>
+</aside>
+
+<main>
+  <div class="topbar">
+    <div><h1 id="pageTitle">Analyst profiles</h1><div class="sub" id="pageSub">—</div></div>
+    <div class="topbar-spacer"></div>
+    <div class="row" id="topContext"></div>
+  </div>
+
+  <!-- ══ PROFILES ══════════════════════════════════════════════════════════ -->
+  <section class="view active" id="view-profiles">
+    <div class="card">
+      <div class="pad toolbar">
+        <div class="field">
+          <label for="analystPick">Analyst</label>
+          <select id="analystPick" aria-label="Select analyst"></select>
+        </div>
+        <div class="field grow">
+          <label>Quarter <span class="muted" style="text-transform:none;letter-spacing:0;" id="qFilterNote"></span></label>
+          <div class="chips-row" id="quarterChips"></div>
+        </div>
+      </div>
+    </div>
+    <div id="profileDetail"><div class="card"><div class="empty">Select an analyst.</div></div></div>
+  </section>
+
+  <!-- ══ SEARCH & CHAT ════════════════════════════════════════════════════ -->
+  <section class="view" id="view-chat">
+    <div class="row" style="margin-bottom:14px;">
+      <div class="seg" role="group" aria-label="Mode">
+        <button id="modeChat" aria-pressed="true">Chat</button>
+        <button id="modeSearch" aria-pressed="false">Structured search</button>
+      </div>
+      <span class="muted small" id="chatModeNote"></span>
+    </div>
+
+    <div id="chatPane">
+      <div class="chat-shell">
+      <div class="chat-wrap">
+        <div class="chat-log" id="chatLog"></div>
+        <div class="composer">
+          <div class="composer-box">
+            <textarea id="chatInput" rows="1" placeholder="Ask about the transcript archive — an analyst, a quarter, a topic…" aria-label="Message"></textarea>
+            <button class="btn btn-primary" id="chatSend">Send</button>
+            <button class="btn" id="chatStop" style="display:none;">Stop</button>
+          </div>
+          <div class="xs muted" style="margin-top:7px;">Answers are grounded in the transcript archive and cite their source passages. Enter to send · Shift+Enter for a new line.</div>
+        </div>
+      </div>
+
+      <aside class="cite-panel" id="citePanel" hidden aria-label="Cited source">
+        <div class="cite-head">
+          <span class="src-n" id="citeNum">1</span>
+          <b class="small" id="citeWho"></b>
+          <span class="q-badge" id="citeQuarter"></span>
+          <div class="topbar-spacer"></div>
+          <span class="cite-nav">
+            <button id="citePrev" title="Previous source" aria-label="Previous source">‹</button>
+            <button id="citeNext" title="Next source" aria-label="Next source">›</button>
+          </span>
+          <button class="cite-x" id="citeClose" title="Close" aria-label="Close source panel">×</button>
+        </div>
+        <div class="cite-body" id="citeBody"></div>
+      </aside>
+      </div>
+    </div>
+
+    <div id="searchPane" style="display:none;">
+      <div class="card"><div class="pad">
+        <input type="search" id="searchBox" placeholder='e.g. "who else covers Slippages & Asset Quality" · "compare Credit Cost across quarters"' aria-label="Search">
+        <div class="xs muted" style="margin-top:8px;">Query understanding extracts analyst / quarter / topic filters and detects relational and comparative intent. Retrieval fuses BM25 with a TF-IDF cosine semantic proxy via reciprocal rank fusion.</div>
+        <div class="starters" id="searchStarters" aria-label="Suggested searches">
+          <div class="starters-head">
+            <span class="sec-label" style="margin:0;">Try one of these</span>
+            <div class="topbar-spacer"></div>
+            <button class="icon-btn" id="startersShuffle" title="Show a different set">
+              <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 4v5h-5"/></svg>
+              Shuffle
+            </button>
+          </div>
+          <div class="starter-list" id="starterList"></div>
+        </div>
+      </div></div>
+      <div id="searchResults"></div>
+    </div>
+  </section>
+
+  <!-- ══ PREDICT ══════════════════════════════════════════════════════════ -->
+  <section class="view" id="view-predict">
+    <div class="card">
+      <div class="card-head">
+        <h2>Upcoming-quarter disclosure</h2>
+        <span class="chip" id="discState">none loaded</span>
+      </div>
+      <div class="pad">
+        <p class="small dim" style="max-width:78ch;">
+          Upload the draft disclosure script, investor presentation, press release or transcript for the
+          call you are preparing for. Prediction is then conditioned on the numbers management is about to
+          read out — which is the only way to anticipate arithmetic follow-ups on a bridge that has never
+          been disclosed before. Nothing is written to the archive.
+        </p>
+        <div class="drop" id="discDrop">
+          <input type="file" id="discFile" accept=".pdf,.txt,.md" style="display:none;">
+          <div class="small"><b>Drop a PDF or text file here</b> or <button class="btn btn-sm" id="discPick">choose a file</button></div>
+          <div class="xs muted" style="margin-top:6px;">Parsed locally — metrics, anomaly percentiles, topic salience and drill-down flags.</div>
+        </div>
+        <div id="discResult"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Run</h2></div>
+      <div class="pad">
+        <div class="row">
+          <label class="xs muted" for="runQuarter">Target quarter</label>
+          <select id="runQuarter" style="max-width:140px;"></select>
+          <label class="row xs muted" style="gap:5px;"><input type="checkbox" id="runHoldout" style="width:auto;"> Held-out mode (train only to <span id="cutoffLabel">cutoff</span>)</label>
+          <div class="topbar-spacer"></div>
+          <button class="btn" id="runOverall">Overall layer</button>
+          <select id="runAnalyst" style="max-width:190px;"><option value="">Analyst…</option></select>
+          <button class="btn" id="runAnalystBtn">Analyst layer</button>
+          <button class="btn btn-primary" id="runFull">Full pipeline</button>
+        </div>
+        <div class="xs muted" style="margin-top:9px;">
+          The Overall layer ranks topics independent of who asks. The Analyst layer reweights that ranking for one
+          analyst and runs the grounding gate. The full pipeline does both plus arithmetic follow-ups.
+        </div>
+        <div id="costNote"></div>
+      </div>
+    </div>
+    <div id="predictResult"></div>
+  </section>
+
+  <!-- ══ EVAL ═════════════════════════════════════════════════════════════ -->
+  <section class="view" id="view-eval">
+    <div class="card">
+      <div class="card-head">
+        <h2>Held-out evaluation</h2>
+        <span class="chip" id="evalScope">—</span>
+        <div class="topbar-spacer"></div>
+        <button class="btn btn-sm" id="evalRefresh">Re-run</button>
+      </div>
+      <div class="pad">
+        <p class="small dim" style="max-width:80ch;">
+          Each test quarter is scored separately against a training cutoff that excludes it and everything after
+          it — predicting Q1FY27 trains through Q4FY26, predicting Q4FY26 trains through Q3FY26. That is the
+          production setting: before a real call you do have every prior call. Scores are never averaged into a
+          single headline, and the spread between quarters is reported as a first-class number.
+        </p>
+      </div>
+    </div>
+    <div id="evalResult"><div class="card"><div class="empty"><span class="spinner"></span> Running the held-out evaluation…</div></div></div>
+  </section>
+
+  <!-- ══ INGEST ═══════════════════════════════════════════════════════════ -->
+  <section class="view" id="view-ingest">
+    <div class="card">
+      <div class="card-head"><h2>Ingest a quarter's transcript</h2></div>
+      <div class="pad">
+        <p class="small dim" style="max-width:78ch;">
+          <b>Preview</b> parses the PDF and shows what would be extracted — quarter, call date, analysts and
+          firms, and the extraction-quality monitor's fuzzy-match flags against the canonical registry —
+          writing nothing. <b>Commit</b> saves it into the archive, recompiles the dataset and graph, and
+          refreshes every view.
+        </p>
+        <div class="drop" id="ingDrop">
+          <input type="file" id="ingFile" accept=".pdf" style="display:none;">
+          <div class="small"><b>Drop a transcript PDF here</b> or <button class="btn btn-sm" id="ingPick">choose a file</button></div>
+          <div class="xs muted" id="ingName" style="margin-top:6px;">No file selected.</div>
+        </div>
+        <div class="row" style="margin-top:12px;">
+          <button class="btn" id="ingPreview">Preview (dry run)</button>
+          <button class="btn btn-primary" id="ingCommit" disabled>Commit to archive</button>
+          <label class="row xs muted" style="gap:5px;"><input type="checkbox" id="ingOverwrite" style="width:auto;"> overwrite existing quarter</label>
+        </div>
+      </div>
+    </div>
+    <div id="ingResult"></div>
+  </section>
+</main>
+
+<div id="tip" role="status"></div>
+
+<script>
+"use strict";
+/* ═══════════════════════════════════════════════════════════════════════════
+   Utilities
+   ═══════════════════════════════════════════════════════════════════════════ */
+const FX = window.__FIXTURE__ || null;   // visual-QA mode: render without a backend
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => (
+  {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pct = v => v == null ? "—" : (v * 100).toFixed(0) + "%";
+const f2 = v => v == null ? "—" : Number(v).toFixed(2);
+const QU = q => String(q || "").toUpperCase();
+
+const ICON = {
+  good: '<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>',
+  bad: '<svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  warn: '<svg viewBox="0 0 24 24"><path d="M12 9v5M12 17.5v.01"/><path d="M10.3 4.3 2.8 18a1.5 1.5 0 0 0 1.3 2.2h15.8a1.5 1.5 0 0 0 1.3-2.2L13.7 4.3a1.5 1.5 0 0 0-2.6 0z"/></svg>',
+};
+const statusHTML = (ok, label) =>
+  `<span class="status ${ok ? "st-good" : "st-bad"}">${ok ? ICON.good : ICON.bad}${esc(label)}</span>`;
+
+async function api(path, opts) {
+  if (FX) return fixture(path, opts);
+  const r = await fetch(path, opts);
+  if (!r.ok && r.status !== 404) {
+    let d = {};
+    try { d = await r.json(); } catch (e) {}
+    throw new Error(d.error || `${r.status} ${r.statusText}`);
+  }
+  return r.json();
+}
+const postJSON = (path, body) => api(path, {
+  method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {})
+});
+
+function fixture(path) {
+  if (path.startsWith("/api/meta")) return Promise.resolve(FX.meta);
+  if (path.startsWith("/api/analysts")) return Promise.resolve(FX.analysts);
+  if (path.startsWith("/api/dossier")) {
+    const n = decodeURIComponent(path.split("analyst=")[1] || "");
+    return Promise.resolve(FX.dossiers[n] || Object.values(FX.dossiers)[0]);
+  }
+  if (path.startsWith("/api/eval/holdout")) return Promise.resolve(FX.eval);
+  if (path.startsWith("/api/search")) return Promise.resolve(FX.search);
+  if (path.startsWith("/api/disclosure")) return Promise.resolve(FX.disclosure);
+  if (path.startsWith("/api/agentic")) return Promise.resolve({ present: false });
+  return Promise.resolve({});
+}
+
+/* Shared hover tooltip — bar charts get a real tooltip, not a title attribute. */
+const tip = $("#tip");
+function bindTip(el, text) {
+  el.addEventListener("mouseenter", () => { tip.textContent = text; tip.style.opacity = 1; });
+  el.addEventListener("mousemove", e => {
+    tip.style.left = Math.min(e.clientX + 12, innerWidth - tip.offsetWidth - 8) + "px";
+    tip.style.top = (e.clientY - tip.offsetHeight - 8) + "px";
+  });
+  el.addEventListener("mouseleave", () => { tip.style.opacity = 0; });
+}
+
+/** Horizontal bars. rows: [{label, value, display, tone, tipText}] */
+function barsHTML(rows, opts = {}) {
+  const max = opts.max ?? (Math.max(...rows.map(r => r.value), 0) || 1);
+  return rows.map((r, i) => `
+    <div class="hbar">
+      <div class="hbar-label" title="${esc(r.label)}">${esc(r.label)}</div>
+      <div class="hbar-track${opts.meter ? " meter" : ""}">
+        <div class="hbar-fill${r.tone ? " tone-" + r.tone : ""}" data-tip="${esc(r.tipText || r.label + ": " + (r.display ?? r.value))}"
+             style="width:${Math.max(1.5, (r.value / max) * 100)}%"></div>
+      </div>
+      <div class="hbar-value">${esc(r.display ?? r.value)}</div>
+    </div>`).join("");
+}
+function activateBars(root) {
+  root.querySelectorAll(".hbar-fill[data-tip]").forEach(el => bindTip(el, el.dataset.tip));
+}
+
+/* Minimal markdown → HTML. Inline, so the page has no CDN dependency and
+   works air-gapped. Handles what the chat actually emits. */
+function md(src) {
+  const blocks = [];
+  let s = String(src || "").replace(/```([\s\S]*?)```/g, (_, c) => {
+    blocks.push(c.replace(/^\w*\n/, "")); return ` CODE${blocks.length - 1} `;
+  });
+  s = esc(s);
+  const inline = t => t
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/(^|[\s(])_([^_]+)_/g, "$1<em>$2</em>")
+    .replace(/\*([^*\n]+)\*/g, "<em>$1</em>")
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\[(\d+)\]/g, (_, n) => `<button class="cite-chip" data-n="${n}" aria-expanded="false">${n}</button>`);
+
+  const out = [];
+  const lines = s.split("\n");
+  let i = 0;
+  while (i < lines.length) {
+    const L = lines[i];
+    if (/^\s*$/.test(L)) { i++; continue; }
+    if (/^ CODE\d+ $/.test(L.trim())) {
+      out.push(`<pre><code>${esc(blocks[+L.trim().match(/\d+/)[0]])}</code></pre>`); i++; continue;
+    }
+    let m = L.match(/^(#{1,4})\s+(.*)$/);
+    if (m) { out.push(`<h3>${inline(m[2])}</h3>`); i++; continue; }
+    if (/^\s*\|/.test(L) && /^\s*\|?[\s:|-]+\|/.test(lines[i + 1] || "")) {
+      const cells = r => r.trim().replace(/^\||\|$/g, "").split("|").map(c => c.trim());
+      const head = cells(L); i += 2;
+      const body = [];
+      while (i < lines.length && /^\s*\|/.test(lines[i])) { body.push(cells(lines[i])); i++; }
+      out.push(`<table><thead><tr>${head.map(h => `<th>${inline(h)}</th>`).join("")}</tr></thead><tbody>${
+        body.map(r => `<tr>${r.map(c => `<td>${inline(c)}</td>`).join("")}</tr>`).join("")}</tbody></table>`);
+      continue;
+    }
+    if (/^\s*>/.test(L)) {
+      const buf = [];
+      while (i < lines.length && /^\s*>/.test(lines[i])) { buf.push(lines[i].replace(/^\s*>\s?/, "")); i++; }
+      out.push(`<blockquote>${inline(buf.join(" "))}</blockquote>`); continue;
+    }
+    if (/^\s*[-*+]\s+/.test(L) || /^\s*\d+\.\s+/.test(L)) {
+      const ord = /^\s*\d+\./.test(L);
+      const items = [];
+      while (i < lines.length && (/^\s*[-*+]\s+/.test(lines[i]) || /^\s*\d+\.\s+/.test(lines[i]))) {
+        items.push(lines[i].replace(/^\s*(?:[-*+]|\d+\.)\s+/, "")); i++;
+      }
+      out.push(`<${ord ? "ol" : "ul"}>${items.map(t => `<li>${inline(t)}</li>`).join("")}</${ord ? "ol" : "ul"}>`);
+      continue;
+    }
+    // Always consume at least the current line, so the loop cannot stall on a
+    // line that looks like a block start but no branch claimed — which happens
+    // mid-stream when a table's header has arrived but its separator row has
+    // not yet. Without this the renderer spins forever on a partial table.
+    const para = [lines[i]]; i++;
+    while (i < lines.length && !/^\s*$/.test(lines[i]) && !/^(#{1,4}\s|\s*[-*+]\s|\s*\d+\.\s|\s*>|\s*\|)/.test(lines[i])) {
+      para.push(lines[i]); i++;
+    }
+    out.push(`<p>${inline(para.join(" "))}</p>`);
+  }
+  return out.join("");
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Shell: nav, theme, meta
+   ═══════════════════════════════════════════════════════════════════════════ */
+const TITLES = {
+  profiles: ["Analyst profiles", "Full question threads, management responses, and why each question was asked"],
+  chat: ["Search & chat", "Grounded retrieval across every transcript in the archive"],
+  predict: ["Run prediction", "Condition on the upcoming quarter's disclosure, then run the agentic layers"],
+  eval: ["Evaluation", "Held-out results, promotion gate, and failure attribution"],
+  ingest: ["Ingest transcript", "Parse, inspect extraction quality, then commit to the archive"],
+};
+let STATE = { meta: null, analysts: [], selected: null, dossier: null,
+              quarterFilter: "all", disclosure: null, evalData: null };
+
+function show(view) {
+  document.querySelectorAll(".nav-item").forEach(b =>
+    b.dataset.view === view ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
+  document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", v.id === "view-" + view));
+  $("#pageTitle").textContent = TITLES[view][0];
+  $("#pageSub").textContent = TITLES[view][1];
+  if (view === "eval" && !STATE.evalData) loadEval();
+  window.scrollTo(0, 0);
+}
+$("#nav").addEventListener("click", e => {
+  const b = e.target.closest(".nav-item"); if (b) show(b.dataset.view);
+});
+$("#themeBtn").addEventListener("click", () => {
+  const cur = document.documentElement.getAttribute("data-theme");
+  const next = cur === "dark" ? "light" : cur === "light" ? "dark"
+    : (matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "dark");
+  document.documentElement.setAttribute("data-theme", next);
+  try { localStorage.setItem("ir-theme", next); } catch (e) {}
+});
+try { const t = localStorage.getItem("ir-theme"); if (t) document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+
+async function boot() {
+  const meta = await api("/api/meta");
+  STATE.meta = meta;
+  $("#cAnalysts").textContent = meta.counts.analysts;
+  $("#cQuarters").textContent = meta.counts.quarters;
+  $("#cCorpus").textContent = meta.counts.corpus_docs;
+  // label follows the selected target: predicting Q1FY27 trains through Q4FY26,
+  // predicting Q4FY26 trains through Q3FY26.
+  const priorOf = q => {
+    const i = (STATE.meta?.quarters || []).indexOf(q);
+    return i > 0 ? STATE.meta.quarters[i - 1] : null;
+  };
+  window.updateCutoffLabel = () => {
+    const q = $("#runQuarter").value || meta.default_quarter;
+    const prev = priorOf(q);
+    $("#cutoffLabel").textContent = prev ? QU(prev) : "the prior quarter";
+  };
+  const llmOn = meta.llm.available;
+  $("#llmDot").style.background = llmOn ? "var(--good)" : "var(--ink-muted)";
+  $("#llmLabel").textContent = llmOn ? `LLM: ${meta.llm.active}` : "LLM unreachable · retrieval only";
+  $("#chatModeNote").textContent = llmOn
+    ? "Answers are synthesised by the model and cite their sources."
+    : "No model reachable — answers are retrieval-only, showing the actual matching passages.";
+  const rolling = (meta.cutoff_mode || "rolling") === "rolling";
+  $("#topContext").innerHTML =
+    `<span class="chip">${rolling ? "Rolling cutoff · trains through the prior quarter"
+                                  : "Fixed cutoff " + QU(meta.train_cutoff)}</span>` +
+    `<span class="chip">Held out ${meta.test_quarters.map(QU).join(" · ")}</span>`;
+  $("#evalScope").textContent = rolling
+    ? `${meta.test_quarters.map(QU).join(" + ")} · each trained through its prior quarter`
+    : `${meta.test_quarters.map(QU).join(" + ")} vs fixed cutoff ${QU(meta.train_cutoff)}`;
+
+  const rq = $("#runQuarter");
+  meta.quarters.slice().reverse().forEach(q =>
+    rq.insertAdjacentHTML("beforeend", `<option value="${q}"${q === meta.default_quarter ? " selected" : ""}>${QU(q)}</option>`));
+
+  updateCutoffLabel();
+  $("#runQuarter").addEventListener("change", updateCutoffLabel);
+
+  STATE.analysts = await api("/api/analysts");
+  const pick = $("#analystPick"), ra = $("#runAnalyst");
+  pick.innerHTML = "";
+  STATE.analysts.forEach(a => {
+    const label = `${a.analyst} — ${a.firm || "firm not recorded"} (${a.n_questions})`;
+    pick.insertAdjacentHTML("beforeend", `<option value="${esc(a.analyst)}">${esc(label)}</option>`);
+    ra.insertAdjacentHTML("beforeend", `<option>${esc(a.analyst)}</option>`);
+  });
+  if (STATE.analysts.length) selectAnalyst(STATE.analysts[0].analyst);
+  // Repaint the chat empty state now that the counts are actually known —
+  // it first renders before boot() resolves, so the numbers would read blank.
+  if (!chatHistory.length) renderEmptyChat();
+  renderStarters();
+  startStarterRotation();
+  renderCostNote();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Analyst profiles
+   ═══════════════════════════════════════════════════════════════════════════ */
+const INTENT_LABEL = {
+  narration_triggered: ["Reacting to a fresh disclosure", "This quarter's prepared remarks prompted it, not a standing interest."],
+  persona_consistent: ["Recurring interest", "Matches their own long-run topic pattern."],
+  unexplained: ["No clear precedent", "Maps to neither their history nor this quarter's narration."],
+};
+
+function quarterChips(quarters, active) {
+  // Latest quarter first, always — the most recent call is what anyone opens this for.
+  const btns = [`<button class="chip-btn" data-q="all" aria-pressed="${active === "all"}">All quarters</button>`];
+  quarters.slice().reverse().forEach(q =>
+    btns.push(`<button class="chip-btn" data-q="${q}" aria-pressed="${active === q}">${QU(q)}</button>`));
+  return btns.join("");
+}
+
+async function selectAnalyst(name, keepFilter) {
+  STATE.selected = name;
+  if (!keepFilter) STATE.quarterFilter = "all";
+  const pick = $("#analystPick");
+  if (pick.value !== name) pick.value = name;
+
+  const host = $("#profileDetail");
+  if (!STATE.dossier || STATE.dossier.analyst !== name) {
+    host.innerHTML = `<div class="card"><div class="empty"><span class="spinner"></span> Loading ${esc(name)}…</div></div>`;
+    $("#quarterChips").innerHTML = "";
+    try { STATE.dossier = await api("/api/dossier?analyst=" + encodeURIComponent(name)); }
+    catch (err) {
+      host.innerHTML = `<div class="card"><div class="empty">Could not load: ${esc(err.message)}</div></div>`;
+      return;
+    }
+  }
+  renderProfile();
+}
+
+function renderProfile() {
+  const d = STATE.dossier;
+  if (!d) return;
+  const name = d.analyst;
+  const meta = STATE.analysts.find(a => a.analyst === name) || {};
+  const qs = d.quarters_covered || [];
+  const filter = STATE.quarterFilter || "all";
+
+  $("#quarterChips").innerHTML = quarterChips(qs, filter);
+  const shown = filter === "all" ? d.exchanges : d.exchanges.filter(e => e.quarter === filter);
+  $("#qFilterNote").textContent = filter === "all"
+    ? `· all ${qs.length} calls, newest first`
+    : `· ${shown.length} exchange${shown.length === 1 ? "" : "s"} in ${QU(filter)}`;
+
+  const topics = Object.entries(d.topic_counts || {}).sort((a, b) => b[1] - a[1]);
+  const top = topics[0];
+
+  let html = `
+  <div class="card">
+    <div class="pad">
+      <h2>${esc(name)}</h2>
+      <div class="small muted" style="margin-top:4px;">
+        ${esc(meta.firm || "Firm not recorded")} · ${esc(meta.bank || "Axis Bank")} coverage ·
+        ${qs.length} call${qs.length === 1 ? "" : "s"}${qs.length ? ` (${QU(qs[0])} → ${QU(qs[qs.length - 1])})` : ""} ·
+        ${d.n_exchanges} exchange${d.n_exchanges === 1 ? "" : "s"}
+      </div>
+      ${top ? `<div class="takeaway" style="margin-top:14px;">
+        Most persistent theme: <b>${esc(top[0])}</b> — raised in ${top[1]} question${top[1] === 1 ? "" : "s"}
+        across ${qs.length} call${qs.length === 1 ? "" : "s"}.</div>` : ""}
+      ${d.hand_curated_persona?.style ? `
+        <div style="margin-top:14px;">
+          <div class="sec-label">Coverage style</div>
+          <div class="ev-q">${esc(d.hand_curated_persona.style)}
+            <span class="muted xs">— from published research</span></div>
+        </div>` : ""}
+      ${d.measured_style?.style_note ? `
+        <div style="margin-top:12px;">
+          <div class="sec-label">Measured style</div>
+          <div class="ev-q">${esc(d.measured_style.style_note)}
+            <span class="muted xs">— from ${d.measured_style.n} classified questions</span></div>
+        </div>` : ""}
+      <div style="margin-top:14px;">
+        <span class="verified"><span class="tick">✓</span> Every exchange below is taken verbatim from the Axis Bank earnings-call transcripts</span>
+      </div>
+    </div>
+  </div>`;
+
+  if (topics.length) {
+    html += `<div class="card"><div class="card-head"><h3>What they ask about</h3>
+      <span class="muted xs">questions per topic, all history</span></div>
+      <div class="pad">${barsHTML(topics.map(([t, c]) => ({
+        label: t, value: c, display: c, tipText: `${t}: ${c} question${c === 1 ? "" : "s"}`
+      })))}</div></div>`;
+  }
+
+  html += `<div class="card-head" style="border:0;padding:22px 0 2px;">
+      <h2>Question history</h2>
+      <span class="muted small">newest first · full threads, management responses, follow-up reactions</span>
+    </div>`;
+
+  html += shown.length ? shown.map(renderExchange).join("")
+    : `<div class="card"><div class="empty">No exchanges in ${QU(filter)}.</div></div>`;
+
+  const host = $("#profileDetail");
+  host.innerHTML = html;
+  activateBars(host);
+  host.querySelectorAll(".more-btn").forEach(b => b.addEventListener("click", () => {
+    b.previousElementSibling.classList.remove("clamped"); b.remove();
+  }));
+}
+
+function renderExchange(ex, xi) {
+  let seenAnalyst = 0;
+  const thread = ex.thread.map(m => {
+    const isA = m.role === "analyst";
+    if (isA) seenAnalyst++;
+    const tag = isA ? (seenAnalyst === 1 ? "Question" : "Follow-up reaction") : "Management response";
+    const long = (m.text || "").length > 640;
+    return `<div class="msg ${isA ? "msg-analyst" : "msg-mgmt"}">
+      <div class="msg-head">
+        <span class="msg-who">${esc(m.speaker)}</span>
+        <span class="role-tag ${isA && seenAnalyst > 1 ? "is-followup" : ""}">${tag}</span>
+      </div>
+      <div class="msg-body ${long ? "clamped" : ""}">${esc(m.text)}</div>
+      ${long ? `<button class="more-btn">Show full text</button>` : ""}
+    </div>`;
+  }).join("");
+
+  const w = ex.why || {};
+  const ev = [];
+  if (w.intent) {
+    const [lab, hint] = INTENT_LABEL[w.intent] || [w.intent, ""];
+    ev.push(`<div class="ev"><div class="ev-t">Classification</div>
+      <div class="ev-q"><b>${esc(lab)}.</b> ${esc(hint)}
+      ${w.intent_evidence ? `<blockquote>${esc(w.intent_evidence)}</blockquote>` : ""}</div></div>`);
+  }
+  if (w.follows_up_on?.length) {
+    ev.push(`<div class="ev"><div class="ev-t">They had asked this before</div>` +
+      w.follows_up_on.map(f => `<div class="ev-q" style="margin-bottom:6px;">
+        <span class="q-badge">${QU(f.quarter)}</span>
+        <blockquote>${esc((f.text || "").slice(0, 300))}…</blockquote></div>`).join("") + `</div>`);
+  }
+  if (w.narration_trigger?.length) {
+    ev.push(`<div class="ev" style="border-left-color:var(--s2);"><div class="ev-t">Management had just disclosed</div>` +
+      w.narration_trigger.slice(0, 2).map(n => `<div class="ev-q" style="margin-bottom:6px;">
+        <b>${esc(n.speaker)}</b><blockquote>${esc((n.text || "").slice(0, 340))}…</blockquote></div>`).join("") + `</div>`);
+  }
+  if (w.metric_context?.length) {
+    ev.push(`<div class="ev" style="border-left-color:var(--s4);">
+      <div class="ev-t">The number behind it</div>
+      ${barsHTML(w.metric_context.map(m => ({
+        label: `${m.metric} ${m.value ?? ""}${m.value_unit || ""}`,
+        value: m.anomaly_percentile ?? 0,
+        display: m.anomaly_percentile == null ? "—" : f2(m.anomaly_percentile),
+        tone: (m.anomaly_percentile ?? 0) >= .8 ? "critical" : (m.anomaly_percentile ?? 0) >= .6 ? "serious" : null,
+        tipText: `${m.metric}: ${m.direction || ""} ${m.delta ?? ""}${m.delta_unit || ""} ${m.period || ""} — anomaly percentile ${f2(m.anomaly_percentile)} against its own history`
+      })), { meter: true })}
+      <div class="xs muted" style="margin-top:5px;">Bar shows how unusual the move was against that metric's own history (1.00 = its largest ever).</div>
+    </div>`);
+  }
+  if (w.recurrence?.length) {
+    ev.push(`<div class="ev" style="border-left-color:var(--s3);"><div class="ev-t">How much of a theme this is for them</div>
+      ${w.recurrence.map(r => `<div class="ev-q" style="margin-bottom:3px;">
+        ${esc(r.topic)} — asked in <b>${r.asked_in_calls} of ${r.of_calls_attended}</b> calls${
+        r.vs_global ? `, <b>${r.vs_global}×</b> the rate across all analysts` : ""}</div>`).join("")}</div>`);
+  }
+
+  return `<article class="card exchange">
+    <div class="ex-head">
+      <span class="q-badge">${QU(ex.quarter)}</span>
+      <span class="muted xs">${esc(ex.call_date || "")}</span>
+      ${ex.topics.map(t => `<span class="chip">${esc(t)}</span>`).join("")}
+      <div class="topbar-spacer"></div>
+      <span class="verified"><span class="tick">✓</span> ${QU(ex.quarter)} transcript ·
+        ${ex.thread.length} turns · ${ex.responders.length} responder${ex.responders.length === 1 ? "" : "s"}</span>
+    </div>
+    <div class="thread">${thread}</div>
+    ${ev.length ? `<details class="why"${xi === 0 ? " open" : ""}>
+      <summary>Why they asked — ${ev.length} piece${ev.length === 1 ? "" : "s"} of evidence</summary>
+      <div class="why-body">${ev.join("")}</div></details>` : ""}
+  </article>`;
+}
+
+$("#analystPick").addEventListener("change", e => { STATE.dossier = null; selectAnalyst(e.target.value); });
+$("#quarterChips").addEventListener("click", e => {
+  const b = e.target.closest(".chip-btn");
+  if (!b) return;
+  STATE.quarterFilter = b.dataset.q;
+  renderProfile();
+  document.querySelector("#view-profiles .card-head h2")?.scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Chat
+   ═══════════════════════════════════════════════════════════════════════════ */
+// Grouped rather than a flat row: the groups tell you what the archive can
+// actually answer, which is most of the value of a starting prompt.
+const PROMPT_GROUPS = [
+  ["Start here", [
+    "What were the three most contested topics on the last call?",
+    "Summarise what analysts pushed hardest on in Q1FY27",
+  ]],
+  ["The numbers", [
+    "What has management said about NIM and deposit repricing?",
+    "Compare Credit Cost & Provisions across quarters",
+  ]],
+  ["The analysts", [
+    "How has Mahrukh Adajania's questioning on NIM changed over recent quarters?",
+    "Who else covers Slippages & Asset Quality?",
+  ]],
+];
+let chatHistory = [], chatAbort = null;
+
+function renderEmptyChat() {
+  $("#chatLog").innerHTML = `
+    <div style="padding:26px 2px;">
+      <h2 style="font-size:18px;">Ask the transcript archive</h2>
+      <p class="small dim" style="max-width:66ch;margin-top:7px;">
+        Every question, answer and prepared-remarks segment from
+        ${STATE.meta?.counts.quarters ?? ""} Axis Bank earnings calls is indexed —
+        ${STATE.meta?.counts.corpus_docs ?? ""} passages in all. Answers quote them directly and
+        cite the quarter and speaker; nothing is summarised from outside the archive.
+      </p>
+      <div style="margin-top:10px;">
+        <span class="verified"><span class="tick">✓</span> Grounded in the transcripts · every claim cites its source</span>
+      </div>
+      ${PROMPT_GROUPS.map(([label, qs]) => `
+        <div class="prompt-group">
+          <div class="sec-label">${esc(label)}</div>
+          <div class="prompt-row">
+            ${qs.map(q => `<button class="prompt-pill" data-q="${esc(q)}">${esc(q)}</button>`).join("")}
+          </div>
+        </div>`).join("")}
+    </div>`;
+  $("#chatLog").querySelectorAll(".prompt-pill").forEach(b =>
+    b.addEventListener("click", () => { $("#chatInput").value = b.dataset.q; sendChat(); }));
+}
+
+function turnEl(role, name) {
+  const el = document.createElement("div");
+  if (role === "user") {
+    el.className = "turn is-user";
+    el.innerHTML = `<div class="bubble-user"></div>`;
+  } else {
+    el.className = "turn is-assistant";
+    el.innerHTML = `<div class="turn-head">
+        <span class="avatar av-bot" aria-hidden="true">IR</span>
+        <span class="turn-name">${esc(name)}</span>
+        <div class="topbar-spacer"></div>
+        <span class="xs muted turn-status"></span>
+      </div><div class="turn-body"></div><div class="sources"></div>`;
+  }
+  $("#chatLog").appendChild(el);
+  return el;
+}
+const scrollChat = () => { const l = $("#chatLog"); l.scrollTop = l.scrollHeight; };
+
+/* ── Cited-source side panel ──────────────────────────────────────────────
+   Clicking a [n] chip opens the passage beside the conversation rather than
+   pushing it below the answer, so you can read the quote and the answer that
+   cites it at the same time. Closes with the ×, or Escape. */
+let citeState = { passages: [], index: 0 };
+
+function openCitePanel(passages, index) {
+  if (!passages || !passages.length) return;
+  citeState = { passages, index: Math.max(0, Math.min(index, passages.length - 1)) };
+  renderCitePanel();
+  $("#citePanel").hidden = false;
+}
+function closeCitePanel() {
+  $("#citePanel").hidden = true;
+  document.querySelectorAll(".cite-chip[aria-expanded='true']")
+    .forEach(c => c.setAttribute("aria-expanded", "false"));
+}
+function renderCitePanel() {
+  const { passages, index } = citeState;
+  const p = passages[index];
+  if (!p) return;
+  $("#citeNum").textContent = index + 1;
+  $("#citeWho").textContent = p.who || "Management";
+  $("#citeQuarter").textContent = QU(p.quarter);
+  $("#citePrev").disabled = index === 0;
+  $("#citeNext").disabled = index === passages.length - 1;
+  $("#citeBody").innerHTML = `
+    <div class="row" style="gap:6px;margin-bottom:10px;">
+      <span class="chip">${esc(p.type)}</span>
+      ${(p.topics || []).map(t => `<span class="chip">${esc(t)}</span>`).join("")}
+    </div>
+    <div class="cite-quote">${esc(p.text || "")}</div>
+    <div class="xs muted" style="margin-top:14px;">
+      Source ${index + 1} of ${passages.length} · quoted verbatim from the ${QU(p.quarter)} transcript
+    </div>`;
+  $("#citeBody").scrollTop = 0;
+  // Mark which chip is currently showing.
+  document.querySelectorAll(".cite-chip").forEach(c =>
+    c.setAttribute("aria-expanded", String(+c.dataset.n === index + 1)));
+}
+$("#citeClose").addEventListener("click", closeCitePanel);
+$("#citePrev").addEventListener("click", () => { citeState.index--; renderCitePanel(); });
+$("#citeNext").addEventListener("click", () => { citeState.index++; renderCitePanel(); });
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !$("#citePanel").hidden) closeCitePanel();
+});
+
+function wireCites(turn, passages) {
+  turn._passages = passages;
+  turn.querySelectorAll(".cite-chip").forEach(chip => chip.addEventListener("click", () => {
+    openCitePanel(passages, (+chip.dataset.n) - 1);
+  }));
+  const btn = turn.querySelector(".src-btn");
+  if (btn) btn.addEventListener("click", () => openCitePanel(passages, 0));
+}
+function sourcesHTML(passages) {
+  return `<button class="src-btn">▤ ${passages.length} source passage${passages.length === 1 ? "" : "s"}</button>`;
+}
+
+/* Structured search shows its matches inline — it IS a results list, so there
+   is nothing to collapse behind a button. */
+function passageListHTML(passages) {
+  return passages.map((p, i) => `<div class="src" data-n="${i + 1}">
+      <div class="src-head"><span class="src-n">${i + 1}</span>
+        <span class="q-badge">${QU(p.quarter)}</span>
+        <b class="small">${esc(p.who)}</b><span class="xs muted">${esc(p.type)}</span>
+        ${(p.topics || []).slice(0, 3).map(t => `<span class="chip">${esc(t)}</span>`).join("")}
+      </div>
+      <div class="src-body">${esc((p.text || "").slice(0, 700))}${(p.text || "").length > 700 ? "…" : ""}</div>
+    </div>`).join("");
+}
+
+async function sendChat() {
+  const input = $("#chatInput");
+  const msg = input.value.trim();
+  if (!msg || chatAbort) return;
+  if (!chatHistory.length) $("#chatLog").innerHTML = "";
+  input.value = ""; input.style.height = "auto";
+
+  const ut = turnEl("user", "You");
+  ut.querySelector(".bubble-user").textContent = msg;
+  chatHistory.push({ role: "user", content: msg });
+  scrollChat();
+
+  const bt = turnEl("assistant", "IR Intelligence");
+  const body = bt.querySelector(".turn-body");
+  const status = bt.querySelector(".turn-status");
+  status.innerHTML = `<span class="spinner"></span> searching the archive`;
+  $("#chatSend").style.display = "none"; $("#chatStop").style.display = "";
+  scrollChat();
+
+  let acc = "", passages = [];
+  const paint = () => { body.innerHTML = md(acc) + `<span class="caret"></span>`; };
+
+  try {
+    if (FX) {   // visual-QA mode: stream the fixture answer
+      passages = FX.chat_passages || [];
+      status.textContent = "retrieval only";
+      const demo = `Across the archive, **NIM & Yields** is the most persistent thread in her questioning [1].\n\n- In Q1FY27 she opened on the structural NIM target and where it stands [1]\n- Management's response tied it to deposit repricing and balance-sheet mix [2]\n\n| Quarter | Focus |\n| --- | --- |\n| Q1FY27 | NIM target, opex run-rate |\n| Q4FY26 | Margin trajectory |`;
+      for (const w of demo.split(" ")) { acc += w + " "; paint(); await new Promise(r => setTimeout(r, 8)); }
+    } else {
+      chatAbort = new AbortController();
+      const resp = await fetch("/api/chat/stream", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg, history: chatHistory.slice(0, -1) }),
+        signal: chatAbort.signal,
+      });
+      const reader = resp.body.getReader(), dec = new TextDecoder();
+      let buf = "";
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const parts = buf.split("\n\n"); buf = parts.pop();
+        for (const part of parts) {
+          let ev = "message", data = "";
+          part.split("\n").forEach(l => {
+            if (l.startsWith("event: ")) ev = l.slice(7).trim();
+            else if (l.startsWith("data: ")) data += l.slice(6);
+          });
+          if (!data) continue;
+          const d = JSON.parse(data);
+          if (ev === "meta") status.innerHTML = `<span class="spinner"></span> ${d.n_passages} passages retrieved`;
+          else if (ev === "mode") status.textContent = d.mode === "llm" ? "model answer · grounded" : "retrieval only";
+          else if (ev === "delta") { acc += d.text; paint(); scrollChat(); }
+          else if (ev === "citations") passages = d;
+        }
+      }
+    }
+  } catch (err) {
+    if (err.name !== "AbortError") acc += `\n\n_Error: ${err.message}_`;
+  }
+
+  body.innerHTML = md(acc);
+  if (passages.length) {
+    bt.querySelector(".sources").innerHTML = sourcesHTML(passages);
+    wireCites(bt, passages);
+  }
+  const copy = document.createElement("button");
+  copy.className = "btn btn-sm"; copy.textContent = "Copy"; copy.style.marginTop = "10px";
+  copy.addEventListener("click", () => navigator.clipboard?.writeText(acc));
+  bt.querySelector(".sources").prepend(copy);
+
+  chatHistory.push({ role: "assistant", content: acc });
+  chatAbort = null;
+  $("#chatSend").style.display = ""; $("#chatStop").style.display = "none";
+  scrollChat();
+}
+$("#chatSend").addEventListener("click", sendChat);
+$("#chatStop").addEventListener("click", () => { chatAbort?.abort(); chatAbort = null; });
+$("#chatInput").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChat(); }
+});
+$("#chatInput").addEventListener("input", e => {
+  e.target.style.height = "auto";
+  e.target.style.height = Math.min(e.target.scrollHeight, 150) + "px";
+});
+$("#modeChat").addEventListener("click", () => {
+  $("#modeChat").setAttribute("aria-pressed", "true"); $("#modeSearch").setAttribute("aria-pressed", "false");
+  $("#chatPane").style.display = ""; $("#searchPane").style.display = "none";
+});
+$("#modeSearch").addEventListener("click", () => {
+  $("#modeSearch").setAttribute("aria-pressed", "true"); $("#modeChat").setAttribute("aria-pressed", "false");
+  $("#searchPane").style.display = ""; $("#chatPane").style.display = "none";
+});
+
+/* ── Structured search: rotating starter queries ─────────────────────────────
+   Built from the data that is actually loaded — real analyst names, real
+   taxonomy topics, real quarters — so a suggestion can never point at
+   something the archive doesn't contain. One of each kind is shown where
+   possible, since the three kinds are exactly what structured search can do
+   that a plain text box doesn't advertise. */
+let starterTimer = null, startersLocked = false;
+
+function buildStarterPool() {
+  const topics = (STATE.meta?.topics || []);
+  const quarters = (STATE.meta?.quarters || []).slice().reverse().slice(0, 6);
+  // Analysts with enough history that the query returns something worth reading.
+  const analysts = STATE.analysts.filter(a => a.n_questions >= 5);
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  if (!topics.length || !analysts.length) return [];
+
+  const pool = { relational: [], comparative: [], lookup: [] };
+  topics.forEach(t => {
+    pool.relational.push(`Who else covers ${t}?`);
+    pool.comparative.push(`Compare ${t} across quarters`);
+  });
+  analysts.forEach(a => {
+    const t = pick(a.top_topics && a.top_topics.length ? a.top_topics : topics);
+    pool.lookup.push(`What did ${a.analyst} ask about ${t}?`);
+    pool.lookup.push(`${a.analyst} ${t} ${QU(pick(quarters))}`);
+  });
+  topics.forEach(t => pool.lookup.push(`What has management said about ${t}?`));
+  return pool;
+}
+
+function renderStarters() {
+  const host = $("#starterList");
+  if (!host) return;
+  const pool = buildStarterPool();
+  if (!pool.relational) { host.innerHTML = ""; return; }
+
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const chosen = [
+    { kind: "relational", q: pick(pool.relational) },
+    { kind: "comparative", q: pick(pool.comparative) },
+    { kind: "lookup", q: pick(pool.lookup) },
+  ].sort(() => Math.random() - 0.5);   // vary the order too
+
+  host.innerHTML = chosen.map(c => `
+    <button class="starter" data-q="${esc(c.q)}">
+      <span class="kind">${c.kind}</span>
+      <span>${esc(c.q)}</span>
+      <span class="arrow">→</span>
+    </button>`).join("");
+}
+
+function stopStarterRotation() {
+  startersLocked = true;
+  if (starterTimer) { clearInterval(starterTimer); starterTimer = null; }
+}
+function startStarterRotation() {
+  if (starterTimer || startersLocked) return;
+  // Gentle: a new set every 12s, and never while the pointer is over them.
+  starterTimer = setInterval(() => {
+    if (!startersLocked && !$("#searchStarters").matches(":hover")) renderStarters();
+  }, 12000);
+}
+
+$("#starterList").addEventListener("click", e => {
+  const b = e.target.closest(".starter");
+  if (!b) return;
+  stopStarterRotation();
+  $("#searchBox").value = b.dataset.q;
+  runSearch(b.dataset.q);
+});
+$("#startersShuffle").addEventListener("click", () => {
+  renderStarters();
+  if (starterTimer) { clearInterval(starterTimer); starterTimer = null; startStarterRotation(); }
+});
+
+/* ── Structured search ───────────────────────────────────────────────────── */
+let searchT;
+$("#searchBox").addEventListener("input", e => {
+  stopStarterRotation();
+  clearTimeout(searchT); const q = e.target.value;
+  searchT = setTimeout(() => runSearch(q), 240);
+});
+async function runSearch(q) {
+  const host = $("#searchResults");
+  if (!q.trim()) { host.innerHTML = ""; return; }
+  host.innerHTML = `<div class="card"><div class="empty"><span class="spinner"></span> Searching…</div></div>`;
+  const d = await postJSON("/api/search", { query: q });
+  const f = d.filters || {};
+  let html = `<div class="card"><div class="card-head"><h3>Query understanding</h3></div><div class="pad">
+    <span class="chip chip-accent">intent: ${esc(f.intent)}</span>
+    ${f.analyst ? `<span class="chip">analyst: ${esc(f.analyst)}</span>` : ""}
+    ${f.quarter ? `<span class="chip">quarter: ${QU(f.quarter)}</span>` : ""}
+    ${f.topic ? `<span class="chip">topic: ${esc(f.topic)}</span>` : ""}
+  </div></div>`;
+  if (d.table) {
+    html += `<div class="card"><div class="card-head"><h3>${esc(d.table.title)}</h3></div><div class="pad">
+      <table><thead><tr>${d.table.columns.map((c, i) => `<th class="${i ? "num" : ""}">${esc(c)}</th>`).join("")}</tr></thead>
+      <tbody>${d.table.rows.map(r => `<tr>${r.map((v, i) => `<td class="${i ? "num" : ""}">${esc(v)}</td>`).join("")}</tr>`).join("")}</tbody>
+      </table></div></div>`;
+  }
+  html += `<div class="card"><div class="card-head"><h3>Passages</h3><span class="muted xs">${(d.passages || []).length} matches, cited</span></div>
+    <div class="pad">${(d.passages || []).length ? passageListHTML(d.passages) : `<div class="empty">No matches.</div>`}</div></div>`;
+  host.innerHTML = html;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Prediction
+   ═══════════════════════════════════════════════════════════════════════════ */
+$("#discPick").addEventListener("click", () => $("#discFile").click());
+$("#discFile").addEventListener("change", e => e.target.files[0] && parseDisclosure(e.target.files[0]));
+const dd = $("#discDrop");
+["dragover", "dragleave", "drop"].forEach(ev => dd.addEventListener(ev, e => {
+  e.preventDefault(); dd.classList.toggle("over", ev === "dragover");
+  if (ev === "drop" && e.dataTransfer.files[0]) parseDisclosure(e.dataTransfer.files[0]);
+}));
+
+async function parseDisclosure(file) {
+  const host = $("#discResult");
+  host.innerHTML = `<div class="pad"><span class="spinner"></span> Parsing ${esc(file.name)}…</div>`;
+  let d;
+  try {
+    if (FX) d = await api("/api/disclosure");
+    else {
+      const fd = new FormData(); fd.append("file", file, file.name); fd.append("holdout", "true");
+      d = await api("/api/disclosure/parse", { method: "POST", body: fd });
+    }
+  } catch (err) { host.innerHTML = `<div class="pad st-bad small">${esc(err.message)}</div>`; return; }
+  STATE.disclosure = d;
+  $("#discState").textContent = `${d.filename} · ${d.summary.metrics_found.length} metrics`;
+
+  const anom = Object.entries(d.anomaly_scores || {}).sort((a, b) => b[1] - a[1]);
+  const sal = Object.entries(d.topic_salience || {}).slice(0, 6);
+  host.innerHTML = `
+    <div class="grid-2" style="margin-top:14px;">
+      <div>
+        <h4 style="margin-bottom:8px;">Disclosed metrics</h4>
+        <table><thead><tr><th>Metric</th><th class="num">Value</th><th class="num">Change</th></tr></thead><tbody>
+        ${Object.entries(d.metrics).map(([m, r]) => `<tr><td>${esc(m)}</td>
+          <td class="num">${esc(r.value ?? "—")}${esc(r.value_unit || "")}</td>
+          <td class="num">${esc(r.direction || "")} ${esc(r.delta ?? "")}${esc(r.delta_unit || "")} ${esc(r.period || "")}</td></tr>`).join("")}
+        </tbody></table>
+      </div>
+      <div>
+        <h4 style="margin-bottom:8px;">How unusual each move is</h4>
+        <div id="anomBars">${barsHTML(anom.map(([t, v]) => ({
+          label: t, value: v, display: f2(v),
+          tone: v >= .8 ? "critical" : v >= .6 ? "serious" : null,
+          tipText: `${t}: percentile ${f2(v)} against this metric's own history`
+        })), { meter: true })}</div>
+        <div class="xs muted" style="margin-top:6px;">Percentile against the metric's own history, using only quarters up to ${QU(d.history_pool.through)}.</div>
+        <h4 style="margin:14px 0 8px;">What the document talks about</h4>
+        <div id="salBars">${barsHTML(sal.map(([t, v]) => ({ label: t, value: v, display: f2(v), tipText: `${t}: salience ${f2(v)}` })))}</div>
+      </div>
+    </div>
+    <div style="margin-top:16px;">
+      <h4>Drill-down risks — ${d.drill_down_flags.length} sentence${d.drill_down_flags.length === 1 ? "" : "s"} shaped to invite scrutiny</h4>
+      <div class="xs muted" style="margin-top:3px;">Multi-part bridges invite "does that add up" arithmetic checks; a stated change with no stated driver invites "what caused it".</div>
+      ${d.drill_down_flags.slice(0, 6).map(f => `<div class="flag">
+        <div class="row" style="gap:6px;">
+          ${f.reasons.map(r => `<span class="chip">${esc(r.replace(/_/g, " "))}</span>`).join("")}
+          <span class="xs muted">${f.numeric_components} numeric components</span>
+          ${(f.topics || []).slice(0, 2).map(t => `<span class="chip chip-accent">${esc(t)}</span>`).join("")}
+        </div>
+        <div class="flag-q">${esc(f.sentence)}</div>
+      </div>`).join("")}
+    </div>`;
+  activateBars(host);
+}
+
+const runBody = () => ({
+  quarter: $("#runQuarter").value,
+  holdout: $("#runHoldout").checked,
+  disclosure_id: STATE.disclosure?.disclosure_id || null,
+});
+
+/* ── What a run actually costs ──────────────────────────────────────────────
+   The free tier's binding constraint is tokens/minute, not requests/minute: a
+   Question-Framer prompt carries evidence passages, so it runs ~1.8k tokens a
+   call and only ~4-5 calls fit in a minute. Showing that up front is the
+   difference between "this is slow" and "this looks broken". */
+function estimateRun(kind) {
+  const lim = STATE.meta?.llm?.limits;
+  const A = STATE.meta?.active_analysts || 0;
+  if (!lim || !A) return null;
+  // best case = one call each; worst case = the verifier's 2 retries firing too
+  const calls = kind === "overall" ? [1, 3]
+              : kind === "analyst" ? [2, 6]          // overall (if uncached) + this analyst
+              : [1 + A, 3 + 3 * A + 3];              // full pipeline
+  const perMin = Math.max(1, Math.floor(lim.tpm / lim.approx_tokens_per_call));
+  return {
+    calls,
+    perMin,
+    mins: [Math.max(1, Math.ceil(calls[0] / perMin)), Math.ceil(calls[1] / perMin)],
+    lim,
+  };
+}
+
+function renderCostNote() {
+  const host = $("#costNote");
+  if (!host) return;
+  if (!STATE.meta?.llm?.available) {
+    host.innerHTML = `<div class="notice calm"><span>ℹ</span><span>No model is reachable, so runs
+      complete immediately and fall back to bare topics — no tokens are consumed.</span></div>`;
+    return;
+  }
+  const e = estimateRun("full");
+  if (!e) { host.innerHTML = ""; return; }
+  host.innerHTML = `<div class="notice"><span>⏳</span><span>
+    <b>Expect high token use — a full run takes a few minutes.</b>
+    Across ${STATE.meta.active_analysts} active analysts it makes roughly
+    <b>${e.calls[0]}–${e.calls[1]} model calls</b>. On ${e.lim.provider}'s ${e.lim.tier} tier
+    (${e.lim.tpm.toLocaleString()} tokens/min, ${e.lim.rpm}/min) that is about
+    ${e.perMin} calls a minute, so budget <b>~${e.mins[0]}–${e.mins[1]} minutes</b>.
+    Rate limits are handled automatically with backoff — the run continues, it just waits.
+    The Overall layer alone is ${estimateRun("overall").calls.join("–")} calls if you want a quick look first.
+  </span></div>`;
+}
+
+/* Live progress: poll the server's LLM counters so a throttled run explains
+   itself instead of sitting behind a spinner. */
+let runPoll = null;
+function busy(label, kind) {
+  const e = kind ? estimateRun(kind) : null;
+  const started = Date.now();
+  $("#predictResult").innerHTML = `<div class="card"><div class="pad">
+      <div class="row"><span class="spinner"></span> <b>${esc(label)}</b></div>
+      <div class="run-progress" id="runProgress">
+        <div class="bigline" id="runLine">starting…</div>
+        ${e ? `<div class="muted xs">estimated ${e.calls[0]}–${e.calls[1]} model calls · ~${e.mins[0]}–${e.mins[1]} min at ${e.lim.tpm.toLocaleString()} TPM</div>` : ""}
+      </div>
+      <div id="runThrottle"></div>
+    </div></div>`;
+
+  if (runPoll) clearInterval(runPoll);
+  if (!STATE.meta?.llm?.available) return;
+  const tick = async () => {
+    let st;
+    try { st = await api("/api/llm/stats"); } catch (err) { return; }
+    const secs = Math.round((Date.now() - started) / 1000);
+    const line = $("#runLine");
+    if (!line) return;
+    line.textContent = `${st.ok} of ${st.calls} model calls complete · ${secs}s elapsed`;
+    const th = $("#runThrottle");
+    if (st.rate_limited > 0 && th) {
+      th.innerHTML = `<div class="notice"><span>⏳</span><span>
+        <b>Waiting on the ${st.limits.tpm.toLocaleString()} tokens/min limit.</b>
+        ${st.rate_limited} rate-limit pause${st.rate_limited === 1 ? "" : "s"} so far,
+        ~${Math.round(st.wait_seconds)}s spent waiting. This is expected on the
+        ${st.limits.tier} tier and resolves on its own — the run is still going.
+      </span></div>`;
+    }
+  };
+  tick();
+  runPoll = setInterval(tick, 2000);
+}
+function runDone(stats) {
+  if (runPoll) { clearInterval(runPoll); runPoll = null; }
+  if (!stats || !stats.calls) return "";
+  const bits = [`${stats.ok}/${stats.calls} model calls`];
+  if (stats.elapsed_seconds) bits.push(`${stats.elapsed_seconds}s`);
+  if (stats.rate_limited) bits.push(`${stats.rate_limited} rate-limit pause${stats.rate_limited === 1 ? "" : "s"} (${Math.round(stats.wait_seconds)}s waiting)`);
+  if (stats.failed) bits.push(`${stats.failed} failed`);
+  return `<div class="notice calm" style="margin:0 0 14px;"><span>✓</span><span>Run complete — ${esc(bits.join(" · "))}.${
+    stats.failed ? " Calls that failed fall back to bare topics rather than invented text." : ""}</span></div>`;
+}
+
+$("#runOverall").addEventListener("click", async () => {
+  busy("Running the planning agent and Overall layer…", "overall");
+  const d = await postJSON("/api/run/overall", runBody());
+  renderOverall(d.overall, d.quarter, d.disclosure_conditioned, d.tool_log);
+  $("#predictResult").insertAdjacentHTML("afterbegin", runDone(d.llm_stats));
+});
+$("#runAnalystBtn").addEventListener("click", async () => {
+  const a = $("#runAnalyst").value;
+  if (!a) { alert("Pick an analyst."); return; }
+  busy(`Running the Analyst-Specific layer for ${a}…`, "analyst");
+  const d = await postJSON("/api/run/analyst", { ...runBody(), analyst: a });
+  renderAnalystRun(d);
+  $("#predictResult").insertAdjacentHTML("afterbegin", runDone(d.llm_stats));
+});
+$("#runFull").addEventListener("click", async () => {
+  busy("Running the full pipeline…", "full");
+  const d = await postJSON("/api/run/full", runBody());
+  renderFull(d.data, d.disclosure_conditioned);
+  $("#predictResult").insertAdjacentHTML("afterbegin", runDone(d.llm_stats));
+});
+
+function condChip(on) {
+  return `<span class="chip ${on ? "chip-accent" : ""}">${on ? "conditioned on uploaded disclosure" : "history only"}</span>`;
+}
+function renderOverall(overall, quarter, cond, toolLog) {
+  const comp = overall.composite_scores || {};
+  const rows = (overall.ranked_topics || []).map(t => ({
+    label: t, value: comp[t] ?? 0, display: f2(comp[t]),
+    tipText: `${t}: composite ${f2(comp[t])}`
+  }));
+  const host = $("#predictResult");
+  host.innerHTML = `<div class="card"><div class="card-head">
+      <h2>Topic brief — ${QU(quarter)}</h2>${condChip(cond)}
+      <div class="topbar-spacer"></div>
+      <span class="muted xs">${(toolLog || []).filter(t => t.status === "called").length} tool calls</span>
+    </div>
+    <div class="pad">
+      <div id="compBars">${barsHTML(rows)}</div>
+      <div class="xs muted" style="margin-top:8px;">Composite of metric anomaly, disclosure salience, cross-analyst momentum, long-run base rate and drill-down flags.</div>
+      <div style="margin-top:16px;">
+      ${(overall.ranked_topics || []).map((t, i) => {
+        const r = (overall.rationale || {})[t];
+        return `<div class="ev" style="margin-bottom:10px;">
+          <div class="ev-t">${i + 1} · ${esc(t)}</div>
+          <div class="ev-q">${r ? esc(r) : `<span class="status st-warn">${ICON.warn}Ranked, but no grounded rationale survived the verifier — shown as a bare topic rather than with unverified text.</span>`}</div>
+        </div>`;
+      }).join("")}
+      </div>
+    </div></div>`;
+  activateBars(host);
+}
+function slotHTML(items) {
+  return items.map(it => `<div class="ev" style="margin-bottom:9px;${it.question_text ? "" : "border-left-color:var(--serious);"}">
+      <div class="ev-t">${esc(it.topic)}</div>
+      <div class="ev-q">${it.question_text ? esc(it.question_text)
+        : `<span class="status st-warn">${ICON.warn}Bare topic — the verifier rejected the drafted wording twice, so no fabricated question is shown.</span>`}</div>
+    </div>`).join("");
+}
+function renderAnalystRun(d) {
+  $("#predictResult").innerHTML = `<div class="card"><div class="card-head">
+      <h2>${esc(d.analyst)} — ${QU(d.quarter)}</h2>${condChip(d.disclosure_conditioned)}
+    </div><div class="pad">
+      ${d.style_note ? `<div class="ev" style="margin-bottom:14px;"><div class="ev-t">Style used</div><div class="ev-q">${esc(d.style_note)}</div></div>` : ""}
+      ${slotHTML(d.topics || [])}
+    </div></div>`;
+}
+function renderFull(data, cond) {
+  const ot = data.overall_topics || {};
+  renderOverall({ ranked_topics: ot.ranked, rationale: ot.rationale, composite_scores: ot.composite_scores },
+    data.quarter, cond, data.planning_agent_tool_log);
+  const host = $("#predictResult");
+  const af = data.arithmetic_followups || {};
+  if (Object.keys(af).length) {
+    host.insertAdjacentHTML("beforeend", `<div class="card"><div class="card-head">
+      <h2>In-call arithmetic follow-ups</h2><span class="muted xs">generated from the disclosed bridge numbers</span></div>
+      <div class="pad">${Object.entries(af).map(([a, it]) =>
+        `<div class="ev" style="margin-bottom:9px;"><div class="ev-t">${esc(a)}</div><div class="ev-q">${esc(it.question)}</div></div>`).join("")}
+      </div></div>`);
+  }
+  const preds = data.analyst_predictions || {};
+  host.insertAdjacentHTML("beforeend", `<div class="card"><div class="card-head">
+    <h2>Per-analyst question sheet</h2><span class="muted xs">${Object.keys(preds).length} analysts</span></div>
+    <div class="pad">${Object.entries(preds).map(([a, o]) => `
+      <div style="margin-bottom:18px;"><h4 style="margin-bottom:7px;">${esc(a)}</h4>${slotHTML(o.topics)}</div>`).join("")}
+    </div></div>`);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Evaluation
+   ═══════════════════════════════════════════════════════════════════════════ */
+$("#evalRefresh").addEventListener("click", () => loadEval(true));
+async function loadEval(refresh) {
+  const host = $("#evalResult");
+  host.innerHTML = `<div class="card"><div class="empty"><span class="spinner"></span> Scoring both held-out quarters…</div></div>`;
+  let d;
+  try { d = await api("/api/eval/holdout" + (refresh ? "?refresh=true" : "")); }
+  catch (err) { host.innerHTML = `<div class="card"><div class="empty">Could not run: ${esc(err.message)}</div></div>`; return; }
+  STATE.evalData = d;
+  const s = d.summary, gate = d.promotion_gate;
+  const pass = gate.verdict === "PASS";
+
+  const sp = d.per_quarter[0]?.slot_policy;
+  let html = `<div class="card hero">
+      <div class="row" style="align-items:flex-start;gap:28px;">
+        <div>
+          <div class="hero-label">Topics that actually came up and were on the brief</div>
+          <div class="hero-value">${pct(s.mean_coverage_recall)}</div>
+          <div class="small dim" style="margin-top:8px;max-width:56ch;">
+            <b>${s.total_topics_covered} of ${s.total_topics_raised}</b> topics raised across both held-out calls were
+            predicted, from ${s.total_topics_predicted} predictions.
+            Recall ${pct(s.mean_recall)} · precision ${pct(s.mean_precision)} · F2 ${f2(s.mean_f2)} ·
+            recall spread between quarters ${pct(s.recall_spread)}.
+          </div>
+        </div>
+        <div class="topbar-spacer"></div>
+        <div style="text-align:right;">
+          <div class="hero-label">Promotion gate</div>
+          <div style="font-size:20px;font-weight:650;">${statusHTML(pass, gate.verdict)}</div>
+          <div class="xs muted" style="margin-top:5px;max-width:22ch;">recall floored, precision only guarded</div>
+        </div>
+      </div>
+      <div class="ev" style="margin-top:18px;">
+        <div class="ev-t">Objective</div>
+        <div class="ev-q small">Recall-first. A topic on the brief that never comes up costs a few minutes of
+        prep; a topic that comes up unprepared costs a bad answer on a recorded call. So the headline is
+        coverage, the reported F is <b>F2</b> (recall weighted twice precision), and over-prediction is a
+        deliberate trade${sp ? ` — each analyst gets their measured topic count + ${sp.extra} slots, capped at ${sp.cap}` : ""}.</div>
+      </div>
+    </div>`;
+
+  html += `<div class="tiles" style="margin-top:14px;">` + d.per_quarter.map(q => `
+      <div class="tile">
+        <div class="tile-label">${QU(q.quarter)} · trained through ${QU(q.train_cutoff)}</div>
+        <div class="tile-value">${pct(q.macro.recall)}</div>
+        <div class="tile-delta">recall · ${q.coverage.topics_covered}/${q.coverage.topics_actually_raised} covered from
+          ${q.coverage.topics_predicted} predicted · precision ${pct(q.macro.precision)} · ${q.n_analysts_scored} analysts</div>
+      </div>`).join("") + `
+      <div class="tile">
+        <div class="tile-label">Recall-weighted F2</div>
+        <div class="tile-value">${f2(s.mean_f2)}</div>
+        <div class="tile-delta">mean across both quarters · balanced F1 would read ${f2(s.mean_f1)}</div>
+      </div>
+      <div class="tile">
+        <div class="tile-label">Topics missed entirely</div>
+        <div class="tile-value">${d.per_quarter.reduce((a, q) => a + q.failure_attribution.total_misses, 0)}</div>
+        <div class="tile-delta">across both calls, each traced to a pipeline stage</div>
+      </div>
+    </div>`;
+
+  html += `<div class="card"><div class="card-head"><h3>Promotion gate checks</h3>
+      <span class="muted xs">a config must clear the recall floor and stay stable across both quarters</span></div>
+    <div class="pad">
+    <table><thead><tr><th>Check</th><th class="num">Measured</th><th class="num">Threshold</th><th>Result</th><th>What it is for</th></tr></thead><tbody>
+    ${Object.entries(gate.checks).map(([k, c]) => `<tr>
+      <td>${esc(k.replace(/_/g, " "))}</td>
+      <td class="num">${f2(c.value)}</td>
+      <td class="num">${f2(c.threshold)}</td>
+      <td>${statusHTML(c.pass, c.pass ? "pass" : "fail")}</td>
+      <td class="xs muted">${esc(c.note || "")}</td></tr>`).join("")}
+    </tbody></table></div></div>`;
+
+  const fa = d.failure_attribution_totals || {};
+  const FA_HELP = {
+    reasoning_weakness: "Signal was retrieved and current — the ranking still put it outside the analyst's slots. The only category that justifies a prompt change.",
+    retrieval_gap: "Signal was in the archive but never made the candidate list. Tune retrieval.",
+    lag: "They asked it last quarter and memory was stale. Tune update cadence.",
+    missing_context: "The signal was never ingested at all. Add a data source.",
+    unpredictable: "No precedent anywhere. Tracked separately, not chased.",
+  };
+  const faRows = Object.entries(fa).sort((a, b) => b[1] - a[1]);
+  html += `<div class="card"><div class="card-head"><h3>Failure attribution</h3>
+      <span class="muted xs">every miss traced to the stage that explains it</span></div>
+    <div class="pad">
+      <div id="faBars">${barsHTML(faRows.map(([k, v]) => ({
+        label: k.replace(/_/g, " "), value: v, display: v,
+        tipText: `${k.replace(/_/g, " ")}: ${v} miss${v === 1 ? "" : "es"} — ${FA_HELP[k] || ""}`
+      })))}</div>
+      <div style="margin-top:12px;">
+        ${faRows.map(([k]) => `<div class="ev" style="margin-bottom:7px;"><div class="ev-t">${esc(k.replace(/_/g, " "))}</div>
+          <div class="ev-q small">${esc(FA_HELP[k] || "")}</div></div>`).join("")}
+      </div>
+    </div></div>`;
+
+  d.per_quarter.forEach(q => {
+    const rows = Object.entries(q.per_analyst).sort((a, b) => b[1].recall - a[1].recall);
+    html += `<div class="card"><div class="card-head"><h3>${QU(q.quarter)} — coverage per analyst</h3>
+        <span class="muted xs">${q.n_analysts_scored} analysts who actually attended · bar is recall</span></div>
+      <div class="pad">
+        <div class="fa-bars">${barsHTML(rows.map(([a, v]) => ({
+          label: a, value: v.recall, display: pct(v.recall),
+          tone: v.recall >= 0.999 ? "good" : null,
+          tipText: `${a}: covered ${v.n_hits} of ${v.n_actual} topics raised, from ${v.n_predicted} predicted (precision ${pct(v.precision)})`
+        })), { max: 1 })}</div>
+        <details style="margin-top:12px;"><summary>Table view — predicted vs actual per analyst</summary>
+          <table style="margin-top:8px;"><thead><tr><th>Analyst</th><th>Covered</th><th>Missed</th><th class="num">Recall</th><th class="num">Pred.</th></tr></thead><tbody>
+          ${rows.map(([a, v]) => `<tr><td>${esc(a)}</td>
+            <td class="small">${v.hits.map(h => `<span class="chip">${esc(h)}</span>`).join(" ") || "—"}</td>
+            <td class="small">${v.missed.map(h => `<span class="chip">${esc(h)}</span>`).join(" ") || "—"}</td>
+            <td class="num">${pct(v.recall)}</td><td class="num">${v.n_predicted}</td></tr>`).join("")}
+          </tbody></table></details>
+      </div></div>`;
+  });
+
+  host.innerHTML = html;
+  activateBars(host);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Ingest
+   ═══════════════════════════════════════════════════════════════════════════ */
+let ingF = null;
+$("#ingPick").addEventListener("click", () => $("#ingFile").click());
+$("#ingFile").addEventListener("change", e => {
+  ingF = e.target.files[0] || null;
+  $("#ingName").textContent = ingF ? ingF.name : "No file selected.";
+  $("#ingCommit").disabled = true;
+});
+const idd = $("#ingDrop");
+["dragover", "dragleave", "drop"].forEach(ev => idd.addEventListener(ev, e => {
+  e.preventDefault(); idd.classList.toggle("over", ev === "dragover");
+  if (ev === "drop" && e.dataTransfer.files[0]) {
+    ingF = e.dataTransfer.files[0];
+    $("#ingName").textContent = ingF.name; $("#ingCommit").disabled = true;
+  }
+}));
+async function ingCall(path, overwrite) {
+  if (!ingF) { alert("Choose a PDF first."); return; }
+  const host = $("#ingResult");
+  host.innerHTML = `<div class="card"><div class="empty"><span class="spinner"></span> Working…</div></div>`;
+  const fd = new FormData(); fd.append("file", ingF, ingF.name);
+  if (overwrite) fd.append("overwrite", "true");
+  let d;
+  try { d = await api(path, { method: "POST", body: fd }); }
+  catch (err) { host.innerHTML = `<div class="card"><div class="pad st-bad small">${esc(err.message)}</div></div>`; return; }
+
+  if (path.includes("preview")) {
+    const flags = d.extraction_quality_flags || [];
+    host.innerHTML = `<div class="card"><div class="card-head">
+        <h2>${QU(d.detected_quarter_id)}</h2>
+        ${d.quarter_already_in_dataset
+          ? `<span class="status st-warn">${ICON.warn}already in the archive — commit needs overwrite</span>`
+          : `<span class="status st-good">${ICON.good}new quarter</span>`}
+      </div><div class="pad">
+        <div class="tiles">
+          <div class="tile"><div class="tile-label">Call date</div><div class="tile-value" style="font-size:17px;">${esc(d.call_date || "not detected")}</div></div>
+          <div class="tile"><div class="tile-label">Q&amp;A turns parsed</div><div class="tile-value">${d.qa_turn_count}</div></div>
+          <div class="tile"><div class="tile-label">Analysts found</div><div class="tile-value">${d.analysts.length}</div></div>
+          <div class="tile"><div class="tile-label">Narration turns</div><div class="tile-value">${d.narration_length_chars}</div></div>
+        </div>
+        <h4 style="margin:18px 0 6px;">Extraction-quality monitor</h4>
+        ${flags.length
+          ? flags.map(f => `<div class="flag"><div class="small"><b>“${esc(f.extracted)}”</b> is ${f.similarity} similar to canonical <b>“${esc(f.closest_canonical)}”</b> — likely an OCR or name-split error worth a look.</div></div>`).join("")
+          : `<div class="status st-good">${ICON.good}Every extracted name matched the canonical registry.</div>`}
+        <h4 style="margin:18px 0 6px;">Analysts extracted</h4>
+        <table><thead><tr><th>Analyst</th><th>Firm</th><th class="num">Turns</th></tr></thead><tbody>
+        ${d.analysts.map(a => `<tr><td>${esc(a.name)}</td><td>${esc(a.firm || "—")}</td><td class="num">${a.turns}</td></tr>`).join("")}
+        </tbody></table>
+      </div></div>`;
+    $("#ingCommit").disabled = false;
+  } else {
+    const ok = d.status === "ok";
+    host.innerHTML = `<div class="card"><div class="pad">
+      <div style="font-size:15px;">${statusHTML(ok, ok ? "Committed to the archive" : "Commit " + d.status)}</div>
+      <p class="small dim" style="margin-top:8px;">${esc(d.message || `${QU(d.quarter_id)} · archive went from ${d.quarters_before} to ${d.quarters_after} quarters.`)}</p>
+      ${d.next_steps ? `<p class="small dim">${esc(d.next_steps)}</p>` : ""}
+    </div></div>`;
+    if (ok) { STATE.evalData = null; boot(); }
+  }
+}
+$("#ingPreview").addEventListener("click", () => ingCall("/api/ingest/preview", false));
+$("#ingCommit").addEventListener("click", () => ingCall("/api/ingest/commit", $("#ingOverwrite").checked));
+
+/* ── Go ──────────────────────────────────────────────────────────────────── */
+renderEmptyChat();
+boot().catch(err => {
+  $("#pageSub").textContent = "Backend unreachable — start it with: python3 run.py app";
+  $("#llmLabel").textContent = "backend unreachable";
+  console.error(err);
+});
+</script>
+</body>
+</html>
