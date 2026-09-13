@@ -426,8 +426,12 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
     <div class="brand-sub">Axis Bank · analyst-relations</div>
   </div>
   <nav id="nav">
+    <div class="nav-sep">Overview</div>
+    <button class="nav-item" data-view="home" aria-current="page">
+      <svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Platform Overview</button>
     <div class="nav-sep">Research</div>
-    <button class="nav-item" data-view="profiles" aria-current="page">
+    <button class="nav-item" data-view="profiles">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/></svg>
       Analyst profiles</button>
     <button class="nav-item" data-view="chat">
@@ -464,8 +468,78 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
     <div class="row" id="topContext"></div>
   </div>
 
+  <!-- ══ HOME / LANDING PAGE ═════════════════════════════════════════════ -->
+  <section class="view active" id="view-home">
+    <div class="card hero" style="background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%); margin-bottom: 20px;">
+      <div class="hero-label">Multi-Institutional IR Scanner</div>
+      <h2 style="font-size: 28px; margin: 8px 0 12px; font-weight: 700;">Earnings Call Predictive Question Intelligence</h2>
+      <p class="takeaway" style="font-size: 14.5px; color: var(--ink-2); max-width: 82ch;">
+        An agentic decision cockpit for Investor Relations teams. Combines multi-agent LangGraph predictions, historical Q&amp;A trajectories, and hybrid transcript search to forecast analyst questions before earnings calls.
+      </p>
+    </div>
+
+    <h3 style="font-size: 16px; margin: 24px 0 14px;">Select Covered Banking Institution</h3>
+
+    <div class="grid-2" style="margin-bottom: 24px;">
+      <div class="card pad" style="border: 2px solid var(--accent); cursor: pointer; transition: transform .15s;" onclick="show('profiles')">
+        <div class="row" style="justify-content: space-between; margin-bottom: 10px;">
+          <h2 style="font-size: 18px; color: var(--ink);">Axis Bank</h2>
+          <span class="chip chip-accent">Active Coverage</span>
+        </div>
+        <p class="small dim" style="margin-bottom: 12px;">
+          Full earnings transcript archive, analyst dossiers, and LangGraph predictive models enabled.
+        </p>
+        <div class="row xs muted" style="gap: 16px;">
+          <span><b>43</b> Analysts</span>
+          <span><b>21</b> Quarters</span>
+          <span><b>580</b> Passages</span>
+        </div>
+        <button class="btn btn-primary btn-sm" style="margin-top: 14px; width: 100%;">Open Axis Bank Workspace →</button>
+      </div>
+
+      <div class="card pad" style="opacity: 0.75; border-style: dashed;">
+        <div class="row" style="justify-content: space-between; margin-bottom: 10px;">
+          <h2 style="font-size: 18px; color: var(--ink-2);">HDFC Bank</h2>
+          <span class="chip">Expansion Planned</span>
+        </div>
+        <p class="small dim" style="margin-bottom: 12px;">
+          Cross-bank transcript parser and peer salience model ingestion ready for deployment.
+        </p>
+        <div class="row xs muted" style="gap: 16px;">
+          <span>Peer Signal Tagged</span>
+          <span>Coming Soon</span>
+        </div>
+        <button class="btn btn-sm" disabled style="margin-top: 14px; width: 100%;">Pipeline Ingestion Pending</button>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card pad" style="opacity: 0.75; border-style: dashed;">
+        <div class="row" style="justify-content: space-between; margin-bottom: 10px;">
+          <h2 style="font-size: 18px; color: var(--ink-2);">ICICI Bank</h2>
+          <span class="chip">Expansion Planned</span>
+        </div>
+        <p class="small dim" style="margin-bottom: 12px;">
+          Peer transcript salience and cross-institutional benchmark model integration in progress.
+        </p>
+        <button class="btn btn-sm" disabled style="margin-top: 14px; width: 100%;">Pipeline Ingestion Pending</button>
+      </div>
+
+      <div class="card pad" style="opacity: 0.75; border-style: dashed;">
+        <div class="row" style="justify-content: space-between; margin-bottom: 10px;">
+          <h2 style="font-size: 18px; color: var(--ink-2);">Kotak Mahindra Bank</h2>
+          <span class="chip">Expansion Planned</span>
+        </div>
+        <p class="small dim" style="margin-bottom: 12px;">
+          Targeting Q3/Q4 earnings call dataset compilation for cross-bank comparison.
+        </p>
+        <button class="btn btn-sm" disabled style="margin-top: 14px; width: 100%;">Pipeline Ingestion Pending</button>
+      </div>
+    </div>
+  </section>
+
   <!-- ══ PROFILES ══════════════════════════════════════════════════════════ -->
-  <section class="view active" id="view-profiles">
+  <section class="view" id="view-profiles">
     <div class="card">
       <div class="pad toolbar">
         <div class="field">
@@ -781,6 +855,7 @@ function md(src) {
    Shell: nav, theme, meta
    ═══════════════════════════════════════════════════════════════════════════ */
 const TITLES = {
+  home: ["Platform Overview", "Multi-institutional IR Question Intelligence and Predictive Scanner"],
   profiles: ["Analyst profiles", "Full question threads, management responses, and why each question was asked"],
   chat: ["Search & chat", "Grounded retrieval across every transcript in the archive"],
   predict: ["Run prediction", "Condition on the upcoming quarter's disclosure, then run the agentic layers"],
