@@ -643,10 +643,6 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
         </div>
       </aside>
     </div>
-    <div class="card">
-      <div class="card-head"><h3>Recent activity</h3><span class="muted xs">last actions taken in this workspace</span></div>
-      <div class="pad" id="wsActivity"><div class="empty small">Loading…</div></div>
-    </div>
   </section>
 
   <!-- ══ PROFILES ══════════════════════════════════════════════════════════ -->
@@ -1108,21 +1104,10 @@ function renderWorkspaceOverview() {
     ? `${STATE.disclosure.filename} is parsed and can condition the next forecast.`
     : "Upload the draft disclosure to condition the forecast on new numbers and narrative.";
   $("#wsDisclosureDot").className = `status-dot ${uploaded ? "ready" : "waiting"}`;
-  refreshWorkspaceBriefAndActivity();
+  refreshWorkspaceBrief();
 }
 
-const ACTIVITY_LABEL = {
-  chat_question: "Asked", search: "Searched", prepare_call: "Ran prepare-call",
-  ingest_commit: "Committed", ingest_commit_failed: "Commit failed", view_analyst: "Viewed",
-};
-function timeAgo(iso) {
-  const secs = Math.floor((Date.now() - new Date(iso)) / 1000);
-  if (secs < 60) return "just now";
-  if (secs < 3600) return `${Math.floor(secs / 60)}m ago`;
-  if (secs < 86400) return `${Math.floor(secs / 3600)}h ago`;
-  return `${Math.floor(secs / 86400)}d ago`;
-}
-async function refreshWorkspaceBriefAndActivity() {
+async function refreshWorkspaceBrief() {
   try {
     const b = await api("/api/brief");
     const n = (b.brief_items || []).length;
@@ -1133,18 +1118,6 @@ async function refreshWorkspaceBriefAndActivity() {
       ? `${n} item${n === 1 ? "" : "s"} pinned — open the brief →`
       : "Nothing pinned yet. Pin an answer, passage, or predicted question as you go.";
   } catch (err) { /* best-effort widget; leave the placeholder text */ }
-
-  try {
-    const activity = await api("/api/activity");
-    const host = $("#wsActivity");
-    if (!activity.length) { host.innerHTML = `<div class="empty small">Nothing yet — actions you take show up here.</div>`; return; }
-    host.innerHTML = `<div>${activity.slice(0, 8).map(a => `
-      <div class="status-row" style="padding:7px 0;">
-        <span class="status-dot ready" style="width:6px;height:6px;"></span>
-        <div><b class="small">${esc(ACTIVITY_LABEL[a.kind] || a.kind)}</b>
-          <span class="xs muted"> · ${esc(a.label || "")} · ${timeAgo(a.at)}</span></div>
-      </div>`).join("")}</div>`;
-  } catch (err) { /* best-effort widget */ }
 }
 
 function show(view, syncRoute = true) {
