@@ -123,6 +123,12 @@ main{min-width:0; height:100vh; overflow-y:auto;}
 .card + .card{margin-top:14px;}
 .pad{padding:16px 18px;}
 .card-head{padding:14px 18px; border-bottom:1px solid var(--hairline); display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+.advanced-run{margin-top:14px; border-top:1px solid var(--hairline); padding-top:12px;}
+.advanced-run summary{cursor:pointer; font-size:12.5px; color:var(--ink-2); list-style:none; user-select:none;}
+.advanced-run summary::-webkit-details-marker{display:none;}
+.advanced-run summary::before{content:"▸ "; display:inline-block; transition:transform .15s ease;}
+.advanced-run[open] summary::before{transform:rotate(90deg);}
+.advanced-run summary:hover{color:var(--ink);}
 .card-head h2,.card-head h3{flex:none;}
 .muted{color:var(--ink-muted);}
 .dim{color:var(--ink-2);}
@@ -706,23 +712,33 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
     </div>
 
     <div class="card">
-      <div class="card-head"><h2>Run</h2></div>
+      <div class="card-head"><h2>Prepare the call</h2></div>
       <div class="pad">
         <div class="row">
           <label class="xs muted" for="runQuarter">Target quarter</label>
           <select id="runQuarter" style="max-width:140px;"></select>
           <label class="row xs muted" style="gap:5px;"><input type="checkbox" id="runHoldout" style="width:auto;"> Held-out mode (train only to <span id="cutoffLabel">cutoff</span>)</label>
           <div class="topbar-spacer"></div>
-          <button class="btn" id="runOverall">Overall layer</button>
-          <select id="runAnalyst" style="max-width:190px;"><option value="">Analyst…</option></select>
-          <button class="btn" id="runAnalystBtn">Analyst layer</button>
-          <button class="btn btn-primary" id="runFull">Full pipeline</button>
+          <button class="btn btn-primary" id="runFull">Prepare next call →</button>
         </div>
         <div class="xs muted" style="margin-top:9px;">
-          The Overall layer ranks topics independent of who asks. The Analyst layer reweights that ranking for one
-          analyst and runs the grounding gate. The full pipeline does both plus arithmetic follow-ups.
+          Builds the full brief for every active analyst: topic ranking, per-analyst reweighting, the grounding
+          gate, and in-call arithmetic follow-ups from the disclosed numbers.
         </div>
         <div id="costNote"></div>
+        <details class="advanced-run">
+          <summary>Advanced — run a single layer</summary>
+          <div class="row" style="margin-top:10px;">
+            <button class="btn btn-sm" id="runOverall">Overall layer only</button>
+            <select id="runAnalyst" style="max-width:190px;"><option value="">Analyst…</option></select>
+            <button class="btn btn-sm" id="runAnalystBtn">Analyst layer only</button>
+          </div>
+          <div class="xs muted" style="margin-top:9px;">
+            The Overall layer ranks topics independent of who asks. The Analyst layer reweights that ranking for
+            one analyst and runs the grounding gate on its own. Use these to inspect one stage in isolation —
+            "Prepare next call" already runs both plus the arithmetic follow-ups.
+          </div>
+        </details>
       </div>
     </div>
     <div id="predictResult"></div>
@@ -1566,11 +1582,27 @@ $("#searchBox").addEventListener("input", e => {
   clearTimeout(searchT); const q = e.target.value;
   searchT = setTimeout(() => runSearch(q), 240);
 });
+let searchSeq = 0;
 async function runSearch(q) {
   const host = $("#searchResults");
   if (!q.trim()) { host.innerHTML = ""; return; }
+  const mySeq = ++searchSeq;   // guards against a fast second query racing this one
   host.innerHTML = `<div class="card"><div class="empty"><span class="spinner"></span> Searching…</div></div>`;
-  const d = await postJSON("/api/search", { query: q });
+  let d;
+  try {
+    d = await postJSON("/api/search", { query: q });
+  } catch (err) {
+    if (mySeq !== searchSeq) return;   // a newer query already took over the panel
+    host.innerHTML = `<div class="card"><div class="pad">
+        <div class="status st-bad" style="margin-bottom:8px;">${ICON.bad}Search failed</div>
+        <div class="small dim" style="margin-bottom:12px;">${esc(err.message)}</div>
+        <button class="btn btn-sm" id="searchRetryBtn">Try again</button>
+      </div></div>`;
+    const rb = $("#searchRetryBtn");
+    if (rb) rb.addEventListener("click", () => runSearch(q), { once: true });
+    return;
+  }
+  if (mySeq !== searchSeq) return;
   const f = d.filters || {};
   let html = `<div class="card"><div class="card-head"><h3>Query understanding</h3></div><div class="pad">
     <span class="chip chip-accent">intent: ${esc(f.intent)}</span>
@@ -1706,6 +1738,36 @@ function renderCostNote() {
 /* Live progress: poll the server's LLM counters so a throttled run explains
    itself instead of sitting behind a spinner. */
 let runPoll = null;
+// Shared request lifecycle for anything long-running (prediction runs, search).
+// Fixes a real bug: the three run buttons and structured search called the API
+// with no try/catch at all, so a failed request left the spinner running
+// forever (runPoll never cleared) with no way to tell the run failed or try
+// again. Every caller now goes through runTask, which guarantees a terminal
+// state — success or a retry-able error card — no matter what the request does.
+function setRunButtonsDisabled(disabled) {
+  ["#runOverall", "#runAnalystBtn", "#runFull"].forEach(sel => {
+    const b = $(sel); if (b) b.disabled = disabled;
+  });
+}
+async function runTask(fn, { host, onRetry } = {}) {
+  host = host || $("#predictResult");
+  setRunButtonsDisabled(true);
+  try {
+    await fn();
+  } catch (err) {
+    if (runPoll) { clearInterval(runPoll); runPoll = null; }
+    const msg = err && err.message ? err.message : "Something went wrong.";
+    host.innerHTML = `<div class="card"><div class="pad">
+        <div class="status st-bad" style="margin-bottom:8px;">${ICON.bad}Run failed</div>
+        <div class="small dim" style="margin-bottom:12px;max-width:60ch;">${esc(msg)}</div>
+        <button class="btn btn-sm" id="runRetryBtn">Try again</button>
+      </div></div>`;
+    const rb = $("#runRetryBtn");
+    if (rb && onRetry) rb.addEventListener("click", () => runTask(fn, { host, onRetry }), { once: true });
+  } finally {
+    setRunButtonsDisabled(false);
+  }
+}
 function busy(label, kind) {
   const e = kind ? estimateRun(kind) : null;
   const started = Date.now();
@@ -1751,26 +1813,28 @@ function runDone(stats) {
     stats.failed ? " Calls that failed fall back to bare topics rather than invented text." : ""}</span></div>`;
 }
 
-$("#runOverall").addEventListener("click", async () => {
+$("#runOverall").addEventListener("click", () => runTask(async () => {
   busy("Running the planning agent and Overall layer…", "overall");
   const d = await postJSON("/api/run/overall", runBody());
   renderOverall(d.overall, d.quarter, d.disclosure_conditioned, d.tool_log);
   $("#predictResult").insertAdjacentHTML("afterbegin", runDone(d.llm_stats));
-});
-$("#runAnalystBtn").addEventListener("click", async () => {
+}, { onRetry: true }));
+$("#runAnalystBtn").addEventListener("click", () => {
   const a = $("#runAnalyst").value;
   if (!a) { alert("Pick an analyst."); return; }
-  busy(`Running the Analyst-Specific layer for ${a}…`, "analyst");
-  const d = await postJSON("/api/run/analyst", { ...runBody(), analyst: a });
-  renderAnalystRun(d);
-  $("#predictResult").insertAdjacentHTML("afterbegin", runDone(d.llm_stats));
+  runTask(async () => {
+    busy(`Running the Analyst-Specific layer for ${a}…`, "analyst");
+    const d = await postJSON("/api/run/analyst", { ...runBody(), analyst: a });
+    renderAnalystRun(d);
+    $("#predictResult").insertAdjacentHTML("afterbegin", runDone(d.llm_stats));
+  }, { onRetry: true });
 });
-$("#runFull").addEventListener("click", async () => {
+$("#runFull").addEventListener("click", () => runTask(async () => {
   busy("Running the full pipeline…", "full");
   const d = await postJSON("/api/run/full", runBody());
   renderFull(d.data, d.disclosure_conditioned);
   $("#predictResult").insertAdjacentHTML("afterbegin", runDone(d.llm_stats));
-});
+}, { onRetry: true }));
 
 function condChip(on) {
   return `<span class="chip ${on ? "chip-accent" : ""}">${on ? "conditioned on uploaded disclosure" : "history only"}</span>`;
