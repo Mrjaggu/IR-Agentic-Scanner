@@ -3,16 +3,28 @@ import os
 import json
 from src.config.settings import (
     PERSONAS_PATH,
+    ANALYST_ENRICHMENT_PATH,
     TOPICS_LIST,
     EngineConfig,
 )
 
 # Load personas
-def load_personas(personas_path=PERSONAS_PATH):
+def load_personas(personas_path=PERSONAS_PATH, enrichment_path=ANALYST_ENRICHMENT_PATH):
+    personas = {}
     if os.path.exists(personas_path):
         with open(personas_path) as f:
-            return {p["analyst"]: p for p in json.load(f)["personas"]}
-    return {}
+            personas = {p["analyst"]: p for p in json.load(f)["personas"]}
+    if os.path.exists(enrichment_path):
+        with open(enrichment_path) as f:
+            enrichment = json.load(f)
+        for name, e in enrichment.items():
+            if name in personas:
+                personas[name]["enrichment"] = e
+            else:
+                # Enrichment for an analyst not in the curated persona file --
+                # still surface it with a minimal persona shell.
+                personas[name] = {"analyst": name, "enrichment": e}
+    return personas
 
 # Cache personas globally for easy import
 PERSONAS = load_personas()
