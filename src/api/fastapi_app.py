@@ -22,6 +22,7 @@ import asyncio
 import json
 import os
 import uuid
+from datetime import datetime
 
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
@@ -102,6 +103,19 @@ def get_meta():
         n_active = len(get_active_analysts(live["dataset"], VAL_QUARTER))
     except Exception:
         n_active = 0
+
+    # Real, unfabricated freshness signal for the workspace context bar: when
+    # the most recent call actually happened (from the transcript itself) and
+    # when the archive file on disk last changed. No calendar integration
+    # exists, so there is no live "next call in N days" countdown here — that
+    # would be invented rather than measured.
+    latest = max(live["dataset"], key=lambda r: r.get("sort_key", 0)) if live["dataset"] else None
+    from src.config.settings import DATASET_PATH
+    try:
+        archive_refreshed = datetime.fromtimestamp(os.path.getmtime(DATASET_PATH)).isoformat()
+    except OSError:
+        archive_refreshed = None
+
     return {
         "quarters": live["quarters"],
         "topics": TOPICS_LIST,
@@ -117,6 +131,9 @@ def get_meta():
             "quarters": len(live["quarters"]),
             "corpus_docs": len(live["corpus"]),
         },
+        "latest_reported_quarter": latest.get("quarter_id") if latest else None,
+        "latest_call_date": latest.get("call_date") if latest else None,
+        "archive_last_refreshed": archive_refreshed,
     }
 
 

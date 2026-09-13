@@ -975,6 +975,39 @@ function previewFeature(key) {
       (el.dataset.featureCard || el.dataset.featureNav) === key));
 }
 
+// Plain-language workspace context bar — visible on every screen, not just
+// Prepare-call. Shows only what is actually known: the quarter the user has
+// selected to prepare for, how current the archive is against the calendar
+// (the latest call it actually contains), and whether a disclosure has been
+// uploaded to condition the forecast. Deliberately no "call in N days"
+// countdown — there is no calendar integration behind this, and inventing a
+// date would be exactly the kind of unsourced number this platform exists to
+// avoid.
+function relativeDate(iso) {
+  if (!iso) return null;
+  const d = new Date(iso), days = Math.floor((Date.now() - d) / 86400000);
+  if (days <= 0) return "today";
+  if (days === 1) return "yesterday";
+  if (days < 30) return `${days} days ago`;
+  const months = Math.floor(days / 30);
+  return `${months} month${months === 1 ? "" : "s"} ago`;
+}
+function renderContextBar() {
+  const meta = STATE.meta;
+  const host = $("#topContext");
+  if (!meta || !host) return;
+  const q = STATE.targetQuarter || meta.default_quarter;
+  const uploaded = Boolean(STATE.disclosure);
+  const latestQ = meta.latest_reported_quarter, latestDate = meta.latest_call_date;
+  const rel = relativeDate(meta.archive_last_refreshed);
+  host.innerHTML =
+    `<span class="chip chip-accent">Preparing for ${QU(q)}</span>` +
+    (latestQ ? `<span class="chip">Archive current through ${QU(latestQ)}${
+        latestDate ? ` · reported ${esc(latestDate)}` : ""}${rel ? ` · synced ${rel}` : ""}</span>` : "") +
+    `<span class="chip ${uploaded ? "chip-accent" : ""}">${
+      uploaded ? "Disclosure uploaded" : "Disclosure not uploaded"}</span>`;
+}
+
 function renderWorkspaceOverview() {
   const meta = STATE.meta;
   if (!meta) return;
@@ -1048,10 +1081,13 @@ async function boot() {
     ? "Answers are synthesised by the model and cite their sources."
     : "No model reachable — answers are retrieval-only, showing the actual matching passages.";
   const rolling = (meta.cutoff_mode || "rolling") === "rolling";
-  $("#topContext").innerHTML =
-    `<span class="chip">${rolling ? "Rolling cutoff · trains through the prior quarter"
-                                  : "Fixed cutoff " + QU(meta.train_cutoff)}</span>` +
-    `<span class="chip">Held out ${meta.test_quarters.map(QU).join(" · ")}</span>`;
+  // The rolling-cutoff / held-out chips are model-governance detail — real,
+  // but not what an IR user needs to see on every screen. They now live only
+  // on the Evaluation page (#evalScope, below). The topbar instead shows the
+  // plain-language context an IR user actually asks first: which quarter,
+  // how current the archive is, whether the call is prepped for.
+  STATE.targetQuarter = meta.default_quarter;
+  renderContextBar();
   $("#evalScope").textContent = rolling
     ? `${meta.test_quarters.map(QU).join(" + ")} · each trained through its prior quarter`
     : `${meta.test_quarters.map(QU).join(" + ")} vs fixed cutoff ${QU(meta.train_cutoff)}`;
@@ -1061,7 +1097,11 @@ async function boot() {
     rq.insertAdjacentHTML("beforeend", `<option value="${q}"${q === meta.default_quarter ? " selected" : ""}>${QU(q)}</option>`));
 
   updateCutoffLabel();
-  $("#runQuarter").addEventListener("change", updateCutoffLabel);
+  $("#runQuarter").addEventListener("change", () => {
+    updateCutoffLabel();
+    STATE.targetQuarter = $("#runQuarter").value;
+    renderContextBar();
+  });
 
   STATE.analysts = await api("/api/analysts");
   const pick = $("#analystPick"), ra = $("#runAnalyst");
@@ -1645,6 +1685,7 @@ async function parseDisclosure(file) {
   } catch (err) { host.innerHTML = `<div class="pad st-bad small">${esc(err.message)}</div>`; return; }
   STATE.disclosure = d;
   $("#discState").textContent = `${d.filename} · ${d.summary.metrics_found.length} metrics`;
+  renderContextBar();
   renderWorkspaceOverview();
 
   const anom = Object.entries(d.anomaly_scores || {}).sort((a, b) => b[1] - a[1]);
