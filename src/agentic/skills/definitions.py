@@ -13,6 +13,7 @@ from src.agentic.question_framer import frame_questions
 from src.agentic.verifier import grounding_gate
 from src.data.upcoming import attach_novel_themes
 from src.agentic.eval_harness import research_errors, backtest_and_promote_weights
+from src.agentic.question_eval import evaluate_analyst_questions
 
 register(
     name="composite_scoring",
@@ -86,4 +87,16 @@ register(
     fn=backtest_and_promote_weights,
     category="backtesting",
     llm=False,
+)
+
+register(
+    name="question_recall",
+    description="Judges the FRAMED QUESTION TEXT against what the analyst actually asked "
+                "(0/0.5/1.0 rubric via LLM judge), not just whether the topic bucket "
+                "matched -- topic recall can look fine while the actual question misses "
+                "the real hook entirely.",
+    module="src.agentic.question_eval",
+    fn=evaluate_analyst_questions,
+    category="diagnostics",
+    llm=True,
 )

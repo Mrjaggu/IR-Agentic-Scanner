@@ -892,6 +892,26 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
 
     <div class="card">
       <div class="card-head">
+        <h3>Question Recall</h3>
+        <span class="muted xs">did the framed QUESTION TEXT anticipate what they actually asked — not just whether the topic bucket matched</span>
+        <div class="topbar-spacer"></div>
+        <button class="btn btn-sm" id="qrRunBtn">Run (uses real LLM calls)</button>
+      </div>
+      <div class="pad">
+        <p class="small dim" style="max-width:78ch;">
+          Topic recall answers "was the bucket on the brief". This answers "did we anticipate what
+          they actually asked" — each analyst's real question is split into individual concerns and
+          judged 1.0 / 0.5 / 0.0 against our framed question text. A topic can be a perfect hit while
+          the actual question is about something else entirely; this is the number that would have
+          caught that. Costs real LLM calls across every held-out analyst in both test quarters —
+          only run this deliberately.
+        </p>
+      </div>
+    </div>
+    <div id="qrResult"></div>
+
+    <div class="card">
+      <div class="card-head">
         <h3>Agentic Skills</h3>
         <span class="muted xs">the named, reusable units the pipeline above is built from — agents/skills/harness separation</span>
       </div>
@@ -2474,6 +2494,52 @@ async function loadErrorResearch(refresh) {
 
   host.innerHTML = html;
 }
+
+/* ── Question Recall ──────────────────────────────────────────────────────── */
+$("#qrRunBtn").addEventListener("click", async () => {
+  const host = $("#qrResult");
+  const btn = $("#qrRunBtn");
+  btn.disabled = true;
+  host.innerHTML = `<div class="card"><div class="empty"><span class="spinner"></span> Framing and judging questions for every held-out analyst — this makes real LLM calls and can take a few minutes…</div></div>`;
+  let d;
+  try { d = await api("/api/eval/question-recall?refresh=true"); }
+  catch (err) { host.innerHTML = `<div class="card"><div class="empty">Could not run: ${esc(err.message)}</div></div>`; btn.disabled = false; return; }
+  btn.disabled = false;
+
+  const mqr = d.summary && d.summary.mean_question_recall;
+  const mr = d.summary && d.summary.mean_recall;
+  let html = `<div class="card"><div class="pad">
+      <div class="ev">
+        <div class="ev-t">Topic recall vs. question recall</div>
+        <div class="ev-q">Topic recall: <b>${mr != null ? pct(mr) : "—"}</b> · Question recall: <b>${mqr != null ? pct(mqr) : "—"}</b></div>
+      </div>
+      <div class="small dim" style="margin-top:10px;">
+        The gap between these two numbers is the part topic-level scoring can't see: how often a
+        correctly-ranked topic still produced a question about the wrong specific thing.
+      </div>
+    </div></div>`;
+
+  (d.per_quarter || []).forEach(q => {
+    const qr = q.question_recall;
+    if (!qr) return;
+    html += `<div class="card"><div class="pad">
+        <h4 style="margin:0 0 8px;">${QU(q.quarter)} — question recall ${qr.macro != null ? pct(qr.macro) : "n/a"}</h4>
+        ${Object.entries(qr.per_analyst || {}).map(([analyst, r]) => `<details style="margin-bottom:8px;">
+          <summary class="small"><b>${esc(analyst)}</b> — ${r.question_recall != null ? pct(r.question_recall) : "n/a"}
+            (${r.fully_anticipated} full, ${r.partially_anticipated} partial, ${r.missed} missed of ${r.n_concerns} concerns · ${esc(r.method)})</summary>
+          <table style="margin-top:6px;"><thead><tr><th>Score</th><th>Their concern</th><th>Best matching prediction</th></tr></thead><tbody>
+            ${(r.per_concern || []).map(c => `<tr>
+              <td>${c.score != null ? c.score : (c.proxy_overlap != null ? "~" + c.proxy_overlap : "—")}</td>
+              <td>${esc((c.concern || "").slice(0, 140))}</td>
+              <td>${esc((c.best || "—").slice(0, 140))}</td>
+            </tr>`).join("")}
+          </tbody></table>
+        </details>`).join("")}
+      </div></div>`;
+  });
+
+  host.innerHTML = html;
+});
 
 /* ── Agentic Skills registry ──────────────────────────────────────────────── */
 async function loadSkills() {

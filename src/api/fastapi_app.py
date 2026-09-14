@@ -597,6 +597,27 @@ def eval_holdout(with_questions: bool = False, refresh: bool = False):
     return _cached_holdout(with_questions=with_questions, refresh=refresh)
 
 
+def _cached_question_recall(refresh: bool = False) -> dict:
+    key = "question_recall"
+    if refresh or key not in _eval_cache:
+        _eval_cache[key] = run_holdout_eval(score_question_recall=True)
+    return _eval_cache[key]
+
+
+@app.get("/api/eval/question-recall")
+def eval_question_recall(refresh: bool = False):
+    """Question-level recall: did the FRAMED QUESTION TEXT anticipate what
+    the analyst actually asked, not just whether the topic bucket matched.
+    Topic recall (see /api/eval/holdout) answers "was the bucket on the
+    brief" -- this answers "did we anticipate what they actually asked",
+    scored via question_eval.evaluate_analyst_questions's 0/0.5/1.0 rubric
+    with an LLM judge. Costs real LLM calls (question framing + grounding +
+    one judge call per decomposed concern) across every held-out analyst in
+    both test quarters -- cached like the other eval endpoints, so this is
+    only expensive on first call or an explicit refresh."""
+    return _cached_question_recall(refresh=refresh)
+
+
 class EvalCompareRequest(BaseModel):
     disclosure_ids: dict[str, str] | None = None
 
