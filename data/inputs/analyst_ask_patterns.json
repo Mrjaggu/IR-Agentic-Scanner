@@ -1,0 +1,31 @@
+{
+  "_provenance": "Hand-curated 2026-09 from an externally-sourced pattern report (per-analyst topic affinity, trigger type, framing style, follow-up propensity), cross-checked sentence-by-sentence against this project's own graph.json Question nodes (5-19 tracked quarters per analyst) before being trusted -- the report's 'Predicted Questions for Q1FY27' section was deliberately NOT used (it reads as written with knowledge of the actual Q1FY27 transcript, not a blind prediction, so it would leak the answer). Only the move_type/note fields below are used by the pipeline; verbatim quotes here are illustrative only and are never shown to the framer LLM (see question_framer.py's own 'never invents' discipline -- this file adds a STYLE signal, not new fact content). Kunal Shah's characterization was broadened from the source report after our own data showed a wider topic range than the report claimed. Ankit Bihani and Zhixuan Gao have too little tracked history (1-2 quarters) for a reliable pattern and are intentionally omitted.",
+  "Chintan Joshi": {
+    "move_type": "bridge_breakdown",
+    "note": "Takes a disclosed change (a NIM move, a rate-cut pass-through) and asks management to decompose it into its named components, then presses on whichever piece wasn't fully explained -- e.g. given '19 bps from repo, X bps from mix', he asks what explains the remainder. Confirmed across 11 tracked quarters (q1fy26 through q4fy26), almost always opens with an explicit numbered list ('first...second...third')."
+  },
+  "Mahrukh Adajania": {
+    "move_type": "quantify_and_check_sustainability",
+    "note": "When management mentions a new figure, reversal, or buffer without full detail, asks two things in sequence: quantify it precisely, then whether it represents a new sustainable base or a one-off. Confirmed across 19 tracked quarters -- recurring verbatim pattern ('could you quantify it', 'is this the new base', 'would you draw down on this'). This is the strongest-confirmed pattern of the set and the one already validated live (Kunal Shah's FCNR case used the same move; Mahrukh's own Q1FY27 opex-normalization question is a textbook instance)."
+  },
+  "Rikin Shah": {
+    "move_type": "multipart_bridge_and_liability_mix",
+    "note": "Opens with 'I had three questions' / 'a few questions' and enumerates, typically leading with a margin/NIM bridge (similar move to Chintan) and following with liability-side sustainability (deposit mix, borrowings, cost of funds). Confirmed across 13 tracked quarters."
+  },
+  "Piran Engineer": {
+    "move_type": "arithmetic_inconsistency_puzzle",
+    "note": "Finds an apparent contradiction between two disclosed figures (e.g. NIM fell X bps and assets grew Y%, so NII should have fallen but didn't) and frames the question as 'what am I missing here' rather than a direct ask. Confirmed across 7 tracked quarters, including a near-verbatim match to his real Q1FY27 question. Always opens with 'congrats on the quarter.'"
+  },
+  "Abhishek Murarka": {
+    "move_type": "raroc_segment_mix_comparison",
+    "note": "Questions whether growing one loan/deposit segment over another still makes sense given return/margin trade-offs, frequently invoking a specific mix split (his real Q4FY26 question cites the bank's own '60% retail, 15 SME, 25 corporate' framing verbatim). Confirmed across 17 tracked quarters."
+  },
+  "MB Mahesh": {
+    "move_type": "reconcile_or_policy_basis",
+    "note": "Either asks management to reconcile two disclosed numbers that don't obviously tie out, or asks 'on what basis' a policy/scheme (one-time settlements, technical classification) was applied to a given borrower. Confirmed across 11 tracked quarters -- recurring phrasing 'just trying to understand', 'can you reconcile those numbers', 'what would that quantum look like'."
+  },
+  "Kunal Shah": {
+    "move_type": "broad_narration_reactive",
+    "note": "Broader than a single lane -- reacts to whatever is anomalous THIS quarter (employee costs, capital raising, credit cards, NIM, recoveries) rather than a fixed topic preference, with compact 1-2 part questions rather than the enumerated multi-part style other analysts use. Confirmed across 19 tracked quarters; this deliberately widens an external report's narrower 'credit costs/policy/recoveries only' framing, which our own data didn't support."
+  }
+}
