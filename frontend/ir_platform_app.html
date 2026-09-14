@@ -385,6 +385,14 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
 .media-item a{color:var(--accent);font-weight:600;text-decoration:none;}
 .media-item a:hover{text-decoration:underline;}
 .enrich-chip{display:inline-block;padding:4px 10px;border-radius:999px;background:var(--surface-2);color:var(--ink-2);font-size:11.5px;font-weight:600;border:1px solid var(--hairline);}
+.wt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:14px;}
+.wt-field{display:flex;flex-direction:column;gap:4px;}
+.wt-field label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-muted);}
+.wt-field input{padding:7px 9px;border-radius:var(--r-sm);border:1px solid var(--hairline);background:var(--surface);color:var(--ink);font-size:13px;}
+.verdict-badge{display:inline-block;padding:4px 12px;border-radius:999px;font-weight:700;font-size:12.5px;}
+.verdict-promote{background:rgba(12,163,12,.14);color:var(--good-ink);}
+.verdict-reject{background:rgba(208,59,59,.14);color:var(--critical);}
+
 
 .av-user{background:var(--surface-3); color:var(--ink-2);}
 .av-bot{background:var(--accent); color:#fff;}
@@ -853,6 +861,34 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
       </div>
     </div>
     <div id="evalResult"><div class="card"><div class="empty"><span class="spinner"></span> Running the held-out evaluation…</div></div></div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Error Researcher</h3>
+        <span class="muted xs">not "the model was wrong" — which pipeline stage caused each miss</span>
+        <div class="topbar-spacer"></div>
+        <button class="btn btn-sm" id="errResearchRefresh">Re-run</button>
+      </div>
+    </div>
+    <div id="errResearchResult"></div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Framework Loop — backtest a weight change</h3>
+        <span class="muted xs">propose new composite weights, score them on the same held-out quarters, promote only if they clear the existing gate</span>
+      </div>
+      <div class="pad">
+        <p class="small dim" style="max-width:78ch;">
+          The Overall layer ranks candidate topics with five named weights (anomaly, disclosure, momentum,
+          base rate, drill-flag). This never edits those defaults directly — it runs the SAME held-out
+          quarters twice, current weights vs your candidate, and only reports PROMOTE if the candidate
+          doesn't regress recall or fall below the existing promotion-gate floors.
+        </p>
+        <div class="wt-grid" id="wtGrid"></div>
+        <button class="btn btn-sm" id="wtBacktestBtn" style="margin-top:10px;">Backtest candidate</button>
+      </div>
+    </div>
+    <div id="wtBacktestResult"></div>
   </section>
 
   <!-- ══ INGEST ═══════════════════════════════════════════════════════════ -->
@@ -1166,6 +1202,7 @@ function show(view, syncRoute = true) {
   $("#pageTitle").textContent = TITLES[view][0];
   $("#pageSub").textContent = TITLES[view][1];
   if (view === "eval" && !STATE.evalData) loadEval();
+  if (view === "eval" && !STATE.errResearchLoaded) { STATE.errResearchLoaded = true; loadErrorResearch(); }
   if (view === "brief") loadBrief();
   if (syncRoute) history.pushState({ view }, "", `#/${view}`);
   window.scrollTo(0, 0);
@@ -2337,11 +2374,12 @@ async function loadEval(refresh) {
 
   const fa = d.failure_attribution_totals || {};
   const FA_HELP = {
-    reasoning_weakness: "Signal was retrieved and current — the ranking still put it outside the analyst's slots. The only category that justifies a prompt change.",
-    retrieval_gap: "Signal was in the archive but never made the candidate list. Tune retrieval.",
-    lag: "They asked it last quarter and memory was stale. Tune update cadence.",
-    missing_context: "The signal was never ingested at all. Add a data source.",
-    unpredictable: "No precedent anywhere. Tracked separately, not chased.",
+    reasoning_weakness: "Signal was retrieved and current — the per-analyst reweighting still put it outside their slots. Fixable by reweighting/re-prompting the analyst layer.",
+    topic_ranked_low: "Scored as a candidate, but the composite weights placed it outside the final ranking. Fixable by re-tuning the Overall layer's weights (see Framework Loop below).",
+    topic_not_candidate: "Had real signal (narration, a disclosed metric, or history) but never even reached the candidate pool. A candidate-generation gap, not a weighting one.",
+    lag: "They asked it last quarter and it still got dropped. A persistence/momentum gap.",
+    missing_context: "The signal was never ingested at all — no narration, no metric, no precedent anywhere. A data gap.",
+    unpredictable: "No precedent anywhere and no signal this quarter, for anyone. Tracked separately, not chased.",
   };
   const faRows = Object.entries(fa).sort((a, b) => b[1] - a[1]);
   html += `<div class="card"><div class="card-head"><h3>Failure attribution</h3>
@@ -2380,6 +2418,98 @@ async function loadEval(refresh) {
   host.innerHTML = html;
   activateBars(host);
 }
+
+/* ── Error Researcher ─────────────────────────────────────────────────────── */
+$("#errResearchRefresh").addEventListener("click", () => loadErrorResearch(true));
+async function loadErrorResearch(refresh) {
+  const host = $("#errResearchResult");
+  host.innerHTML = `<div class="card"><div class="empty"><span class="spinner"></span> Aggregating failure attribution…</div></div>`;
+  let d;
+  try { d = await api("/api/eval/error-report" + (refresh ? "?refresh=true" : "")); }
+  catch (err) { host.innerHTML = `<div class="card"><div class="empty">Could not run: ${esc(err.message)}</div></div>`; return; }
+
+  if (!d.total_misses) {
+    host.innerHTML = `<div class="card"><div class="pad small muted">No misses in the current held-out run — nothing to diagnose.</div></div>`;
+    return;
+  }
+
+  let html = `<div class="card"><div class="pad">
+      <div class="ev">
+        <div class="ev-t">Framework diagnosis</div>
+        <div class="ev-q">${esc(d.diagnosis || "")}</div>
+      </div>
+      <div class="small dim" style="margin-top:10px;">
+        <b>${d.actionable_misses} of ${d.total_misses}</b> misses (${pct(d.actionable_share)}) fall into a category this
+        pipeline can actually fix by reweighting or re-prompting — the rest point at upstream data or
+        candidate-generation gaps, which no amount of weight tuning will move.
+      </div>
+    </div></div>`;
+
+  html += d.breakdown.map(b => `<div class="card"><div class="pad">
+      <div class="row" style="gap:8px;align-items:center;">
+        <h4 style="margin:0;">${esc(b.category.replace(/_/g, " "))}</h4>
+        <span class="chip">${b.count} miss${b.count === 1 ? "" : "es"} · ${pct(b.share)}</span>
+        <span class="chip ${b.actionable ? "chip-accent" : ""}">${b.actionable ? "actionable" : "not fixable by reweighting"}</span>
+      </div>
+      <div class="small muted" style="margin-top:6px;max-width:80ch;">${esc(b.description)}</div>
+      ${b.top_topics.length ? `<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;">
+        ${b.top_topics.map(t => `<span class="chip">${esc(t.topic)} × ${t.count}</span>`).join("")}
+      </div>` : ""}
+      <details style="margin-top:8px;"><summary class="xs muted">Examples</summary>
+        <table style="margin-top:6px;"><thead><tr><th>Analyst</th><th>Topic</th><th>Quarter</th></tr></thead><tbody>
+        ${b.examples.map(e => `<tr><td>${esc(e.analyst)}</td><td>${esc(e.topic)}</td><td>${QU(e.quarter)}</td></tr>`).join("")}
+        </tbody></table>
+      </details>
+    </div></div>`).join("");
+
+  host.innerHTML = html;
+}
+
+/* ── Framework Loop: weight backtest ──────────────────────────────────────── */
+const WT_FIELDS = [
+  { key: "anomaly", label: "Anomaly", default: 0.35 },
+  { key: "disclosure", label: "Disclosure", default: 0.25 },
+  { key: "momentum", label: "Momentum", default: 0.15 },
+  { key: "base_rate", label: "Base rate", default: 0.15 },
+  { key: "drill_flag", label: "Drill flag", default: 0.10 },
+];
+$("#wtGrid").innerHTML = WT_FIELDS.map(f => `
+  <div class="wt-field">
+    <label>${esc(f.label)}</label>
+    <input type="number" step="0.01" min="0" max="1" id="wt_${f.key}" value="${f.default}">
+  </div>`).join("");
+
+$("#wtBacktestBtn").addEventListener("click", async () => {
+  const host = $("#wtBacktestResult");
+  const weights = {};
+  for (const f of WT_FIELDS) {
+    const v = parseFloat($(`#wt_${f.key}`).value);
+    if (!Number.isNaN(v)) weights[f.key] = v;
+  }
+  host.innerHTML = `<div class="card"><div class="empty"><span class="spinner"></span> Backtesting on both held-out quarters…</div></div>`;
+  let d;
+  try {
+    d = await api("/api/eval/backtest-weights", { method: "POST", body: JSON.stringify({ weights }) });
+  } catch (err) { host.innerHTML = `<div class="card"><div class="empty">Could not run: ${esc(err.message)}</div></div>`; return; }
+
+  const promote = d.verdict === "PROMOTE";
+  host.innerHTML = `<div class="card"><div class="pad">
+      <div class="row" style="align-items:center;gap:10px;">
+        <span class="verdict-badge ${promote ? "verdict-promote" : "verdict-reject"}">${esc(d.verdict)}</span>
+        <span class="small muted">baseline recall ${pct(d.baseline.mean_recall)} → candidate ${pct(d.candidate.mean_recall)} ·
+          precision ${pct(d.baseline.mean_precision)} → ${pct(d.candidate.mean_precision)}</span>
+      </div>
+      <table style="margin-top:12px;"><thead><tr><th>Check</th><th>Result</th><th class="num">Baseline</th><th class="num">Candidate</th><th class="num">Threshold</th></tr></thead><tbody>
+      ${Object.entries(d.checks).map(([k, c]) => `<tr>
+        <td>${esc(k.replace(/_/g, " "))}</td>
+        <td>${statusHTML(c.pass, c.pass ? "pass" : "fail")}</td>
+        <td class="num">${c.baseline != null ? f2(c.baseline) : "—"}</td>
+        <td class="num">${c.candidate != null ? f2(c.candidate) : "—"}</td>
+        <td class="num">${c.threshold != null ? f2(c.threshold) : "—"}</td></tr>`).join("")}
+      </tbody></table>
+      <div class="small dim" style="margin-top:10px;">${esc(d.note)}</div>
+    </div></div>`;
+});
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Ingest
