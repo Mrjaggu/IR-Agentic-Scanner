@@ -40,9 +40,23 @@ W_BASE_RATE = 0.15     # long-run frequency of the topic
 W_DRILL_FLAG = 0.10    # disclosure sentence shaped like it invites scrutiny
 
 
+# Named so a candidate weight set (Framework Loop / backtest_and_promote_weights
+# in eval_harness.py) can be described and logged the same way the production
+# defaults are, rather than as a positional tuple.
+DEFAULT_WEIGHTS = {
+    "anomaly": W_ANOMALY, "disclosure": W_DISCLOSURE, "momentum": W_MOMENTUM,
+    "base_rate": W_BASE_RATE, "drill_flag": W_DRILL_FLAG,
+}
+
+
 def composite_scores(candidate_topics: list[str], anomaly_scores: dict, global_rate: dict,
-                     momentum: dict, disclosure: dict | None) -> dict[str, float]:
-    """One transparent score per topic, from named signals with fixed weights."""
+                     momentum: dict, disclosure: dict | None,
+                     weights: dict[str, float] | None = None) -> dict[str, float]:
+    """One transparent score per topic, from named signals with fixed weights
+    (or an override set, so the Framework Loop can propose and backtest a
+    different weighting WITHOUT touching the module defaults production
+    actually runs on -- see eval_harness.py::backtest_and_promote_weights)."""
+    w = {**DEFAULT_WEIGHTS, **(weights or {})}
     max_momentum = max(momentum.values()) if momentum else 1.0
     max_rate = max(global_rate.values()) if global_rate else 1.0
     salience = (disclosure or {}).get("topic_salience", {}) or {}
@@ -53,11 +67,11 @@ def composite_scores(candidate_topics: list[str], anomaly_scores: dict, global_r
     scores = {}
     for t in candidate_topics:
         scores[t] = (
-            W_ANOMALY * anomaly_scores.get(t, 0.0)
-            + W_DISCLOSURE * salience.get(t, 0.0)
-            + W_MOMENTUM * (momentum.get(t, 0.0) / max_momentum if max_momentum else 0.0)
-            + W_BASE_RATE * (global_rate.get(t, 0.0) / max_rate if max_rate else 0.0)
-            + W_DRILL_FLAG * (1.0 if t in flagged else 0.0)
+            w["anomaly"] * anomaly_scores.get(t, 0.0)
+            + w["disclosure"] * salience.get(t, 0.0)
+            + w["momentum"] * (momentum.get(t, 0.0) / max_momentum if max_momentum else 0.0)
+            + w["base_rate"] * (global_rate.get(t, 0.0) / max_rate if max_rate else 0.0)
+            + w["drill_flag"] * (1.0 if t in flagged else 0.0)
         )
     return scores
 
@@ -145,12 +159,18 @@ def _verify_rationale(topic: str, rationale: str, evidence_bundles: dict, global
 
 
 def build_overall_topics(evidence_bundles: dict, anomaly_scores: dict, global_rate: dict,
-                         momentum: dict, client, disclosure: dict | None = None) -> dict:
+                         momentum: dict, client, disclosure: dict | None = None,
+                         weights: dict[str, float] | None = None) -> dict:
     """disclosure: the parsed upcoming-quarter document (src/data/upcoming.py).
     When present, topics the disclosure actually talks about or flags become
     candidates in their own right -- that is how a theme with no historical
     base rate (a subsidiary result, a one-off charge) gets onto the brief at
-    all, which pure history-based ranking structurally cannot do."""
+    all, which pure history-based ranking structurally cannot do.
+
+    weights: optional override of the five composite weights (see
+    DEFAULT_WEIGHTS above) -- production always omits this; only the
+    Framework Loop's backtest passes a candidate set, and only on a copy of
+    the pipeline it runs for comparison, never on the live path."""
     max_momentum = max(momentum.values()) if momentum else 1.0
 
     salience = (disclosure or {}).get("topic_salience", {}) or {}
@@ -186,7 +206,7 @@ def build_overall_topics(evidence_bundles: dict, anomaly_scores: dict, global_ra
                 }
 
     # Order by the transparent composite score, then cap.
-    comp = composite_scores(candidates, anomaly_scores, global_rate, momentum, disclosure)
+    comp = composite_scores(candidates, anomaly_scores, global_rate, momentum, disclosure, weights=weights)
     candidates = sorted(candidates, key=lambda t: -comp[t])[:TOP_K]
 
     verifier_log = []

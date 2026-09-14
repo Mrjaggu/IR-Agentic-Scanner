@@ -41,6 +41,7 @@ from src.agentic.overall_layer import build_overall_topics
 from src.agentic.analyst_layer import reweight_for_analyst
 from src.agentic.question_framer import build_evidence_pool
 from src.agentic.verifier import grounding_gate
+from src.data.upcoming import topic_salience, drill_down_flags, attach_novel_themes
 
 
 # ── Ground truth ────────────────────────────────────────────────────────────
@@ -110,13 +111,47 @@ def prf(predicted: list[str], actual: set[str]) -> dict:
             "hits": sorted(hits), "missed": sorted(actual - pset)}
 
 
-# ── Failure attribution (Section 6.3) ──────────────────────────────────────
+# ── Failure attribution / error taxonomy (Section 6.3) ─────────────────────
+#
+# Each category names ONE pipeline stage as the explanation, so "we predicted
+# badly" turns into "which component caused it" (the Error Researcher's whole
+# job -- see research_errors() below). Only reasoning_weakness and
+# topic_ranked_low point at logic this codebase can actually change by
+# reweighting or re-prompting; the rest point at data/candidate-generation
+# gaps, which is exactly why lumping them into one "miss" count was hiding
+# where effort should go.
+ERROR_TAXONOMY = {
+    "missing_context": "No narration, no disclosed metric, and no one has ever asked "
+        "about this before -- the signal never entered the system at all. A data/ingestion "
+        "gap, not a reasoning one.",
+    "unpredictable": "Genuinely no precedent anywhere and no signal this quarter, for ANY "
+        "analyst. A true cold case, not a system failure.",
+    "topic_not_candidate": "Signal existed (narration, a disclosed metric, or history) but "
+        "the topic never reached the ranked candidate pool at all -- a candidate-generation "
+        "gap. This is the exact shape of the Kunal/FCNR miss: strong signal, structurally "
+        "invisible to ranking because nothing outside the fixed taxonomy could become a "
+        "candidate (see src/data/upcoming.py::attach_novel_themes for the fix targeting "
+        "this category specifically).",
+    "topic_ranked_low": "The topic WAS scored as a candidate (it appears in composite_scores) "
+        "but the composite weights placed it outside the slots that made the final ranking. "
+        "A weighting problem -- the one category the Framework Loop (backtest_and_promote_weights, "
+        "below) exists to fix.",
+    "lag": "The analyst asked about this same topic just last quarter and the system still "
+        "failed to carry it forward -- a persistence/momentum gap.",
+    "reasoning_weakness": "The topic was globally ranked and/or this analyst has real history "
+        "on it, but the per-analyst reweighting in analyst_layer.py still dropped it out of "
+        "their slots. The one category that points at the analyst-layer's own logic rather "
+        "than upstream data.",
+}
+
+
 def attribute_miss(topic: str, analyst: str, quarter: str, state: dict,
-                   overall_ranked: list[str]) -> str:
+                   overall_ranked: list[str], composite_scores: dict | None = None) -> str:
     """Walk the pipeline in the doc's order and return the FIRST stage that
-    explains the miss. Only 'reasoning_weakness' justifies a prompt change --
-    the rest point at data or retrieval, which is the whole reason for
-    classifying instead of just counting misses."""
+    explains the miss. Only 'reasoning_weakness' and 'topic_ranked_low' justify
+    a prompt/weight change -- the rest point at data or candidate-generation,
+    which is the whole reason for classifying instead of just counting misses."""
+    composite_scores = composite_scores or {}
     graph = state["graph"]
     anomaly = state["anomaly_scores"]
     prior = set(state["prior_quarters"])
@@ -148,7 +183,10 @@ def attribute_miss(topic: str, analyst: str, quarter: str, state: dict,
         return "missing_context"
     # 2. Signal existed but the topic never made the candidate list
     if topic not in overall_ranked:
-        return "retrieval_gap"
+        # Distinguish "never even scored as a candidate" (candidate-generation
+        # gap -- topic_not_candidate) from "scored, but the weights ranked it
+        # too low to survive" (a weighting problem -- topic_ranked_low).
+        return "topic_ranked_low" if topic in composite_scores else "topic_not_candidate"
     # 3. They asked it in the immediately prior quarter and we still dropped it
     prior_list = state["prior_quarters"]
     if prior_list:
@@ -164,7 +202,7 @@ def attribute_miss(topic: str, analyst: str, quarter: str, state: dict,
     # 4. Retrieved, current, still ranked out of their slots
     if asked_before_by_them or topic in overall_ranked:
         return "reasoning_weakness"
-    return "retrieval_gap"
+    return "topic_ranked_low" if topic in composite_scores else "topic_not_candidate"
 
 
 # ── Per-quarter evaluation ─────────────────────────────────────────────────
@@ -211,7 +249,8 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
         for missed in score["missed"]:
             failures.append({
                 "analyst": analyst, "topic": missed,
-                "category": attribute_miss(missed, analyst, quarter, state, ranked),
+                "category": attribute_miss(missed, analyst, quarter, state, ranked,
+                                           composite_scores=overall.get("composite_scores", {})),
             })
 
         if with_questions:
@@ -347,6 +386,196 @@ def run_holdout_eval(with_questions: bool = False) -> dict:
         },
         "failure_attribution_totals": all_fail_counts,
     }
+
+
+# ── Error Researcher (Section 8/9 of the harness-engineering brief) ────────
+#
+# Its job is explicitly NOT to predict better questions -- it looks at
+# everything the holdout eval already missed and asks "which component
+# caused this", using the taxonomy above. No LLM call: it is pure
+# aggregation over data evaluate_quarter() already computed, so it's free
+# to run after every eval and never adds to the Groq free-tier budget.
+def research_errors(holdout_result: dict | None = None, top_n: int = 5) -> dict:
+    """Aggregates failure_attribution across the held-out quarters into a
+    framework-level diagnosis: which error category dominates, and which
+    specific (analyst, topic) pairs are driving it -- the concrete, actionable
+    output the brief's 'Error Researcher' and error-taxonomy sections call for."""
+    holdout_result = holdout_result if holdout_result is not None else run_holdout_eval()
+
+    all_failures = []
+    for r in holdout_result["per_quarter"]:
+        for f in r["failure_attribution"]["detail"]:
+            all_failures.append({**f, "quarter": r["quarter"]})
+
+    total = len(all_failures)
+    counts: dict[str, int] = {}
+    by_category_examples: dict[str, list[dict]] = {}
+    topic_counts_by_category: dict[str, dict[str, int]] = {}
+    for f in all_failures:
+        cat = f["category"]
+        counts[cat] = counts.get(cat, 0) + 1
+        by_category_examples.setdefault(cat, []).append(f)
+        topic_counts_by_category.setdefault(cat, {})
+        topic_counts_by_category[cat][f["topic"]] = topic_counts_by_category[cat].get(f["topic"], 0) + 1
+
+    breakdown = []
+    for cat, n in sorted(counts.items(), key=lambda kv: -kv[1]):
+        top_topics = sorted(topic_counts_by_category[cat].items(), key=lambda kv: -kv[1])[:top_n]
+        breakdown.append({
+            "category": cat,
+            "description": ERROR_TAXONOMY.get(cat, "(no description on file)"),
+            "count": n,
+            "share": round(n / total, 4) if total else 0.0,
+            "actionable": cat in ("reasoning_weakness", "topic_ranked_low"),
+            "top_topics": [{"topic": t, "count": c} for t, c in top_topics],
+            "examples": [{"analyst": e["analyst"], "topic": e["topic"], "quarter": e["quarter"]}
+                        for e in by_category_examples[cat][:top_n]],
+        })
+
+    actionable_n = sum(b["count"] for b in breakdown if b["actionable"])
+    diagnosis = None
+    if breakdown:
+        top = breakdown[0]
+        diagnosis = (f"{top['count']} of {total} missed predictions ({top['share']:.0%}) are "
+                    f"'{top['category']}': {top['description']}")
+        if not top["actionable"]:
+            diagnosis += (" This is NOT fixable by reweighting or re-prompting -- it points at "
+                         "upstream data/candidate-generation, so a framework-weight change would "
+                         "not move this number.")
+
+    return {
+        "total_misses": total,
+        "actionable_misses": actionable_n,
+        "actionable_share": round(actionable_n / total, 4) if total else 0.0,
+        "breakdown": breakdown,
+        "diagnosis": diagnosis,
+        "taxonomy": ERROR_TAXONOMY,
+        "scored_quarters": [r["quarter"] for r in holdout_result["per_quarter"]],
+    }
+
+
+# ── Framework Loop: backtest a candidate weight set before it can be promoted
+#
+# "The harness proposes changes; evaluation decides whether they deserve
+# promotion." Never edits overall_layer.py's DEFAULT_WEIGHTS itself -- it runs
+# the SAME held-out quarters twice (current defaults vs the candidate) and
+# reuses the existing PromotionGate thresholds so a candidate is judged by
+# the identical bar production already has to clear.
+def backtest_and_promote_weights(candidate_weights: dict[str, float],
+                                 with_questions: bool = False) -> dict:
+    from src.agentic.overall_layer import DEFAULT_WEIGHTS
+    from src.config.settings import PromotionGate
+
+    def _run(weights):
+        results = [evaluate_quarter_with_weights(q, weights, with_questions=with_questions)
+                  for q in TEST_QUARTERS]
+        recalls = [r["macro"]["recall"] for r in results]
+        precisions = [r["macro"]["precision"] for r in results]
+        mean_r = round(sum(recalls) / len(recalls), 4) if recalls else 0.0
+        mean_p = round(sum(precisions) / len(precisions), 4) if precisions else 0.0
+        spread = round(max(recalls) - min(recalls), 4) if len(recalls) > 1 else 0.0
+        return {"per_quarter": results, "mean_recall": mean_r, "mean_precision": mean_p,
+                "recall_spread": spread}
+
+    baseline = _run(DEFAULT_WEIGHTS)
+    candidate = _run({**DEFAULT_WEIGHTS, **candidate_weights})
+
+    checks = {
+        "recall_not_worse": {
+            "pass": candidate["mean_recall"] >= baseline["mean_recall"],
+            "baseline": baseline["mean_recall"], "candidate": candidate["mean_recall"],
+        },
+        "meets_recall_floor": {
+            "pass": candidate["mean_recall"] >= PromotionGate.MIN_MEAN_RECALL,
+            "threshold": PromotionGate.MIN_MEAN_RECALL, "candidate": candidate["mean_recall"],
+        },
+        "meets_precision_floor": {
+            "pass": candidate["mean_precision"] >= PromotionGate.MIN_MEAN_PRECISION,
+            "threshold": PromotionGate.MIN_MEAN_PRECISION, "candidate": candidate["mean_precision"],
+        },
+        "spread_not_worse": {
+            "pass": candidate["recall_spread"] <= max(baseline["recall_spread"], PromotionGate.MAX_RECALL_SPREAD),
+            "baseline": baseline["recall_spread"], "candidate": candidate["recall_spread"],
+        },
+    }
+    verdict = "PROMOTE" if all(c["pass"] for c in checks.values()) else "REJECT"
+
+    return {
+        "candidate_weights": {**DEFAULT_WEIGHTS, **candidate_weights},
+        "baseline_weights": DEFAULT_WEIGHTS,
+        "baseline": baseline,
+        "candidate": candidate,
+        "checks": checks,
+        "verdict": verdict,
+        "note": "Scored on the SAME held-out quarters as production (TEST_QUARTERS) using the "
+                "existing PromotionGate thresholds -- this never edits production weights itself, "
+                "it only tells you whether the candidate would clear the bar production already has to.",
+    }
+
+
+def synthetic_disclosure_for_quarter(quarter: str, graph: dict) -> dict:
+    """Builds a disclosure dict (topic_salience/drill_down_flags/novel_themes)
+    from a held-out quarter's OWN actual prepared-remarks narration, using the
+    exact same deterministic parsing an uploaded document would get. This is
+    not leakage -- it is that quarter's real script, the same text
+    question_framer.py already reads for phrasing even when no disclosure was
+    uploaded (src/agentic/question_framer.py::_narration_for_topic) -- it is
+    only NEW here in that it also feeds the Overall layer's ranking signals
+    (topic_salience/drill_down_flags), not just question phrasing.
+
+    Exists so backtest_and_promote_weights() can actually exercise the
+    disclosure/drill_flag composite weights: plain run_holdout_eval() never
+    passes an `upcoming` disclosure at all, so those two weights multiply by
+    zero and a candidate that only touches them would score identically to
+    the baseline -- silently, not because the candidate has no effect."""
+    text = "\n".join(
+        n["properties"]["text"] for n in graph["nodes"]
+        if n["type"] == "NarrationSegment" and n["properties"]["quarter"] == quarter
+    )
+    if not text.strip():
+        return {"topic_salience": {}, "drill_down_flags": [], "narration": ""}
+    salience = topic_salience(text)
+    flags = drill_down_flags(text)
+    salience, flags, _ = attach_novel_themes(salience, flags)
+    return {"topic_salience": salience, "drill_down_flags": flags, "narration": text}
+
+
+def evaluate_quarter_with_weights(quarter: str, weights: dict[str, float],
+                                  with_questions: bool = False,
+                                  use_synthetic_disclosure: bool = True) -> dict:
+    """Same as evaluate_quarter(), but injecting an alternate composite-weight
+    set into the Overall layer instead of the module defaults -- the one extra
+    hook backtest_and_promote_weights needs that evaluate_quarter() doesn't
+    expose, since production call sites should never need to pass weights.
+
+    use_synthetic_disclosure=True (the default here, unlike production) feeds
+    that quarter's own real narration through synthetic_disclosure_for_quarter
+    so a weight change on disclosure/drill_flag is actually exercised by the
+    backtest instead of scoring identically to baseline by construction."""
+    state = build_initial_state(quarter, probe=with_questions, holdout=True)
+    disclosure = synthetic_disclosure_for_quarter(quarter, state["graph"]) if use_synthetic_disclosure else None
+    bundles, _ = run_planning_agent(
+        state["anomaly_scores"], state["graph"], state["prior_quarters"], state["global_rate"]
+    )
+    overall = build_overall_topics(bundles, state["anomaly_scores"], state["global_rate"],
+                                   state["momentum"], state["client"], disclosure=disclosure,
+                                   weights=weights)
+    ranked = overall["ranked_topics"]
+    truth = ground_truth(quarter, state["graph"])
+    scored_analysts = [a for a in state["active_analysts"] if a in truth]
+
+    per_analyst = {}
+    for analyst in scored_analysts:
+        pref, N = state["analyst_prefs"][analyst]
+        predicted = reweight_for_analyst(analyst, ranked, pref, N, disclosure=disclosure)
+        per_analyst[analyst] = prf(predicted, truth[analyst])
+
+    def _macro(key):
+        vals = [s[key] for s in per_analyst.values()]
+        return round(sum(vals) / len(vals), 4) if vals else None
+
+    return {"quarter": quarter, "macro": {"precision": _macro("precision"), "recall": _macro("recall"),
+                                          "f1": _macro("f1"), "f2": _macro("f2")}}
 
 
 if __name__ == "__main__":

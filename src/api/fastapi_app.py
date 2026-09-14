@@ -43,7 +43,9 @@ from src.agentic.overall_layer import build_overall_topics
 from src.agentic.analyst_layer import reweight_for_analyst, build_arithmetic_followups
 from src.agentic.verifier import grounding_gate
 from src.agentic.question_framer import build_evidence_pool
-from src.agentic.eval_harness import run_holdout_eval, evaluate_quarter
+from src.agentic.eval_harness import (
+    run_holdout_eval, evaluate_quarter, research_errors, backtest_and_promote_weights,
+)
 from src.model_provider.llm_client import client, stats as llm_stats, reset_stats as llm_reset, RATE_LIMITS
 
 APP_HTML_PATH = os.path.join(BASE_DIR, "frontend", "ir_platform_app.html")
@@ -615,6 +617,41 @@ def eval_compare(req: EvalCompareRequest):
                                              "ranked": cond["topic_ranking"]["ranked_topics"]}
         out[q] = row
     return {"train_cutoff": TRAIN_CUTOFF, "per_quarter": out}
+
+
+@app.get("/api/eval/error-report")
+def eval_error_report(with_questions: bool = False, refresh: bool = False):
+    """The 'Error Researcher': aggregates the held-out eval's per-miss failure
+    attribution into a framework-level diagnosis -- which error category
+    dominates, whether it's even fixable by reweighting, and which specific
+    (analyst, topic) pairs are driving it. Reuses the same cached holdout run
+    as /api/eval/holdout; no extra LLM calls."""
+    holdout = _cached_holdout(with_questions=with_questions, refresh=refresh)
+    return research_errors(holdout)
+
+
+class WeightBacktestRequest(BaseModel):
+    weights: dict[str, float]
+    with_questions: bool = False
+
+
+@app.post("/api/eval/backtest-weights")
+def eval_backtest_weights(req: WeightBacktestRequest):
+    """The 'Framework Loop': backtests a candidate composite-weight override
+    (anomaly/disclosure/momentum/base_rate/drill_flag) against the SAME
+    held-out quarters and PromotionGate thresholds production uses, and
+    returns PROMOTE/REJECT -- it never writes to overall_layer.py's own
+    defaults. Uses each held-out quarter's own real narration as a synthetic
+    disclosure so disclosure/drill_flag weights are actually exercised (a
+    plain holdout run passes no disclosure at all, so those two weights would
+    otherwise always score identically to baseline)."""
+    valid_keys = {"anomaly", "disclosure", "momentum", "base_rate", "drill_flag"}
+    unknown = set(req.weights) - valid_keys
+    if unknown:
+        return JSONResponse(status_code=400,
+                            content={"error": f"unknown weight key(s): {sorted(unknown)}",
+                                     "valid_keys": sorted(valid_keys)})
+    return backtest_and_promote_weights(req.weights, with_questions=req.with_questions)
 
 
 # ── Ingestion ───────────────────────────────────────────────────────────────
