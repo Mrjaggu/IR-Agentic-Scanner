@@ -29,7 +29,7 @@ Output: data/inputs/analyst_personas_transcript_derived.json
 
 import json
 
-from src.config.settings import QUESTION_INTENT_PATH, PERSONA_DERIVED_PATH
+from src.config.settings import QUESTION_INTENT_PATH, PERSONA_DERIVED_PATH, ASK_PATTERNS_PATH
 
 MIN_N_FOR_STYLE_NOTE = 3
 
@@ -89,6 +89,43 @@ def synthesize_personas(intent_path: str = QUESTION_INTENT_PATH,
             print(f"  {a:22s} n={p['n']:2d}  PC={p['persona_consistent_rate']:.0%}  "
                   f"NT={p['narration_triggered_rate']:.0%}  UX={p['unexplained_rate']:.0%}")
     return result
+
+
+def apply_ask_patterns(persona_stats: dict, path: str = ASK_PATTERNS_PATH) -> dict:
+    """Layers the hand-curated, cross-checked-against-our-own-transcripts
+    ask-pattern taxonomy (data/inputs/analyst_ask_patterns.json -- see that
+    file's _provenance field for how it was validated, 2026-09) onto the
+    style_note every consumer already reads (question_framer's prompt,
+    grounding_gate's Verifier context). Additive only: an analyst not in the
+    ask-pattern file keeps whatever style_note synthesize_personas() gave
+    them, unchanged.
+
+    This is deliberately NOT new factual content -- it never adds a number
+    or a claim the Verifier would need to check, only a description of HOW
+    this analyst tends to turn evidence into a question (e.g. 'quantify a
+    new disclosure, then ask if it's sustainable'), the same kind of thing
+    style_note already carries (persona-consistent vs narration-triggered
+    rates) just at a finer grain."""
+    try:
+        with open(path) as f:
+            patterns = json.load(f)
+    except FileNotFoundError:
+        return persona_stats
+    patterns = {k: v for k, v in patterns.items() if not k.startswith("_")}
+
+    merged = {a: dict(stats) for a, stats in persona_stats.items()}
+    for analyst, pat in patterns.items():
+        note = f"Characteristic move: {pat['note']}"
+        if analyst in merged:
+            existing = merged[analyst].get("style_note", "")
+            merged[analyst]["style_note"] = f"{existing} {note}".strip()
+        else:
+            merged[analyst] = {
+                "n": 0, "persona_consistent_rate": None, "narration_triggered_rate": None,
+                "unexplained_rate": None, "style_note": note,
+            }
+        merged[analyst]["ask_pattern"] = pat["move_type"]
+    return merged
 
 
 if __name__ == "__main__":

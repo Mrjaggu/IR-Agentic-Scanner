@@ -19,7 +19,7 @@ from src.config.settings import (
 from src.data.loader import load_dataset, load_graph, get_active_analysts
 from src.memory.history import get_global_rate, get_analyst_profile
 from src.signals.metrics_extractor import compute_topic_anomaly_scores
-from src.signals.persona_synthesis import synthesize_personas
+from src.signals.persona_synthesis import synthesize_personas, apply_ask_patterns
 from src.model_provider.llm_client import client
 from src.agentic.graph_app import run_pipeline
 
@@ -116,6 +116,10 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
         analyst_prefs[a] = (pref, N)
 
     persona_stats = synthesize_personas(exclude_quarters=persona_exclude, out_path=None)
+    # Layer the hand-curated, cross-checked ask-pattern taxonomy on top -- see
+    # persona_synthesis.apply_ask_patterns' docstring. Additive: analysts not in
+    # that file are unaffected.
+    persona_stats = apply_ask_patterns(persona_stats)
 
     if probe:
         api_mode = client.probe_llm()
