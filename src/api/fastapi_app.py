@@ -46,6 +46,9 @@ from src.agentic.question_framer import build_evidence_pool
 from src.agentic.eval_harness import (
     run_holdout_eval, evaluate_quarter, research_errors, backtest_and_promote_weights,
 )
+from src.agentic.skills import definitions as _skills_definitions  # noqa: F401 -- populates the skill registry
+from src.agentic.skills.registry import list_skills
+
 from src.model_provider.llm_client import client, stats as llm_stats, reset_stats as llm_reset, RATE_LIMITS
 
 APP_HTML_PATH = os.path.join(BASE_DIR, "frontend", "ir_platform_app.html")
@@ -652,6 +655,16 @@ def eval_backtest_weights(req: WeightBacktestRequest):
                             content={"error": f"unknown weight key(s): {sorted(unknown)}",
                                      "valid_keys": sorted(valid_keys)})
     return backtest_and_promote_weights(req.weights, with_questions=req.with_questions)
+
+
+@app.get("/api/skills")
+def get_skills():
+    """Lists the registered agentic-pipeline skills (agents/skills/harness
+    separation): what each one does, which pipeline stage it belongs to, and
+    whether calling it can make an LLM request. Pure discovery/introspection
+    -- does not run anything, and the pipeline's own routes above still call
+    these functions directly rather than through this registry."""
+    return {"skills": list_skills()}
 
 
 # ── Ingestion ───────────────────────────────────────────────────────────────
