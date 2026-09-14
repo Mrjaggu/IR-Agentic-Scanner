@@ -14,14 +14,13 @@ _BASE_WAIT   = 10   # seconds for first retry (doubles each attempt)
 # req/day. TPM was the binding constraint there -- a Question-Framer prompt
 # carries evidence passages and runs ~1.5-2k tokens a call, so only ~4-5 calls
 # fit in a minute before throttling, which is why Cerebras/OpenRouter were
-# added as higher-TPM alternatives (2026-09).
+# investigated as higher-TPM alternatives (2026-09).
 #
-# Cerebras free trial (same gpt-oss-120b family, different provider): 30,000
-# uncached TPM / 90,000 total TPM is ~3.75x Groq's ceiling, but RPM is much
-# tighter (5) and it is a time-limited trial credit ($5, expires 30 days after
-# grant), not a permanently renewable free tier the way Groq's is -- worth
-# knowing before relying on it long-term. Source: Cerebras inference docs,
-# rate-limits page, Sept 2026.
+# Cerebras: DROPPED from the active rotation (2026-09) -- despite "free trial"
+# framing in its own docs, actually using it required a payment method on
+# file, which defeats the point of a free-tier fallback here. The
+# call_cerebras() code path is left in (harmless, no-ops without a key) in
+# case that changes, but it is now last in the fallback order, after Groq.
 #
 # OpenRouter free tier (":free"-suffixed model slugs): 20 RPM, 50 requests/day
 # (1,000/day once $10+ in lifetime credit has been purchased on the account,
@@ -33,10 +32,12 @@ _BASE_WAIT   = 10   # seconds for first retry (doubles each attempt)
 PROVIDER_LIMITS = {
     "Groq": {"provider": "groq", "tier": "free", "tpm": 8000, "rpm": 30, "rpd": 1000,
              "approx_tokens_per_call": 1800},
-    "Cerebras": {"provider": "cerebras", "tier": "free_trial", "tpm": 30000, "rpm": 5,
-                 "rpd": None, "tph_tpd": 1_000_000, "approx_tokens_per_call": 1800,
-                 "note": "Free TRIAL credit ($5), expires 30 days after grant -- not a "
-                         "permanently renewable free tier."},
+    "Cerebras": {"provider": "cerebras", "tier": "requires_payment_method", "tpm": 30000,
+                 "rpm": 5, "rpd": None, "tph_tpd": 1_000_000, "approx_tokens_per_call": 1800,
+                 "note": "Despite 'free trial' framing in Cerebras's own docs, actually "
+                         "using it required a payment method on file (confirmed 2026-09) "
+                         "-- not a no-payment free tier. Dropped from the active fallback "
+                         "rotation; kept here only in case that changes."},
     "OpenRouter": {"provider": "openrouter", "tier": "free", "tpm": None, "rpm": 20,
                    "rpd": 50, "rpd_with_credit": 1000, "approx_tokens_per_call": 1800,
                    "note": "TPM not published -- governed by whichever :free model is "
@@ -130,7 +131,7 @@ class LLMClient:
         explicit MODEL_PROVIDER preference first (if its key is present), then
         falls back through providers in an order biased toward higher-TPM free
         options before Groq's tighter 8,000 TPM ceiling."""
-        order = ["CEREBRAS", "OPENROUTER", "GROQ", "GEMINI", "OPENAI"]
+        order = ["OPENROUTER", "GROQ", "CEREBRAS", "GEMINI", "OPENAI"]
         callers = {
             "GROQ": (self.groq_key, self.call_groq, "Groq"),
             "CEREBRAS": (self.cerebras_key, self.call_cerebras, "Cerebras"),
@@ -350,7 +351,7 @@ class LLMClient:
             return dispatch[self.active_llm]()
 
         # Fallback order if not probed/set -- same higher-TPM-first bias as probe_llm.
-        for label in ("Cerebras", "OpenRouter", "Groq", "Gemini", "OpenAI"):
+        for label in ("OpenRouter", "Groq", "Cerebras", "Gemini", "OpenAI"):
             key = {"Groq": self.groq_key, "Cerebras": self.cerebras_key,
                    "OpenRouter": self.openrouter_key, "Gemini": self.gemini_key,
                    "OpenAI": self.openai_key}[label]
