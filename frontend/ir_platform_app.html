@@ -1940,11 +1940,28 @@ async function parseDisclosure(file) {
         <div id="salBars">${barsHTML(sal.map(([t, v]) => ({ label: t, value: v, display: f2(v), tipText: `${t}: salience ${f2(v)}` })))}</div>
       </div>
     </div>
+    ${(d.novel_themes || []).length ? `
+    <div style="margin-top:16px;">
+      <h4>New themes detected — outside the standard 12-topic list</h4>
+      <div class="xs muted" style="margin-top:3px;">These sentences are shaped like they'll draw scrutiny but don't match any known
+        coverage topic — most likely a one-off item (a regulatory window, a new balance-sheet line) with no question history yet.
+        They're still fed into topic ranking and analyst predictions below, since a topic with zero history is exactly the kind
+        this taxonomy-only view would otherwise miss.</div>
+      ${d.novel_themes.map(nt => `<div class="flag">
+        <div class="row" style="gap:6px;">
+          <span class="chip chip-accent">${esc(nt.topic)}</span>
+          <span class="xs muted">new theme</span>
+          ${(nt.reasons || []).map(r => `<span class="chip">${esc(r.replace(/_/g, " "))}</span>`).join("")}
+        </div>
+        <div class="flag-q">${esc(nt.sentence)}</div>
+      </div>`).join("")}
+    </div>` : ""}
     <div style="margin-top:16px;">
       <h4>Drill-down risks — ${d.drill_down_flags.length} sentence${d.drill_down_flags.length === 1 ? "" : "s"} shaped to invite scrutiny</h4>
       <div class="xs muted" style="margin-top:3px;">Multi-part bridges invite "does that add up" arithmetic checks; a stated change with no stated driver invites "what caused it".</div>
       ${d.drill_down_flags.slice(0, 6).map(f => `<div class="flag">
         <div class="row" style="gap:6px;">
+          ${f.novel_theme ? `<span class="xs muted" style="font-weight:700;">NEW</span>` : ""}
           ${f.reasons.map(r => `<span class="chip">${esc(r.replace(/_/g, " "))}</span>`).join("")}
           <span class="xs muted">${f.numeric_components} numeric components</span>
           ${(f.topics || []).slice(0, 2).map(t => `<span class="chip chip-accent">${esc(t)}</span>`).join("")}

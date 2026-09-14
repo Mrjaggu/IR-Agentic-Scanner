@@ -36,7 +36,7 @@ DISCLOSURE_BLEND = 0.25
 # is also what RESULTS_V2.md found independently: its N+1 boost was
 # cross-validated across all 15 training quarters (recall 45.4%->59.5%) and
 # adopted as the deterministic engine's default.
-from src.config.settings import SLOT_EXTRA, SLOT_CAP
+from src.config.settings import SLOT_EXTRA, SLOT_CAP, TOPICS_LIST
 
 
 def _disclosure_signal(disclosure: dict | None) -> dict[str, float]:
@@ -69,10 +69,22 @@ def reweight_for_analyst(analyst: str, overall_ranked_topics: list[str], pref: d
 
     candidates = list(overall_ranked_topics)
     for t, v in signal.items():
-        # Only pull in an off-list topic if this analyst has some real history
-        # on it -- otherwise the disclosure would spray the same new topic at
-        # every analyst regardless of whether they've ever cared.
-        if t not in candidates and v >= 0.5 and pref.get(t, 0.0) > 0.0:
+        if t in candidates or v < 0.5:
+            continue
+        if t in TOPICS_LIST:
+            # A known taxonomy topic this analyst has never engaged with is
+            # the doc's exact "globally hot topic they've never asked about"
+            # case -- only pull it in if they have SOME real history on it,
+            # otherwise the disclosure would spray the same topic at every
+            # analyst regardless of whether they've ever cared.
+            if pref.get(t, 0.0) > 0.0:
+                candidates.append(t)
+        else:
+            # A genuinely new theme (not part of the fixed taxonomy) has zero
+            # history for EVERY analyst by construction -- pref==0 here means
+            # "this didn't exist before", not "this analyst doesn't care", so
+            # the anti-spray rule above doesn't apply. A strong disclosure
+            # signal is itself the reason to surface it.
             candidates.append(t)
 
     max_pref = max((pref.get(t, 0.0) for t in candidates), default=0.0) or 1.0

@@ -161,10 +161,18 @@ def build_overall_topics(evidence_bundles: dict, anomaly_scores: dict, global_ra
     # Candidates: anomalous topics + disclosure-salient/flagged topics + top
     # base-rate topics. Attach disclosure evidence to each bundle so the
     # Analyst node and the Verifier both see it.
+    # Flagged/salient topics are NOT restricted to the fixed 12-topic taxonomy
+    # here -- a genuinely new theme the disclosure introduces (an FCNR
+    # liquidity opportunity, a one-off charge) only ever reaches drill-down
+    # flags / salience with a synthetic ad-hoc label (see
+    # src/data/upcoming.py::attach_novel_themes), never as a bare taxonomy
+    # name, so gating on `t in TOPICS_LIST` here is exactly what made those
+    # themes structurally unrepresentable regardless of how strongly the
+    # disclosure signalled them.
     candidates = list(dict.fromkeys(
         list(anomaly_scores.keys())
-        + [t for t in flagged_topics if t in TOPICS_LIST]
-        + [t for t, v in sorted(salience.items(), key=lambda x: -x[1]) if v >= 0.25 and t in TOPICS_LIST]
+        + flagged_topics
+        + [t for t, v in sorted(salience.items(), key=lambda x: -x[1]) if v >= 0.25]
         + sorted(TOPICS_LIST, key=lambda t: -global_rate.get(t, 0.0))
     ))
 
