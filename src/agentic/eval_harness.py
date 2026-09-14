@@ -225,7 +225,8 @@ def attribute_miss(topic: str, analyst: str, quarter: str, state: dict,
 def evaluate_quarter(quarter: str, holdout: bool = True,
                      with_questions: bool = False, upcoming: dict | None = None,
                      slot_extra: int | None = None, slot_cap: int | None = None,
-                     score_question_recall: bool = False) -> dict:
+                     score_question_recall: bool = False,
+                     analysts: list[str] | None = None) -> dict:
     """Run the agentic pipeline for one quarter under held-out conditions and
     score it. with_questions=True also runs the Question Framer + Verifier to
     measure grounding rate (costs LLM calls); default False keeps topic
@@ -236,7 +237,17 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
     for the quarter via question_eval.evaluate_analyst_questions -- topic
     recall answers "was the bucket on the brief", this answers "did we
     anticipate what they actually asked". Costs one extra LLM judge call per
-    decomposed concern, on top of the framing/grounding calls."""
+    decomposed concern, on top of the framing/grounding calls.
+
+    analysts, if given, restricts the ENTIRE per-analyst loop (framing +
+    grounding + question recall) to just those names -- a scoping knob added
+    2026-09 after a full-held-out-set question-recall run got throttled to a
+    crawl by OpenRouter's free-tier 20 RPM/50-per-day ceiling. Cuts LLM call
+    volume roughly in proportion to len(analysts)/len(scored_analysts).
+    Topic-ranking metrics (precision_at_k etc.) are unaffected -- they don't
+    depend on the per-analyst loop -- but per-analyst macro/coverage numbers
+    then describe only the filtered subset, not the full held-out set, so
+    callers must not treat a scoped run's macro numbers as the headline."""
     state = build_initial_state(quarter, probe=with_questions, holdout=holdout, upcoming=upcoming)
     bundles, tool_log = run_planning_agent(
         state["anomaly_scores"], state["graph"], state["prior_quarters"], state["global_rate"]
@@ -248,6 +259,13 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
     truth = ground_truth(quarter, state["graph"])
     scored_analysts = [a for a in state["active_analysts"] if a in truth]
     all_actual_topics = set().union(*truth.values()) if truth else set()
+
+    # Topic ranking metrics above are computed from `ranked`/`truth` only, so
+    # this filter (applied just before the expensive per-analyst loop) never
+    # touches them -- only per_analyst/macro/coverage/question_recall narrow
+    # to the requested subset.
+    if analysts:
+        scored_analysts = [a for a in scored_analysts if a in analysts]
 
     # Topic-level ranking quality (no attendance information used)
     topic_metrics = {
@@ -361,20 +379,32 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
         "composite_scores": overall.get("composite_scores", {}),
         "question_recall": ({"macro": question_recall_macro, "per_analyst": question_recall_detail}
                             if score_question_recall else None),
+        "analyst_scope": sorted(scored_analysts) if analysts else None,
     }
 
 
 # ── Held-out test set: both quarters, separately, plus the gate ────────────
-def run_holdout_eval(with_questions: bool = False, score_question_recall: bool = False) -> dict:
+def run_holdout_eval(with_questions: bool = False, score_question_recall: bool = False,
+                     analysts: list[str] | None = None,
+                     quarters: list[str] | None = None) -> dict:
     """The headline result: q4fy26 and q1fy27 scored independently against a
     training cutoff of q3fy26, with the spread between them made explicit.
 
     score_question_recall=True (forces with_questions=True) additionally
-    scores question-level recall -- see evaluate_quarter's docstring."""
+    scores question-level recall -- see evaluate_quarter's docstring.
+
+    analysts/quarters narrow the run for a cheap, targeted check (e.g. one
+    analyst on one quarter) instead of the full held-out set -- see
+    evaluate_quarter's docstring for why this exists and what it does NOT
+    change (topic-ranking metrics stay full-set; only per-analyst numbers
+    narrow). Only meant for ad-hoc verification; the promotion-gate checks
+    below still run against whatever `results` this scoping produces, so a
+    scoped run's gate verdict should not be read as the real gate result."""
     with_questions = with_questions or score_question_recall
     results = [evaluate_quarter(q, holdout=True, with_questions=with_questions,
-                                score_question_recall=score_question_recall)
-               for q in TEST_QUARTERS]
+                                score_question_recall=score_question_recall,
+                                analysts=analysts)
+               for q in (quarters or TEST_QUARTERS)]
 
     f1s = [r["macro"]["f1"] for r in results]
     f2s = [r["macro"]["f2"] for r in results]

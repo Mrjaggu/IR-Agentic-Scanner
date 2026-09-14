@@ -605,7 +605,7 @@ def _cached_question_recall(refresh: bool = False) -> dict:
 
 
 @app.get("/api/eval/question-recall")
-def eval_question_recall(refresh: bool = False):
+def eval_question_recall(refresh: bool = False, analysts: str = "", quarter: str = ""):
     """Question-level recall: did the FRAMED QUESTION TEXT anticipate what
     the analyst actually asked, not just whether the topic bucket matched.
     Topic recall (see /api/eval/holdout) answers "was the bucket on the
@@ -614,7 +614,19 @@ def eval_question_recall(refresh: bool = False):
     with an LLM judge. Costs real LLM calls (question framing + grounding +
     one judge call per decomposed concern) across every held-out analyst in
     both test quarters -- cached like the other eval endpoints, so this is
-    only expensive on first call or an explicit refresh."""
+    only expensive on first call or an explicit refresh.
+
+    `analysts` (comma-separated names) and `quarter` (a single TEST_QUARTERS
+    value, e.g. "q1fy27") scope the run to a cheap, targeted check instead of
+    the full held-out set -- added 2026-09 after a full run got throttled to
+    a crawl by OpenRouter's free-tier rate limit. A scoped call bypasses the
+    cache entirely (it's not the headline result and shouldn't overwrite or
+    be served as it), so it always makes fresh LLM calls -- use sparingly."""
+    if analysts or quarter:
+        analyst_list = [a.strip() for a in analysts.split(",") if a.strip()] or None
+        quarter_list = [quarter.strip()] if quarter.strip() else None
+        return run_holdout_eval(score_question_recall=True,
+                                analysts=analyst_list, quarters=quarter_list)
     return _cached_question_recall(refresh=refresh)
 
 
