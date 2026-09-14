@@ -388,27 +388,63 @@ class LLMClient:
         STATS["calls"] += 1
         if STATS["started_at"] is None:
             STATS["started_at"] = time.time()
-        try:
-            with urllib.request.urlopen(req, timeout=30) as resp:
-                body = json.loads(resp.read())
-        except urllib.error.HTTPError as e:
-            if e.code == 429:
-                STATS["rate_limited"] += 1
-                STATS["last_error"] = "Gemini: rate limited (429)"
-                print(f"  [Gemini rate limit] 429{' -- skipped (no_retry probe)' if no_retry else ''}.")
-            else:
-                try:
-                    err_body = e.read().decode("utf-8", errors="ignore")
-                except Exception:
-                    err_body = str(e)
+
+        # 2026-09 fix #2: the 6-analyst wider run exposed that this method
+        # never retried a 429 at all (unlike _chat_completions, which the
+        # other four providers share) -- Gemini's free tier throttles well
+        # before 6 analysts' worth of framing calls finish, so grounding_rate
+        # collapsed to 0.146 (17/44 calls rate-limited, all lost for good).
+        # Now mirrors _chat_completions' backoff: real calls (no_retry=False,
+        # the default for question-framing/grounding) retry up to
+        # _MAX_RETRIES times with exponential backoff (or the server's
+        # Retry-After header if present); no_retry=True (probe_llm only)
+        # still fails a 429 instantly, same as before.
+        body = None
+        for attempt in range(_MAX_RETRIES):
+            try:
+                with urllib.request.urlopen(req, timeout=30) as resp:
+                    body = json.loads(resp.read())
+                break
+            except urllib.error.HTTPError as e:
+                if e.code == 429:
+                    STATS["rate_limited"] += 1
+                    if no_retry:
+                        STATS["last_error"] = "Gemini: rate limited (429) -- skipped (no_retry probe)"
+                        print("  [Gemini rate limit] 429 -- skipped (no_retry probe).")
+                        return None
+                    wait = None
+                    try:
+                        retry_after = e.headers.get("retry-after") or e.headers.get("Retry-After")
+                        if retry_after:
+                            wait = float(retry_after)
+                    except Exception:
+                        pass
+                    if wait is None:
+                        wait = _BASE_WAIT * (2 ** attempt)
+                    STATS["wait_seconds"] += wait
+                    STATS["last_error"] = f"Gemini: rate limited (429) -- waiting {wait:.0f}s"
+                    print(f"  [Gemini rate limit] Waiting {wait:.0f}s before retry "
+                          f"(attempt {attempt+1}/{_MAX_RETRIES}) ...")
+                    time.sleep(wait)
+                    continue
+                else:
+                    try:
+                        err_body = e.read().decode("utf-8", errors="ignore")
+                    except Exception:
+                        err_body = str(e)
+                    STATS["failed"] += 1
+                    STATS["last_error"] = f"Gemini: HTTP {e.code}: {err_body[:160]}"
+                    print(f"  [Gemini error {e.code}] {err_body[:200]}")
+                    return None
+            except Exception as e:
                 STATS["failed"] += 1
-                STATS["last_error"] = f"Gemini: HTTP {e.code}: {err_body[:160]}"
-                print(f"  [Gemini error {e.code}] {err_body[:200]}")
-            return None
-        except Exception as e:
+                STATS["last_error"] = f"Gemini: {str(e)[:160]}"
+                print(f"  [Gemini error] {e}")
+                return None
+        if body is None:
             STATS["failed"] += 1
-            STATS["last_error"] = f"Gemini: {str(e)[:160]}"
-            print(f"  [Gemini error] {e}")
+            STATS["last_error"] = f"Gemini: gave up after {_MAX_RETRIES} retries"
+            print(f"  [Gemini] Gave up after {_MAX_RETRIES} retries.")
             return None
 
         candidates = body.get("candidates") or []
