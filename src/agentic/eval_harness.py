@@ -41,6 +41,7 @@ from src.agentic.overall_layer import build_overall_topics
 from src.agentic.analyst_layer import reweight_for_analyst
 from src.agentic.question_framer import build_evidence_pool
 from src.agentic.verifier import grounding_gate
+from src.agentic.question_eval import evaluate_analyst_questions
 from src.data.upcoming import topic_salience, drill_down_flags, attach_novel_themes
 
 
@@ -56,6 +57,19 @@ def ground_truth(quarter: str, graph: dict) -> dict[str, set[str]]:
         if topics:
             truth.setdefault(p["analyst"], set()).update(topics)
     return truth
+
+
+def actual_question_text(quarter: str, graph: dict, analyst: str) -> str:
+    """The analyst's own real question text for this quarter, verbatim from
+    the transcript -- the ground-truth block question_eval.py decomposes
+    into individual concerns and scores our predictions against. Usually one
+    Question node per (analyst, quarter); joined just in case there is ever
+    more than one."""
+    return " ".join(
+        n["properties"]["text"] for n in graph["nodes"]
+        if n["type"] == "Question" and n["properties"]["quarter"] == quarter
+        and n["properties"]["analyst"] == analyst
+    )
 
 
 # ── Metric primitives ──────────────────────────────────────────────────────
@@ -210,11 +224,19 @@ def attribute_miss(topic: str, analyst: str, quarter: str, state: dict,
 # ── Per-quarter evaluation ─────────────────────────────────────────────────
 def evaluate_quarter(quarter: str, holdout: bool = True,
                      with_questions: bool = False, upcoming: dict | None = None,
-                     slot_extra: int | None = None, slot_cap: int | None = None) -> dict:
+                     slot_extra: int | None = None, slot_cap: int | None = None,
+                     score_question_recall: bool = False) -> dict:
     """Run the agentic pipeline for one quarter under held-out conditions and
     score it. with_questions=True also runs the Question Framer + Verifier to
     measure grounding rate (costs LLM calls); default False keeps topic
-    scoring cheap and deterministic."""
+    scoring cheap and deterministic.
+
+    score_question_recall=True (requires with_questions=True) additionally
+    judges each analyst's FRAMED QUESTION TEXT against their real question
+    for the quarter via question_eval.evaluate_analyst_questions -- topic
+    recall answers "was the bucket on the brief", this answers "did we
+    anticipate what they actually asked". Costs one extra LLM judge call per
+    decomposed concern, on top of the framing/grounding calls."""
     state = build_initial_state(quarter, probe=with_questions, holdout=holdout, upcoming=upcoming)
     bundles, tool_log = run_planning_agent(
         state["anomaly_scores"], state["graph"], state["prior_quarters"], state["global_rate"]
@@ -241,6 +263,7 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
     # Per-analyst prediction quality
     per_analyst, failures = {}, []
     grounded_slots = total_slots = 0
+    question_recall_detail = {}
     for analyst in scored_analysts:
         pref, N = state["analyst_prefs"][analyst]
         predicted = reweight_for_analyst(analyst, ranked, pref, N, disclosure=upcoming,
@@ -268,6 +291,13 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
             total_slots += len(results)
             grounded_slots += sum(1 for r in results if r["status"] == "grounded")
 
+            if score_question_recall:
+                actual_block = actual_question_text(quarter, state["graph"], analyst)
+                predicted_qs = [r["question_text"] for r in results if r.get("question_text")]
+                if actual_block and predicted_qs:
+                    question_recall_detail[analyst] = evaluate_analyst_questions(
+                        actual_block, predicted_qs, state["client"])
+
     def _macro(key):
         vals = [s[key] for s in per_analyst.values()]
         return round(sum(vals) / len(vals), 4) if vals else None
@@ -284,6 +314,12 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
     fail_counts = {}
     for f in failures:
         fail_counts[f["category"]] = fail_counts.get(f["category"], 0) + 1
+
+    question_recall_macro = None
+    if question_recall_detail:
+        judged = [d["question_recall"] for d in question_recall_detail.values()
+                 if d["question_recall"] is not None]
+        question_recall_macro = round(sum(judged) / len(judged), 4) if judged else None
 
     return {
         "quarter": quarter,
@@ -323,14 +359,21 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
         "planning_tool_calls": len([t for t in tool_log if t["status"] == "called"]),
         "disclosure_conditioned": bool(upcoming),
         "composite_scores": overall.get("composite_scores", {}),
+        "question_recall": ({"macro": question_recall_macro, "per_analyst": question_recall_detail}
+                            if score_question_recall else None),
     }
 
 
 # ── Held-out test set: both quarters, separately, plus the gate ────────────
-def run_holdout_eval(with_questions: bool = False) -> dict:
+def run_holdout_eval(with_questions: bool = False, score_question_recall: bool = False) -> dict:
     """The headline result: q4fy26 and q1fy27 scored independently against a
-    training cutoff of q3fy26, with the spread between them made explicit."""
-    results = [evaluate_quarter(q, holdout=True, with_questions=with_questions)
+    training cutoff of q3fy26, with the spread between them made explicit.
+
+    score_question_recall=True (forces with_questions=True) additionally
+    scores question-level recall -- see evaluate_quarter's docstring."""
+    with_questions = with_questions or score_question_recall
+    results = [evaluate_quarter(q, holdout=True, with_questions=with_questions,
+                                score_question_recall=score_question_recall)
                for q in TEST_QUARTERS]
 
     f1s = [r["macro"]["f1"] for r in results]
@@ -362,6 +405,10 @@ def run_holdout_eval(with_questions: bool = False) -> dict:
         for cat, n in r["failure_attribution"]["counts"].items():
             all_fail_counts[cat] = all_fail_counts.get(cat, 0) + n
 
+    qr_macros = [r["question_recall"]["macro"] for r in results
+                if r.get("question_recall") and r["question_recall"]["macro"] is not None]
+    mean_question_recall = round(sum(qr_macros) / len(qr_macros), 4) if qr_macros else None
+
     return {
         "train_cutoff": {r["quarter"]: r["train_cutoff"] for r in results},
         "cutoff_mode": results[0].get("cutoff_mode") if results else None,
@@ -380,6 +427,7 @@ def run_holdout_eval(with_questions: bool = False) -> dict:
             "mean_coverage_recall": round(sum(cov_r) / len(cov_r), 4) if cov_r else 0.0,
             "total_topics_covered": sum(r["coverage"]["topics_covered"] for r in results),
             "total_topics_raised": sum(r["coverage"]["topics_actually_raised"] for r in results),
+            "mean_question_recall": mean_question_recall,
             "total_topics_predicted": sum(r["coverage"]["topics_predicted"] for r in results),
         },
         "promotion_gate": {
