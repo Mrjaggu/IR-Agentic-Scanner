@@ -120,6 +120,8 @@ def prf(predicted: list[str], actual: set[str]) -> dict:
 # reweighting or re-prompting; the rest point at data/candidate-generation
 # gaps, which is exactly why lumping them into one "miss" count was hiding
 # where effort should go.
+from src.agentic.skills.registry import SKILL_FOR_ERROR_CATEGORY
+
 ERROR_TAXONOMY = {
     "missing_context": "No narration, no disclosed metric, and no one has ever asked "
         "about this before -- the signal never entered the system at all. A data/ingestion "
@@ -427,6 +429,7 @@ def research_errors(holdout_result: dict | None = None, top_n: int = 5) -> dict:
             "count": n,
             "share": round(n / total, 4) if total else 0.0,
             "actionable": cat in ("reasoning_weakness", "topic_ranked_low"),
+            "skill": SKILL_FOR_ERROR_CATEGORY.get(cat),
             "top_topics": [{"topic": t, "count": c} for t, c in top_topics],
             "examples": [{"analyst": e["analyst"], "topic": e["topic"], "quarter": e["quarter"]}
                         for e in by_category_examples[cat][:top_n]],
@@ -442,6 +445,8 @@ def research_errors(holdout_result: dict | None = None, top_n: int = 5) -> dict:
             diagnosis += (" This is NOT fixable by reweighting or re-prompting -- it points at "
                          "upstream data/candidate-generation, so a framework-weight change would "
                          "not move this number.")
+        elif top["skill"]:
+            diagnosis += f" The implicated skill is '{top['skill']}'."
 
     return {
         "total_misses": total,
