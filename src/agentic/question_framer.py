@@ -140,6 +140,17 @@ def build_evidence_pool(analyst: str, topics: list[str], graph: dict, prior_quar
             "anomaly_score": anomaly_scores.get(t),
             "metrics": _metrics_for_topic(t, disclosed_metrics),
             "narration": narration,
+            # Which of the narration snippets above mention something without
+            # putting a number on it -- e.g. "FCNR deposits are attracting
+            # strong interest" with no quantum yet. This is the evidence
+            # shape behind a real, confirmed miss (Kunal Shah, Q1FY27: topic
+            # recall scored it a hit, question recall scored it 0.5, because
+            # the framed question reacted generally instead of asking for the
+            # figure). Surfacing it lets _build_frame_prompt nudge toward the
+            # quantify-it follow-up a real analyst tends to ask, without any
+            # per-analyst customization -- this fires for whoever gets this
+            # evidence, not a name-specific rule. (2026-09)
+            "qualitative_gaps": [snip for snip in narration if not re.search(r"\d", snip)],
             # Exactly the figures shown for THIS topic — so what the model may
             # say and what the Verifier will accept are the same set.
             "disclosure_numbers": set(re.findall(r"\d+(?:\.\d+)?", " ".join(narration))),
@@ -169,6 +180,12 @@ def _build_frame_prompt(analyst: str, style_note: str, topics: list[str], pool: 
             lines.append(f"- Management is disclosing this quarter: {_fmt_metric(m)}")
         for snip in ev.get("narration", []) or []:
             lines.append(f'- Management says on this call: "{snip[:300]}"')
+        if ev.get("qualitative_gaps"):
+            lines.append("- The line(s) above with no number attached are exactly the kind of "
+                         "thing a sharp analyst presses on next -- don't just react to the "
+                         "general subject; ask management to put a figure on it (how much, "
+                         "what proportion, what run-rate) rather than settling for the "
+                         "qualitative description they gave.")
         if not ev["precedent"] and not ev["metrics"] and not ev.get("narration"):
             lines.append("- No prior question from them on this and no disclosed figure — "
                          "keep it a plain, open question with no numbers at all.")
