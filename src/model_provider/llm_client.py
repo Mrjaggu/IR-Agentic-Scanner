@@ -158,7 +158,7 @@ class LLMClient:
         if self.preferred_provider in callers:
             key, fn, label = callers[self.preferred_provider]
             if key:
-                res = fn('Return valid JSON: {"ok": true}', temperature=0.0)
+                res = fn('Return valid JSON: {"ok": true}', temperature=0.0, no_retry=True)
                 if res:
                     self.active_llm = label
                     return label
@@ -171,7 +171,7 @@ class LLMClient:
             key, fn, label = callers[name]
             if not key:
                 continue
-            res = fn('Return valid JSON: {"ok": true}', temperature=0.0)
+            res = fn('Return valid JSON: {"ok": true}', temperature=0.0, no_retry=True)
             if res:
                 self.active_llm = label
                 return label
@@ -185,10 +185,20 @@ class LLMClient:
                           temperature: float, system_prompt: str | None,
                           provider_label: str, tpm_hint: int | None,
                           extra_headers: dict | None = None,
-                          json_mode: bool = True) -> str | None:
+                          json_mode: bool = True,
+                          no_retry: bool = False) -> str | None:
         """POSTs an OpenAI-style /chat/completions request with 429 backoff and
         a one-shot fallback that drops response_format if the model rejects
-        strict JSON mode (some OpenRouter free models don't support it)."""
+        strict JSON mode (some OpenRouter free models don't support it).
+
+        no_retry=True skips the sleep-and-retry loop entirely: a 429 fails
+        immediately instead of working through the full exponential backoff
+        (up to 10+20+40+80+160=310s). This exists for probe_llm() -- probing
+        is choosing WHICH provider to use, so a rate-limited provider should
+        just lose that race and let the next provider in the order get tried,
+        not block server startup for minutes on a provider it may not even
+        end up using. Real question-framing/grounding calls still retry
+        normally (no_retry defaults to False)."""
         sys_msg = system_prompt or _DEFAULT_SYSTEM_PROMPT
 
         def _body(with_json_mode: bool) -> bytes:
@@ -225,6 +235,10 @@ class LLMClient:
             except urllib.error.HTTPError as e:
                 if e.code == 429:
                     STATS["rate_limited"] += 1
+                    if no_retry:
+                        STATS["last_error"] = f"{provider_label}: rate limited (429) -- skipped (no_retry probe)"
+                        print(f"  [{provider_label} rate limit] Skipping (probe, no retry).")
+                        return None
                     wait = None
                     try:
                         retry_after = e.headers.get("retry-after") or e.headers.get("Retry-After")
@@ -277,23 +291,28 @@ class LLMClient:
         return None
 
     # ── Providers ────────────────────────────────────────────────────────────
-    def call_groq(self, prompt: str, temperature: float = 0.15, system_prompt: str = None) -> str | None:
+    def call_groq(self, prompt: str, temperature: float = 0.15, system_prompt: str = None,
+                  no_retry: bool = False) -> str | None:
         if not self.groq_key:
             return None
         return self._chat_completions(
             "https://api.groq.com/openai/v1/chat/completions", self.groq_key, self.groq_model,
             prompt, temperature, system_prompt, "Groq", PROVIDER_LIMITS["Groq"]["tpm"],
+            no_retry=no_retry,
         )
 
-    def call_cerebras(self, prompt: str, temperature: float = 0.15, system_prompt: str = None) -> str | None:
+    def call_cerebras(self, prompt: str, temperature: float = 0.15, system_prompt: str = None,
+                      no_retry: bool = False) -> str | None:
         if not self.cerebras_key:
             return None
         return self._chat_completions(
             "https://api.cerebras.ai/v1/chat/completions", self.cerebras_key, self.cerebras_model,
             prompt, temperature, system_prompt, "Cerebras", PROVIDER_LIMITS["Cerebras"]["tpm"],
+            no_retry=no_retry,
         )
 
-    def call_openrouter(self, prompt: str, temperature: float = 0.15, system_prompt: str = None) -> str | None:
+    def call_openrouter(self, prompt: str, temperature: float = 0.15, system_prompt: str = None,
+                        no_retry: bool = False) -> str | None:
         if not self.openrouter_key or not self.openrouter_model:
             if self.openrouter_key and not self.openrouter_model:
                 print("  [OpenRouter] OPENROUTER_API_KEY is set but OPENROUTER_MODEL is not -- "
@@ -306,9 +325,11 @@ class LLMClient:
             # OpenRouter asks for these but works without them; harmless to include.
             extra_headers={"HTTP-Referer": "https://axisbank-ir-platform.local",
                            "X-Title": "IR Question Intelligence"},
+            no_retry=no_retry,
         )
 
-    def call_nvidia_nim(self, prompt: str, temperature: float = 0.15, system_prompt: str = None) -> str | None:
+    def call_nvidia_nim(self, prompt: str, temperature: float = 0.15, system_prompt: str = None,
+                        no_retry: bool = False) -> str | None:
         if not self.nim_key or not self.nim_model:
             if self.nim_key and not self.nim_model:
                 print("  [NVIDIA NIM] NVIDIA_NIM_API_KEY is set but NVIDIA_NIM_MODEL is not -- "
@@ -317,9 +338,12 @@ class LLMClient:
         return self._chat_completions(
             "https://integrate.api.nvidia.com/v1/chat/completions", self.nim_key, self.nim_model,
             prompt, temperature, system_prompt, "NVIDIA NIM", PROVIDER_LIMITS["NVIDIA NIM"]["tpm"],
+            no_retry=no_retry,
         )
 
-    def call_gemini(self, prompt: str, temperature: float = 0.15) -> str | None:
+    def call_gemini(self, prompt: str, temperature: float = 0.15, no_retry: bool = False) -> str | None:
+        # no_retry accepted for signature parity with the other providers'
+        # call_* methods (see probe_llm) -- this method never retries anyway.
         if not self.gemini_key:
             return None
         url = (f"https://generativelanguage.googleapis.com/v1beta/models/"
@@ -338,7 +362,9 @@ class LLMClient:
             print(f"  [Gemini error] {e}")
             return None
 
-    def call_openai(self, prompt: str, temperature: float = 0.15) -> str | None:
+    def call_openai(self, prompt: str, temperature: float = 0.15, no_retry: bool = False) -> str | None:
+        # no_retry accepted for signature parity with the other providers'
+        # call_* methods (see probe_llm) -- this method never retries anyway.
         if not self.openai_key:
             return None
         url = "https://api.openai.com/v1/chat/completions"
