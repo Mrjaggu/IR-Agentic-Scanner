@@ -65,7 +65,7 @@ def _metrics_for_topic(topic: str, disclosed: dict | None) -> list[dict]:
 
 
 def _narration_for_topic(graph: dict, target_quarter: str, topic: str,
-                         disclosure_text: str = "", max_snips: int = 2) -> list[str]:
+                         disclosure_text: str = "", max_snips: int = 3) -> list[str]:
     """What management actually SAYS about this topic on the call being
     prepared for — from an uploaded draft script if there is one, else the
     prepared remarks for that quarter.
@@ -77,7 +77,19 @@ def _narration_for_topic(graph: dict, target_quarter: str, topic: str,
     figures the model SEES identical to the set the Verifier will ACCEPT.
     Section 2.1 lists the draft disclosure script as a legitimate pre-call
     source; analyst QUESTIONS from the target quarter are never used and
-    remain the leak boundary."""
+    remain the leak boundary.
+
+    A qualitative sentence with no number yet (e.g. "FCNR deposits are
+    attracting strong interest, a meaningful opportunity") is exactly the
+    kind of disclosure that provokes a real analyst's "how much?" follow-up
+    -- so it is no longer hard-excluded for lacking a digit (2026-09 fix,
+    found via a live cross-check against Kunal Shah's real Q1FY27 FCNR
+    question: the sentence was IN the narration but a digit requirement was
+    silently dropping it from the evidence pool, so the framed question
+    talked about the repo-cut instead). Number-bearing sentences are still
+    ranked ahead of qualitative ones when both are on-topic, since the
+    Verifier needs concrete figures to ground a claim against -- this just
+    stops qualitative-but-relevant sentences from being invisible."""
     from src.graphs.compiler import TOPICS as TOPIC_KEYWORDS
     kws = [k.lower() for k in TOPIC_KEYWORDS.get(topic, [])]
     kws += [w for w in re.split(r"[^a-z]+", topic.lower()) if len(w) > 3]
@@ -97,14 +109,19 @@ def _narration_for_topic(graph: dict, target_quarter: str, topic: str,
     for seg in source:
         for sent in re.split(r"(?<=[.!?])\s+", seg):
             sent = sent.strip()
-            if len(sent) < 40 or not re.search(r"\d", sent):
+            if len(sent) < 40:
                 continue
             low = sent.lower()
             hits = sum(1 for k in kws if k in low)
             if hits:
-                scored.append((hits, len(sent), sent))
-    scored.sort(key=lambda x: (-x[0], x[1]))
-    return [s for _, _, s in scored[:max_snips]]
+                has_digit = bool(re.search(r"\d", sent))
+                # Rank by topic relevance first, then prefer number-bearing
+                # sentences (the Verifier needs a figure to check a claim
+                # against) -- but a qualitative, on-topic sentence with no
+                # digit yet still gets a slot instead of being dropped.
+                scored.append((hits, 0 if has_digit else 1, len(sent), sent))
+    scored.sort(key=lambda x: (-x[0], x[1], x[2]))
+    return [s for _, _, _, s in scored[:max_snips]]
 
 
 def build_evidence_pool(analyst: str, topics: list[str], graph: dict, prior_quarters: set[str],
