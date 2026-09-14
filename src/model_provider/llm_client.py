@@ -29,6 +29,13 @@ _BASE_WAIT   = 10   # seconds for first retry (doubles each attempt)
 # deprecate/replace, so OPENROUTER_MODEL should be checked against
 # https://openrouter.ai/models?max_price=0 periodically rather than assumed
 # stable. Source: OpenRouter docs, Sept 2026.
+#
+# NVIDIA NIM (build.nvidia.com hosted inference API, added 2026-09): free API
+# key, OpenAI-compatible /v1/chat/completions endpoint. NVIDIA does not
+# publish a fixed TPM/RPM number for the free tier the way Groq/Cerebras do --
+# treat it as "free but unpublished/variable limits" rather than a known
+# ceiling, and let the existing 429 backoff handle whatever throttling shows
+# up in practice.
 PROVIDER_LIMITS = {
     "Groq": {"provider": "groq", "tier": "free", "tpm": 8000, "rpm": 30, "rpd": 1000,
              "approx_tokens_per_call": 1800},
@@ -43,6 +50,10 @@ PROVIDER_LIMITS = {
                    "note": "TPM not published -- governed by whichever :free model is "
                            "configured, and that model can be deprecated/replaced by "
                            "OpenRouter without notice."},
+    "NVIDIA NIM": {"provider": "nvidia_nim", "tier": "free", "tpm": None, "rpm": None,
+                   "rpd": None, "approx_tokens_per_call": 1800,
+                   "note": "NVIDIA does not publish fixed free-tier TPM/RPM numbers -- "
+                           "limits are unconfirmed/variable, handled via 429 backoff."},
     "Gemini": {"provider": "gemini", "tier": "free", "tpm": None, "rpm": None, "rpd": None},
     "OpenAI": {"provider": "openai", "tier": "paid", "tpm": None, "rpm": None, "rpd": None},
 }
@@ -72,7 +83,7 @@ def current_limits(client_obj: "LLMClient | None" = None) -> dict:
     c = client_obj if client_obj is not None else client
     base = dict(PROVIDER_LIMITS.get(c.active_llm, PROVIDER_LIMITS["Groq"]))
     model = {"Groq": c.groq_model, "Cerebras": c.cerebras_model, "OpenRouter": c.openrouter_model,
-             "Gemini": c.gemini_model, "OpenAI": c.openai_model}.get(c.active_llm)
+             "NVIDIA NIM": c.nim_model, "Gemini": c.gemini_model, "OpenAI": c.openai_model}.get(c.active_llm)
     if model:
         base["model"] = model
     return base
@@ -108,6 +119,7 @@ class LLMClient:
         self.openrouter_key = os.getenv("OPENROUTER_API_KEY")
         self.gemini_key = os.getenv("GEMINI_API_KEY")
         self.openai_key = os.getenv("OPENAI_API_KEY")
+        self.nim_key = os.getenv("NVIDIA_NIM_API_KEY")
         self.preferred_provider = os.getenv("MODEL_PROVIDER", "").upper()
 
         self.groq_model = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
@@ -122,6 +134,7 @@ class LLMClient:
         self.openrouter_model = os.getenv("OPENROUTER_MODEL", "")
         self.gemini_model = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
         self.openai_model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+        self.nim_model = os.getenv("NVIDIA_NIM_MODEL", "")
 
         self.active_llm = None
 
@@ -131,11 +144,12 @@ class LLMClient:
         explicit MODEL_PROVIDER preference first (if its key is present), then
         falls back through providers in an order biased toward higher-TPM free
         options before Groq's tighter 8,000 TPM ceiling."""
-        order = ["OPENROUTER", "GROQ", "CEREBRAS", "GEMINI", "OPENAI"]
+        order = ["OPENROUTER", "GROQ", "NVIDIA_NIM", "CEREBRAS", "GEMINI", "OPENAI"]
         callers = {
             "GROQ": (self.groq_key, self.call_groq, "Groq"),
             "CEREBRAS": (self.cerebras_key, self.call_cerebras, "Cerebras"),
             "OPENROUTER": (self.openrouter_key, self.call_openrouter, "OpenRouter"),
+            "NVIDIA_NIM": (self.nim_key, self.call_nvidia_nim, "NVIDIA NIM"),
             "GEMINI": (self.gemini_key, self.call_gemini, "Gemini"),
             "OPENAI": (self.openai_key, self.call_openai, "OpenAI"),
         }
@@ -294,6 +308,17 @@ class LLMClient:
                            "X-Title": "IR Question Intelligence"},
         )
 
+    def call_nvidia_nim(self, prompt: str, temperature: float = 0.15, system_prompt: str = None) -> str | None:
+        if not self.nim_key or not self.nim_model:
+            if self.nim_key and not self.nim_model:
+                print("  [NVIDIA NIM] NVIDIA_NIM_API_KEY is set but NVIDIA_NIM_MODEL is not -- "
+                      "set it in .env to a model slug from https://build.nvidia.com/models.")
+            return None
+        return self._chat_completions(
+            "https://integrate.api.nvidia.com/v1/chat/completions", self.nim_key, self.nim_model,
+            prompt, temperature, system_prompt, "NVIDIA NIM", PROVIDER_LIMITS["NVIDIA NIM"]["tpm"],
+        )
+
     def call_gemini(self, prompt: str, temperature: float = 0.15) -> str | None:
         if not self.gemini_key:
             return None
@@ -344,6 +369,7 @@ class LLMClient:
             "Groq": lambda: self.call_groq(prompt, temperature=temperature, system_prompt=system_prompt),
             "Cerebras": lambda: self.call_cerebras(prompt, temperature=temperature, system_prompt=system_prompt),
             "OpenRouter": lambda: self.call_openrouter(prompt, temperature=temperature, system_prompt=system_prompt),
+            "NVIDIA NIM": lambda: self.call_nvidia_nim(prompt, temperature=temperature, system_prompt=system_prompt),
             "Gemini": lambda: self.call_gemini(prompt, temperature=temperature),
             "OpenAI": lambda: self.call_openai(prompt, temperature=temperature),
         }
@@ -351,10 +377,10 @@ class LLMClient:
             return dispatch[self.active_llm]()
 
         # Fallback order if not probed/set -- same higher-TPM-first bias as probe_llm.
-        for label in ("OpenRouter", "Groq", "Cerebras", "Gemini", "OpenAI"):
+        for label in ("OpenRouter", "Groq", "NVIDIA NIM", "Cerebras", "Gemini", "OpenAI"):
             key = {"Groq": self.groq_key, "Cerebras": self.cerebras_key,
-                   "OpenRouter": self.openrouter_key, "Gemini": self.gemini_key,
-                   "OpenAI": self.openai_key}[label]
+                   "OpenRouter": self.openrouter_key, "NVIDIA NIM": self.nim_key,
+                   "Gemini": self.gemini_key, "OpenAI": self.openai_key}[label]
             if key:
                 return dispatch[label]()
         return None
