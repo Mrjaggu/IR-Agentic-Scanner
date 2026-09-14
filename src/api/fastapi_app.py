@@ -457,6 +457,7 @@ async def disclosure_parse(file: UploadFile = File(...), holdout: str = Form("tr
         "anomaly_scores": parsed["anomaly_scores"],
         "topic_salience": parsed["topic_salience"],
         "drill_down_flags": parsed["drill_down_flags"],
+        "novel_themes": parsed.get("novel_themes", []),
         "summary": parsed["summary"],
         "history_pool": {"holdout": use_holdout, "n_quarters": len(history), "through": history[-1]},
     }

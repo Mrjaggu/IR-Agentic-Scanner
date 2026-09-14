@@ -49,6 +49,77 @@ _DELTA_CUES = re.compile(
     r"compress\w+|expand\w+|fell|rose)\b", re.I)
 _NUMBER = re.compile(r"\d+(?:\.\d+)?\s*(?:%|bps|basis points|crores?|bn|mn)?")
 
+# ── Novel-theme detection ────────────────────────────────────────────────
+#
+# topic_salience/drill_down_flags above are keyword-matched against the fixed
+# 12-topic taxonomy (TOPIC_KEYWORDS), so a genuinely new theme the disclosure
+# introduces -- an FCNR liquidity opportunity, a new subsidiary line, a
+# one-off regulatory item -- never enters either signal: hits=0, topics=[].
+# The pipeline was then structurally blind to it, not just imprecise about
+# it (see RESULTS_V2.md's post-mortem on the Kunal Q1FY27 FCNR miss). This
+# gives a flagged-but-untagged sentence (one already shaped like it invites
+# scrutiny -- a bridge, an unexplained delta, a dense numeric claim) a
+# deterministic ad-hoc label instead of silently dropping it.
+_NOVEL_SKIP_ACRONYMS = {
+    "YOY", "QOQ", "MOM", "GDP", "RBI", "SEBI", "FY", "INR", "USD", "CEO",
+    "CFO", "COO", "CTO", "EPS", "PAT", "NII", "NIM", "ROE", "ROA", "CASA",
+    "GNPA", "NNPA", "PCR", "RWA", "SME", "CBG", "Q1", "Q2", "Q3", "Q4",
+}
+_NOVEL_ACRONYM = re.compile(r"\b([A-Z]{2,6})\b")
+_NOVEL_PHRASE_ANCHOR = re.compile(
+    r"\b([a-zA-Z][a-zA-Z\s]{2,30}?)\s+"
+    r"(opportunity|book|integration|segment|portfolio|platform|initiative|"
+    r"vertical|business line|charge|item|scheme)\b", re.I)
+
+
+def _novel_theme_label(sentence: str) -> str | None:
+    """Deterministic short label for a theme outside the fixed taxonomy --
+    no LLM, so this still works air-gapped. Prefers a domain acronym (FCNR,
+    ECB, ADR...) since that is how these one-off themes are actually named
+    on calls; falls back to a short noun-phrase anchored on a business-shape
+    word ("... book", "... opportunity")."""
+    for m in _NOVEL_ACRONYM.finditer(sentence):
+        if m.group(1) not in _NOVEL_SKIP_ACRONYMS:
+            return m.group(1)
+    m2 = _NOVEL_PHRASE_ANCHOR.search(sentence)
+    if m2:
+        words = [w for w in m2.group(1).strip().split() if w.lower() not in
+                 ("the", "a", "an", "this", "that", "our", "their", "and", "of", "to", "in")]
+        if words:
+            label = " ".join(w.capitalize() for w in words[-3:]) + " " + m2.group(2).capitalize()
+            return label
+    return None
+
+
+def attach_novel_themes(salience: dict[str, float], flags: list[dict]) -> tuple[dict, list[dict], list[dict]]:
+    """Labels flagged sentences that matched no taxonomy topic, folds each
+    label into `salience` (so it scores through the same disclosure-weight
+    channel as a known topic) and into that flag's own `topics`. Returns
+    (salience, flags, novel_summary) -- novel_summary is surfaced to the UI/API
+    so an emerging theme is visible, not just silently blended in."""
+    novel_summary = []
+    seen_labels = {}
+    for flag in flags:
+        if flag.get("topics"):
+            continue
+        label = _novel_theme_label(flag["sentence"])
+        if not label:
+            continue
+        key = label.lower()
+        canonical = seen_labels.setdefault(key, label)
+        flag["topics"] = [canonical]
+        flag["novel_theme"] = True
+        # Strong, flat salience -- these sentences were already selected for
+        # being shaped like scrutiny-inviting disclosure (bridge / unexplained
+        # delta / dense numeric claim), which is itself the evidence.
+        score = min(1.0, 0.75 + 0.05 * len(flag.get("reasons", [])))
+        prev = salience.get(canonical, 0.0)
+        if score > prev:
+            salience[canonical] = score
+        novel_summary.append({"topic": canonical, "sentence": flag["sentence"][:300],
+                              "reasons": flag.get("reasons", [])})
+    return salience, flags, novel_summary
+
 
 def extract_text(file_bytes: bytes, filename: str) -> str:
     """PDF via pypdf, anything else as UTF-8 text."""
@@ -154,6 +225,7 @@ def parse_upcoming_document(file_bytes: bytes, filename: str,
     anomalies = anomaly_scores_for_metrics(metrics, history_quarters)
     salience = topic_salience(text)
     flags = drill_down_flags(text)
+    salience, flags, novel_themes = attach_novel_themes(salience, flags)
 
     return {
         "filename": filename,
@@ -163,10 +235,12 @@ def parse_upcoming_document(file_bytes: bytes, filename: str,
         "anomaly_scores": anomalies,
         "topic_salience": salience,
         "drill_down_flags": flags,
+        "novel_themes": novel_themes,
         "summary": {
             "metrics_found": sorted(metrics.keys()),
             "topics_touched": list(salience.keys())[:8],
             "n_drill_down_flags": len(flags),
+            "n_novel_themes": len(novel_themes),
             "top_anomalies": sorted(anomalies.items(), key=lambda x: -x[1])[:5],
         },
     }
