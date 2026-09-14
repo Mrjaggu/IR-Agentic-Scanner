@@ -130,7 +130,7 @@ class LLMClient:
         explicit MODEL_PROVIDER preference first (if its key is present), then
         falls back through providers in an order biased toward higher-TPM free
         options before Groq's tighter 8,000 TPM ceiling."""
-        order = ["GROQ", "CEREBRAS", "OPENROUTER", "GEMINI", "OPENAI"]
+        order = ["CEREBRAS", "OPENROUTER", "GROQ", "GEMINI", "OPENAI"]
         callers = {
             "GROQ": (self.groq_key, self.call_groq, "Groq"),
             "CEREBRAS": (self.cerebras_key, self.call_cerebras, "Cerebras"),
@@ -350,7 +350,7 @@ class LLMClient:
             return dispatch[self.active_llm]()
 
         # Fallback order if not probed/set -- same higher-TPM-first bias as probe_llm.
-        for label in ("Groq", "Cerebras", "OpenRouter", "Gemini", "OpenAI"):
+        for label in ("Cerebras", "OpenRouter", "Groq", "Gemini", "OpenAI"):
             key = {"Groq": self.groq_key, "Cerebras": self.cerebras_key,
                    "OpenRouter": self.openrouter_key, "Gemini": self.gemini_key,
                    "OpenAI": self.openai_key}[label]

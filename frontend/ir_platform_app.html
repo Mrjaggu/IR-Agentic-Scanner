@@ -2489,7 +2489,7 @@ $("#wtBacktestBtn").addEventListener("click", async () => {
   host.innerHTML = `<div class="card"><div class="empty"><span class="spinner"></span> Backtesting on both held-out quarters…</div></div>`;
   let d;
   try {
-    d = await api("/api/eval/backtest-weights", { method: "POST", body: JSON.stringify({ weights }) });
+    d = await postJSON("/api/eval/backtest-weights", { weights });
   } catch (err) { host.innerHTML = `<div class="card"><div class="empty">Could not run: ${esc(err.message)}</div></div>`; return; }
 
   const promote = d.verdict === "PROMOTE";
