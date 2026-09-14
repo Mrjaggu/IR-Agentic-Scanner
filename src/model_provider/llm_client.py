@@ -341,26 +341,96 @@ class LLMClient:
             no_retry=no_retry,
         )
 
-    def call_gemini(self, prompt: str, temperature: float = 0.15, no_retry: bool = False) -> str | None:
+    def call_gemini(self, prompt: str, temperature: float = 0.15, system_prompt: str = None,
+                    no_retry: bool = False) -> str | None:
         # no_retry accepted for signature parity with the other providers'
         # call_* methods (see probe_llm) -- this method never retries anyway.
+        #
+        # 2026-09 fix: a live 6-analyst run against Gemini produced grounding_rate
+        # 0.0 -- every framed question failed the Verifier's JSON parse, while a
+        # bare {"ok": true} probe had worked fine. Two real gaps caused it:
+        #   1. system_prompt was silently dropped -- every OTHER provider gets
+        #      _DEFAULT_SYSTEM_PROMPT (or an override) via _chat_completions, but
+        #      this method didn't even accept the parameter, so Gemini never saw
+        #      the "return ONLY valid JSON, no markdown fences" instruction that
+        #      the other providers' system role carries. Now passed via Gemini's
+        #      own systemInstruction field (a sibling of `contents`, not another
+        #      message in it -- that's the v1beta shape, distinct from the
+        #      OpenAI-style chat array the other providers use).
+        #   2. No maxOutputTokens was set. question_framer's prompt asks for
+        #      several questions back in one JSON object; on Gemini's default
+        #      output budget for a "flash-lite" tier model that can truncate
+        #      before the closing brace, producing unparseable JSON with no
+        #      error raised at the HTTP layer (200 OK, just cut off) -- silent
+        #      truncation, not a Gemini bug, but this call site needs to ask for
+        #      enough headroom explicitly. 4096 is generous for a handful of
+        #      short question_text fields.
+        # Also: this call path previously never touched STATS, so a Gemini run
+        # was invisible to /api/llm/stats and the dashboard's throttled banner --
+        # now bookkept the same way _chat_completions does, and a truncated or
+        # safety-blocked response is now a distinguishable, logged failure
+        # instead of a bare KeyError caught by the generic except clause.
         if not self.gemini_key:
             return None
         url = (f"https://generativelanguage.googleapis.com/v1beta/models/"
                f"{self.gemini_model}:generateContent?key={self.gemini_key}")
-        data = json.dumps({
-            "contents": [{"parts": [{"text": prompt + "\n\nReturn ONLY valid JSON."}]}],
-            "generationConfig": {"responseMimeType": "application/json", "temperature": temperature}
-        }).encode()
+        payload = {
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {"responseMimeType": "application/json", "temperature": temperature,
+                                 "maxOutputTokens": 4096},
+        }
+        sys_msg = system_prompt or _DEFAULT_SYSTEM_PROMPT
+        payload["systemInstruction"] = {"parts": [{"text": sys_msg}]}
+        data = json.dumps(payload).encode()
         req = urllib.request.Request(
             url, data=data, headers={"Content-Type": "application/json"}, method="POST"
         )
+        STATS["calls"] += 1
+        if STATS["started_at"] is None:
+            STATS["started_at"] = time.time()
         try:
             with urllib.request.urlopen(req, timeout=30) as resp:
-                return json.loads(resp.read())["candidates"][0]["content"]["parts"][0]["text"]
+                body = json.loads(resp.read())
+        except urllib.error.HTTPError as e:
+            if e.code == 429:
+                STATS["rate_limited"] += 1
+                STATS["last_error"] = "Gemini: rate limited (429)"
+                print(f"  [Gemini rate limit] 429{' -- skipped (no_retry probe)' if no_retry else ''}.")
+            else:
+                try:
+                    err_body = e.read().decode("utf-8", errors="ignore")
+                except Exception:
+                    err_body = str(e)
+                STATS["failed"] += 1
+                STATS["last_error"] = f"Gemini: HTTP {e.code}: {err_body[:160]}"
+                print(f"  [Gemini error {e.code}] {err_body[:200]}")
+            return None
         except Exception as e:
+            STATS["failed"] += 1
+            STATS["last_error"] = f"Gemini: {str(e)[:160]}"
             print(f"  [Gemini error] {e}")
             return None
+
+        candidates = body.get("candidates") or []
+        if not candidates:
+            block_reason = (body.get("promptFeedback") or {}).get("blockReason", "no candidates returned")
+            STATS["failed"] += 1
+            STATS["last_error"] = f"Gemini: {block_reason}"
+            print(f"  [Gemini error] {block_reason} -- full response: {json.dumps(body)[:300]}")
+            return None
+        cand = candidates[0]
+        parts = (cand.get("content") or {}).get("parts") or []
+        if not parts:
+            finish_reason = cand.get("finishReason", "unknown")
+            STATS["failed"] += 1
+            STATS["last_error"] = f"Gemini: empty response (finishReason={finish_reason})"
+            print(f"  [Gemini error] empty content, finishReason={finish_reason} "
+                 f"-- likely truncated (raise maxOutputTokens) or safety-blocked.")
+            return None
+        if cand.get("finishReason") == "MAX_TOKENS":
+            print("  [Gemini warning] response hit maxOutputTokens and may be truncated/unparseable.")
+        STATS["ok"] += 1
+        return parts[0].get("text")
 
     def call_openai(self, prompt: str, temperature: float = 0.15, no_retry: bool = False) -> str | None:
         # no_retry accepted for signature parity with the other providers'
