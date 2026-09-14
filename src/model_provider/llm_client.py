@@ -9,6 +9,35 @@ from src.config.settings import BASE_DIR
 _MAX_RETRIES = 5
 _BASE_WAIT   = 10   # seconds for first retry (doubles each attempt)
 
+# Gemini free tier (per user, 2026-09): 15 requests/min. Rather than only
+# reacting to 429s after the fact (which still burns a request and, per the
+# 6-analyst run, an attempt's worth of latency even with the retry loop
+# above), self-pace calls to stay under a buffered ceiling -- 12/min, not 15
+# -- so a burst of framing/grounding calls for one analyst doesn't trip the
+# limit in the first place. Sliding 60s window of call timestamps.
+_GEMINI_SAFE_RPM = 12
+_gemini_call_times: list[float] = []
+
+
+def _gemini_pace() -> None:
+    """Block, if needed, so this call stays within _GEMINI_SAFE_RPM over a
+    trailing 60s window. Called once per attempt, right before each Gemini
+    HTTP request (including retries, so a retry doesn't itself re-trip the
+    limit)."""
+    now = time.time()
+    while _gemini_call_times and now - _gemini_call_times[0] > 60:
+        _gemini_call_times.pop(0)
+    if len(_gemini_call_times) >= _GEMINI_SAFE_RPM:
+        wait = 60 - (now - _gemini_call_times[0]) + 0.5
+        if wait > 0:
+            print(f"  [Gemini pacing] {_GEMINI_SAFE_RPM}/min buffer reached -- "
+                  f"waiting {wait:.1f}s before next call.")
+            time.sleep(wait)
+        now = time.time()
+        while _gemini_call_times and now - _gemini_call_times[0] > 60:
+            _gemini_call_times.pop(0)
+    _gemini_call_times.append(time.time())
+
 # ── Published free-tier limits per provider ─────────────────────────────────
 # Groq free tier, openai/gpt-oss-120b: 8,000 tokens/min, 30 req/min, 1,000
 # req/day. TPM was the binding constraint there -- a Question-Framer prompt
@@ -54,7 +83,10 @@ PROVIDER_LIMITS = {
                    "rpd": None, "approx_tokens_per_call": 1800,
                    "note": "NVIDIA does not publish fixed free-tier TPM/RPM numbers -- "
                            "limits are unconfirmed/variable, handled via 429 backoff."},
-    "Gemini": {"provider": "gemini", "tier": "free", "tpm": None, "rpm": None, "rpd": None},
+    "Gemini": {"provider": "gemini", "tier": "free", "tpm": None, "rpm": 15, "rpd": None,
+               "note": "15 req/min published free-tier ceiling (per user, 2026-09) -- "
+                       "call_gemini self-paces to 12/min via _gemini_pace() rather than "
+                       "only reacting to 429s after the fact."},
     "OpenAI": {"provider": "openai", "tier": "paid", "tpm": None, "rpm": None, "rpd": None},
 }
 
@@ -401,6 +433,7 @@ class LLMClient:
         # still fails a 429 instantly, same as before.
         body = None
         for attempt in range(_MAX_RETRIES):
+            _gemini_pace()
             try:
                 with urllib.request.urlopen(req, timeout=30) as resp:
                     body = json.loads(resp.read())
