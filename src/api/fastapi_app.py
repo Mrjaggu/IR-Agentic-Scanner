@@ -89,7 +89,7 @@ def _load_live(bank_id: str = DEFAULT_BANK) -> dict:
     data = {
         "dataset": dataset,
         "graph": graph,
-        "profiles": compile_analyst_profiles(dataset, graph),
+        "profiles": compile_analyst_profiles(dataset, graph, bank_name=BANKS[bank_id].display_name),
         "corpus": compile_search_corpus(graph),
         "quarters": [q["quarter_id"] for q in dataset],
     }
