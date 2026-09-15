@@ -14,25 +14,101 @@ if os.path.exists(_env_path):
 
 # Directory settings
 BASE_DIR = _BASE_DIR
-DATASET_PATH = os.path.join(_BASE_DIR, "data", "db", "dataset.json")
-GRAPH_PATH = os.path.join(_BASE_DIR, "data", "db", "graph.json")
-PREDICTIONS_PATH = os.path.join(_BASE_DIR, "data", "outputs", "predictions.json")
-PERSONAS_PATH = os.path.join(_BASE_DIR, "data", "inputs", "analyst_personas.json")
-ANALYST_ENRICHMENT_PATH = os.path.join(_BASE_DIR, "data", "inputs", "analyst_profile_enrichment.json")
-NOVELTY_PATH = os.path.join(_BASE_DIR, "data", "inputs", "narration_novelty.json")
-PEER_SIGNAL_PATH = os.path.join(_BASE_DIR, "data", "inputs", "peer_signal.json")
-EXTERNAL_CONTEXT_PATH = os.path.join(_BASE_DIR, "data", "inputs", "external_context_history.json")
-QUESTION_INTENT_PATH = os.path.join(_BASE_DIR, "data", "db", "question_intent.json")
-PERSONA_DERIVED_PATH = os.path.join(_BASE_DIR, "data", "inputs", "analyst_personas_transcript_derived.json")
-ASK_PATTERNS_PATH = os.path.join(_BASE_DIR, "data", "inputs", "analyst_ask_patterns.json")
-METRICS_TIMESERIES_PATH = os.path.join(_BASE_DIR, "data", "db", "metrics_timeseries.json")
-PREP_SHEET_PATH = os.path.join(_BASE_DIR, "data", "outputs", "ir_prep_sheet.json")
-CROSSVAL_PATH = os.path.join(_BASE_DIR, "data", "outputs", "cross_validation.json")
-SEMANTIC_EVAL_PATH = os.path.join(_BASE_DIR, "data", "outputs", "semantic_eval_full.json")
-EARNINGS_TRANSCRIPT_DIR = os.path.join(_BASE_DIR, "earnings_transcript")
-PEER_TRANSCRIPT_DIR = os.path.join(_BASE_DIR, "earnings_transcript", "peers")
 DASHBOARD_HTML_PATH = os.path.join(_BASE_DIR, "frontend", "ir_dashboard.html")
 PLATFORM_HTML_PATH = os.path.join(_BASE_DIR, "frontend", "ir_platform_ui.html")
+
+# ── Multi-bank path resolution ───────────────────────────────────────────────
+# 2026-09: this platform is becoming multi-bank (see src/config/banks.py).
+# Every per-bank data file now lives under data/db/<bank_id>/,
+# data/inputs/<bank_id>/, data/outputs/<bank_id>/, earnings_transcript/<bank_id>/
+# instead of the old flat data/db/, data/inputs/, earnings_transcript/ layout.
+#
+# paths_for(bank_id) is the one place that knows this layout. The flat
+# constants below (DATASET_PATH, GRAPH_PATH, ...) are kept as a COMPATIBILITY
+# SHIM -- they resolve to paths_for(DEFAULT_BANK)'s paths, so the ~20+ existing
+# call sites that still `from src.config.settings import DATASET_PATH` keep
+# working unchanged and unaware anything moved. Those call sites are migrated
+# to take a bank_id and call paths_for(bank_id) directly one module at a time
+# (dataset_compiler.py and graphs/compiler.py first); this shim is deleted
+# once no call site imports the flat names anymore.
+from dataclasses import dataclass
+from src.config.banks import DEFAULT_BANK
+
+
+@dataclass(frozen=True)
+class BankPaths:
+    bank_id: str
+    dataset_path: str
+    graph_path: str
+    predictions_path: str
+    personas_path: str
+    analyst_enrichment_path: str
+    novelty_path: str
+    peer_signal_path: str
+    external_context_path: str
+    question_intent_path: str
+    persona_derived_path: str
+    ask_patterns_path: str
+    metrics_timeseries_path: str
+    prep_sheet_path: str
+    crossval_path: str
+    semantic_eval_path: str
+    earnings_transcript_dir: str
+
+
+def paths_for(bank_id: str) -> BankPaths:
+    db = os.path.join(_BASE_DIR, "data", "db", bank_id)
+    inputs = os.path.join(_BASE_DIR, "data", "inputs", bank_id)
+    outputs = os.path.join(_BASE_DIR, "data", "outputs", bank_id)
+    return BankPaths(
+        bank_id=bank_id,
+        dataset_path=os.path.join(db, "dataset.json"),
+        graph_path=os.path.join(db, "graph.json"),
+        predictions_path=os.path.join(outputs, "predictions.json"),
+        personas_path=os.path.join(inputs, "analyst_personas.json"),
+        analyst_enrichment_path=os.path.join(inputs, "analyst_profile_enrichment.json"),
+        novelty_path=os.path.join(inputs, "narration_novelty.json"),
+        peer_signal_path=os.path.join(inputs, "peer_signal.json"),
+        external_context_path=os.path.join(inputs, "external_context_history.json"),
+        question_intent_path=os.path.join(db, "question_intent.json"),
+        persona_derived_path=os.path.join(inputs, "analyst_personas_transcript_derived.json"),
+        ask_patterns_path=os.path.join(inputs, "analyst_ask_patterns.json"),
+        metrics_timeseries_path=os.path.join(db, "metrics_timeseries.json"),
+        prep_sheet_path=os.path.join(outputs, "ir_prep_sheet.json"),
+        crossval_path=os.path.join(outputs, "cross_validation.json"),
+        semantic_eval_path=os.path.join(outputs, "semantic_eval_full.json"),
+        earnings_transcript_dir=os.path.join(_BASE_DIR, "earnings_transcript", bank_id),
+    )
+
+
+_DEFAULT_PATHS = paths_for(DEFAULT_BANK)
+
+# ── Compatibility shim (see note above) -- remove once every call site is
+# migrated to paths_for(bank_id) directly. ───────────────────────────────────
+DATASET_PATH = _DEFAULT_PATHS.dataset_path
+GRAPH_PATH = _DEFAULT_PATHS.graph_path
+PREDICTIONS_PATH = _DEFAULT_PATHS.predictions_path
+PERSONAS_PATH = _DEFAULT_PATHS.personas_path
+ANALYST_ENRICHMENT_PATH = _DEFAULT_PATHS.analyst_enrichment_path
+NOVELTY_PATH = _DEFAULT_PATHS.novelty_path
+PEER_SIGNAL_PATH = _DEFAULT_PATHS.peer_signal_path
+EXTERNAL_CONTEXT_PATH = _DEFAULT_PATHS.external_context_path
+QUESTION_INTENT_PATH = _DEFAULT_PATHS.question_intent_path
+PERSONA_DERIVED_PATH = _DEFAULT_PATHS.persona_derived_path
+ASK_PATTERNS_PATH = _DEFAULT_PATHS.ask_patterns_path
+METRICS_TIMESERIES_PATH = _DEFAULT_PATHS.metrics_timeseries_path
+PREP_SHEET_PATH = _DEFAULT_PATHS.prep_sheet_path
+CROSSVAL_PATH = _DEFAULT_PATHS.crossval_path
+SEMANTIC_EVAL_PATH = _DEFAULT_PATHS.semantic_eval_path
+EARNINGS_TRANSCRIPT_DIR = _DEFAULT_PATHS.earnings_transcript_dir
+# PEER_TRANSCRIPT_DIR is NOT bank-scoped -- src/signals/peer_signal.py's whole
+# purpose is reading OTHER banks' transcripts as a side signal for the active
+# bank's prep sheet, so it deliberately stays pointed at the shared peers/
+# folder rather than any one bank's own transcript dir. Untouched by the
+# migration in scripts/migrate_to_bank_layout.py (that script COPIES, not
+# moves, kotak/indusind PDFs into their new per-bank dirs, leaving the
+# originals here so peer_signal.py keeps working unmodified).
+PEER_TRANSCRIPT_DIR = os.path.join(_BASE_DIR, "earnings_transcript", "peers")
 
 # Validation parameters
 VAL_QUARTER = "q1fy27"
