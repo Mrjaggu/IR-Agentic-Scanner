@@ -1,0 +1,149 @@
+{
+  "bank": "axis",
+  "correlations": [
+    {
+      "metric_a": "PAT",
+      "metric_b": "ROE",
+      "correlation": 0.89,
+      "n_quarters": 12
+    },
+    {
+      "metric_a": "PAT",
+      "metric_b": "ROA",
+      "correlation": 0.854,
+      "n_quarters": 10
+    },
+    {
+      "metric_a": "NIM",
+      "metric_b": "NNPA",
+      "correlation": -0.801,
+      "n_quarters": 13
+    },
+    {
+      "metric_a": "ROA",
+      "metric_b": "ROE",
+      "correlation": 0.693,
+      "n_quarters": 11
+    },
+    {
+      "metric_a": "Cost_to_Assets",
+      "metric_b": "NIM",
+      "correlation": 0.632,
+      "n_quarters": 12
+    },
+    {
+      "metric_a": "Cost_to_Assets",
+      "metric_b": "NNPA",
+      "correlation": -0.628,
+      "n_quarters": 13
+    },
+    {
+      "metric_a": "GNPA",
+      "metric_b": "NIM",
+      "correlation": 0.538,
+      "n_quarters": 17
+    },
+    {
+      "metric_a": "Cost_to_Assets",
+      "metric_b": "Net_Credit_Cost",
+      "correlation": 0.511,
+      "n_quarters": 10
+    },
+    {
+      "metric_a": "GNPA",
+      "metric_b": "NNPA",
+      "correlation": 0.478,
+      "n_quarters": 15
+    },
+    {
+      "metric_a": "NIM",
+      "metric_b": "Net_Credit_Cost",
+      "correlation": 0.463,
+      "n_quarters": 12
+    },
+    {
+      "metric_a": "GNPA",
+      "metric_b": "PAT",
+      "correlation": 0.461,
+      "n_quarters": 17
+    },
+    {
+      "metric_a": "NNPA",
+      "metric_b": "ROE",
+      "correlation": -0.44,
+      "n_quarters": 9
+    },
+    {
+      "metric_a": "NIM",
+      "metric_b": "ROA",
+      "correlation": 0.404,
+      "n_quarters": 9
+    },
+    {
+      "metric_a": "GNPA",
+      "metric_b": "ROA",
+      "correlation": 0.385,
+      "n_quarters": 11
+    },
+    {
+      "metric_a": "Cost_to_Assets",
+      "metric_b": "PAT",
+      "correlation": 0.38,
+      "n_quarters": 10
+    },
+    {
+      "metric_a": "Cost_to_Assets",
+      "metric_b": "GNPA",
+      "correlation": 0.358,
+      "n_quarters": 13
+    },
+    {
+      "metric_a": "NNPA",
+      "metric_b": "PAT",
+      "correlation": -0.265,
+      "n_quarters": 12
+    },
+    {
+      "metric_a": "NIM",
+      "metric_b": "PAT",
+      "correlation": 0.208,
+      "n_quarters": 14
+    },
+    {
+      "metric_a": "GNPA",
+      "metric_b": "Net_Credit_Cost",
+      "correlation": -0.176,
+      "n_quarters": 12
+    },
+    {
+      "metric_a": "NNPA",
+      "metric_b": "ROA",
+      "correlation": 0.09,
+      "n_quarters": 9
+    },
+    {
+      "metric_a": "NIM",
+      "metric_b": "ROE",
+      "correlation": 0.063,
+      "n_quarters": 10
+    },
+    {
+      "metric_a": "GNPA",
+      "metric_b": "ROE",
+      "correlation": 0.055,
+      "n_quarters": 13
+    },
+    {
+      "metric_a": "Net_Credit_Cost",
+      "metric_b": "PAT",
+      "correlation": 0.035,
+      "n_quarters": 10
+    },
+    {
+      "metric_a": "NNPA",
+      "metric_b": "Net_Credit_Cost",
+      "correlation": 0.017,
+      "n_quarters": 11
+    }
+  ]
+}

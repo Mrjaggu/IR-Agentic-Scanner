@@ -1,0 +1,586 @@
+{
+  "Mahrukh Adajania": {
+    "analyst": "Mahrukh Adajania",
+    "patterns": [
+      {
+        "trigger": "Management provides a specific, granular, or technical update on asset quality, provisioning, or technical classification.",
+        "reasoning_pattern": "She attempts to reconcile the technical accounting or classification changes with the underlying economic reality of recoverability or future credit cost impact.",
+        "question_style": "Are these [technical items] likely to be upgraded to standard or recovered, or is there a specific reason for the divergence between slippage and credit cost?",
+        "typical_follow_up": "She often asks for quantification of the impact or clarification on the specific bucket/classification of the assets.",
+        "evidence_quarters": [
+          "q1fy26",
+          "q2fy26",
+          "q4fy25"
+        ]
+      },
+      {
+        "trigger": "Management discusses deposit growth, specifically when it lags loan growth or shows signs of sector-wide tightness.",
+        "reasoning_pattern": "She connects the bank's specific deposit performance to broader sector-wide liquidity constraints to determine if the bank will prioritize margin protection over growth or change its competitive strategy.",
+        "question_style": "If the system deposit growth remains tight, would you rather opt for managing margins and calibrating growth, or will you launch competitive schemes?",
+        "typical_follow_up": "She often asks for a forward-looking view on whether deposit growth will align with the sector or if the current momentum is sustainable.",
+        "evidence_quarters": [
+          "q2fy25",
+          "q3fy25",
+          "q3fy26",
+          "q4fy24"
+        ]
+      },
+      {
+        "trigger": "Management provides guidance or commentary on operating expenses (OPEX) or specific one-off items.",
+        "reasoning_pattern": "She attempts to strip away non-recurring or integration-related costs to establish a 'normalized' run rate for the bank's operating expenses.",
+        "question_style": "If we exclude the [one-off/integration] expenses, what would be a normalized run rate for opex?",
+        "typical_follow_up": "She often asks for confirmation on whether the current level should be considered the new base for future growth.",
+        "evidence_quarters": [
+          "q1fy23",
+          "q2fy24",
+          "q3fy26"
+        ]
+      },
+      {
+        "trigger": "Management mentions a change in credit cost trends or provides a new provisioning policy.",
+        "reasoning_pattern": "She compares current elevated or changed credit costs against historical norms or previous guidance to determine if the bank is being overly conservative or if a new 'normal' has been established.",
+        "question_style": "If I remove the one-offs, the rise in credit costs is sharp; are you being extra conservative, or is this the new outlook?",
+        "typical_follow_up": "She often asks for a specific outlook or guidance on whether credit costs will remain lower than normal in the short term.",
+        "evidence_quarters": [
+          "q1fy22",
+          "q3fy22"
+        ]
+      }
+    ]
+  },
+  "Kunal Shah": {
+    "analyst": "Kunal Shah",
+    "patterns": [
+      {
+        "trigger": "Discrepancy between reported margin/yield metrics and the bank's stated lending strategy or peer performance.",
+        "reasoning_pattern": "He compares the bank's reported yield or margin expansion against his expectation of what the current lending mix or interest rate environment should produce, looking for hidden constraints.",
+        "question_style": "If X is happening, why is Y not reflecting that, or does this imply a hidden constraint?",
+        "typical_follow_up": "Inquiry into specific balance sheet items like excess liquidity, LCR, or deposit repricing gaps.",
+        "evidence_quarters": [
+          "q4fy23",
+          "q4fy24"
+        ]
+      },
+      {
+        "trigger": "Bank's deposit growth or loan growth lagging behind system averages.",
+        "reasoning_pattern": "He uses the delta between the bank's growth and the system average to challenge the sustainability of the bank's current strategy or to prompt a discussion on whether they will be forced to hike rates.",
+        "question_style": "Given that we are lagging the system, should we assume this continues, or will you be forced to change your pricing strategy?",
+        "typical_follow_up": "Questions regarding the specific trade-off between loan growth and deposit mobilization.",
+        "evidence_quarters": [
+          "q1fy23",
+          "q2fy25"
+        ]
+      },
+      {
+        "trigger": "Unexpected movements or high volatility in asset quality metrics (slippages, recoveries, or provisioning).",
+        "reasoning_pattern": "He attempts to isolate whether the movement is a result of a one-off policy change, a specific cohort issue, or a broader structural trend in the portfolio.",
+        "question_style": "Is this movement due to a change in policy/classification, or is it a reflection of underlying credit stress in a specific segment?",
+        "typical_follow_up": "Request for specific examples or a breakdown of the cohort causing the variance.",
+        "evidence_quarters": [
+          "q1fy26",
+          "q3fy26"
+        ]
+      },
+      {
+        "trigger": "Sequential increases in operating expenses or employee costs.",
+        "reasoning_pattern": "He connects the absolute increase in costs to the bank's stated digital or growth agenda to determine if the spending is a one-off incentive or a permanent shift in the cost structure.",
+        "question_style": "What is the nature of this incremental cost, and should we expect this trajectory to continue?",
+        "typical_follow_up": "Inquiry into whether the cost increase is tied to specific business volumes or headcount additions.",
+        "evidence_quarters": [
+          "q1fy22",
+          "q3fy22"
+        ]
+      }
+    ]
+  },
+  "Adarsh Parasrampuria": {
+    "analyst": "Adarsh Parasrampuria",
+    "patterns": [
+      {
+        "trigger": "Discrepancies between the bank's cost-to-income/cost-to-asset ratios and those of peer banks.",
+        "reasoning_pattern": "He uses peer benchmarking to challenge management's cost guidance, implying that if peers can operate at lower levels, the bank's elevated costs may be structural rather than purely investment-driven.",
+        "question_style": "For our Bank, I see that we are at or a little at pre-COVID levels and when we see the top 2-3 banks, they are 2-3-4 percentage points lower. Could you explain why that gap is there?",
+        "typical_follow_up": "Asking for a specific timeline or 'turning point' for when cost ratios will moderate or align with medium-term guidance.",
+        "evidence_quarters": [
+          "q1fy22",
+          "q1fy24"
+        ]
+      },
+      {
+        "trigger": "Management's guidance on cost-to-asset ratios or operating expense (OPEX) run rates.",
+        "reasoning_pattern": "He attempts to reconcile current elevated spending with previous guidance, often probing whether 'one-time' costs are masking a permanent shift in the cost base.",
+        "question_style": "What's changed in a few months for you to not have visibility of how OPEX will pan out... is there a thought that because the credit cycle is benign, that allows you some space to spend?",
+        "typical_follow_up": "Asking for clarification on whether specific line items (like integration costs or one-offs) are included in the reported guidance numbers.",
+        "evidence_quarters": [
+          "q3fy22",
+          "q4fy22",
+          "q4fy23"
+        ]
+      },
+      {
+        "trigger": "Underperformance in specific growth segments (e.g., mortgages) or margin trends compared to the broader market.",
+        "reasoning_pattern": "He identifies a divergence between the bank's reported growth/margins and his perception of industry trends, prompting him to ask if the bank is losing market share or facing structural headwinds.",
+        "question_style": "I don't see this kind of trend in most other banks. So I just wanted to understand, have we seen a lot of balance transfers out or disbursement trends are weaker?",
+        "typical_follow_up": "Asking for confirmation on whether the bank's internal view of market share and disbursement health remains positive despite the data.",
+        "evidence_quarters": [
+          "q2fy23",
+          "q3fy23"
+        ]
+      },
+      {
+        "trigger": "Gap in credit cost performance compared to large peers.",
+        "reasoning_pattern": "He uses the 'peer gap' as a proxy for asset quality normalization, questioning if the bank's higher credit costs are a temporary anomaly or a structural difference in portfolio risk.",
+        "question_style": "So if you can offer some direction, you did speak about credit cost, but do you expect to bridge the gap you've had in, maybe in the last couple of years?",
+        "typical_follow_up": "Probing whether technical slippages or specific product-level issues (like unsecured retail) are the primary drivers of the variance.",
+        "evidence_quarters": [
+          "q3fy26",
+          "q4fy22"
+        ]
+      }
+    ]
+  },
+  "Abhishek Murarka": {
+    "analyst": "Abhishek Murarka",
+    "patterns": [
+      {
+        "trigger": "Discrepancy between reported yield/margin metrics and the underlying loan mix or external rate environment.",
+        "reasoning_pattern": "He attempts to reconcile reported yield increases or decreases against the expected impact of repo rate movements and shifts in the loan book composition.",
+        "question_style": "Given X (metric) and Y (mix/rate environment), I am finding it difficult to reconcile Z (the outcome); is there a specific sector where this is occurring?",
+        "typical_follow_up": "He often pivots to asking about the sustainability of the current mix or whether specific segments are becoming harder to price.",
+        "evidence_quarters": [
+          "q3fy22",
+          "q4fy23"
+        ]
+      },
+      {
+        "trigger": "Management commentary on loan growth moderation or shifts in segment-wise lending.",
+        "reasoning_pattern": "He connects current growth slowdowns in specific retail or corporate segments to broader strategic constraints like LDR, capital adequacy, or regulatory pressure.",
+        "question_style": "If we are seeing X (slowdown/consolidation) and Y (regulatory/liquidity constraint), does that mean we should expect Z (a shift in growth strategy or recalibration)?",
+        "typical_follow_up": "He asks for the specific 'trigger' or 'inflection point' that would cause the bank to resume growth in those segments.",
+        "evidence_quarters": [
+          "q1fy26",
+          "q4fy25",
+          "q4fy26"
+        ]
+      },
+      {
+        "trigger": "Increases in credit costs or asset quality stress in retail/unsecured portfolios.",
+        "reasoning_pattern": "He attempts to normalize the reported credit cost by stripping out one-off factors (like timing differences) to determine if the remaining level represents a 'new normal' for the bank's P&L.",
+        "question_style": "If we back out X (one-off factor), we are still at Y (higher level); is this the new normal, and what are the levers to return to Z (target ROA)?",
+        "typical_follow_up": "He asks for granular detail on where the stress lies (e.g., Tier-1 vs Tier-2, salaried vs self-employed) to validate his thesis on the portfolio's health.",
+        "evidence_quarters": [
+          "q1fy25",
+          "q2fy24"
+        ]
+      }
+    ]
+  },
+  "Jai Mundhra": {
+    "analyst": "Jai Mundhra",
+    "patterns": [
+      {
+        "trigger": "Management provides a high-level strategic goal or industry-wide trend (e.g., loan growth targets, deposit growth, or regulatory changes).",
+        "reasoning_pattern": "The analyst contrasts the bank's current performance or specific constraints against the stated industry benchmark to identify potential gaps or trade-offs.",
+        "question_style": "If [Management Statement], does that mean [Specific Implication for Bank]?",
+        "typical_follow_up": "Asking for the specific timeline or the quantitative impact of the identified constraint.",
+        "evidence_quarters": [
+          "q3fy24",
+          "q4fy23"
+        ]
+      },
+      {
+        "trigger": "Management reports a change in a key profitability or efficiency metric (e.g., NIM, ROA, or Fee-to-Asset ratio).",
+        "reasoning_pattern": "The analyst attempts to decompose the sustainability of the current metric level by questioning if the drivers are structural or temporary.",
+        "question_style": "Given [Metric Trend], how should one think about the sustainability of this ratio as a driver for [Future Performance]?",
+        "typical_follow_up": "Asking for the specific 'like-to-like' number or the impact of excluding one-off items.",
+        "evidence_quarters": [
+          "q3fy23",
+          "q4fy24"
+        ]
+      },
+      {
+        "trigger": "Management discloses asset quality metrics or mentions specific portfolio segments (e.g., retail slippages, unsecured book).",
+        "reasoning_pattern": "The analyst calculates the implied run-rate of the metric and asks management to validate if this level is a new 'normal' or a temporary spike.",
+        "question_style": "Considering [Management's focus on risk-adjusted returns], is it fair to say that [Current Metric Level] may sustain in the near-term?",
+        "typical_follow_up": "Requesting a breakdown of the slippages by specific segments (retail, wholesale, SME).",
+        "evidence_quarters": [
+          "q2fy25",
+          "q1fy26"
+        ]
+      }
+    ]
+  },
+  "Anand Dama": {
+    "analyst": "Anand Dama",
+    "patterns": [
+      {
+        "trigger": "Management disclosure of specific operational milestones or cost-related metrics (e.g., Citi integration completion, rising staff/other expenses).",
+        "reasoning_pattern": "The analyst links operational changes or cost spikes to future efficiency ratios, seeking to understand the 'new normal' for the bank's cost-to-asset trajectory.",
+        "question_style": "So now that [Event X] is complete, how should we see [Metric Y] moving over the next [N] quarters?",
+        "typical_follow_up": "Can you talk specifically about the [Metric Y] journey over the next few quarters?",
+        "evidence_quarters": [
+          "q1fy25",
+          "q2fy22"
+        ]
+      },
+      {
+        "trigger": "High-level management commentary on digital transformation or technology spending.",
+        "reasoning_pattern": "The analyst attempts to bridge the gap between accounting-based tech expenses and tangible business growth, specifically looking for the ROI of digital investment.",
+        "question_style": "Is it possible for you to share [Granular Metric] and how this is really going to convert into higher growth in [Specific Business Segment]?",
+        "typical_follow_up": "Do we also capitalize our tech, and can you provide a breakdown between maintenance and new-age tech spend?",
+        "evidence_quarters": [
+          "q2fy22",
+          "q3fy22"
+        ]
+      },
+      {
+        "trigger": "Rapid growth in a specific loan portfolio segment (e.g., SME or rural book).",
+        "reasoning_pattern": "The analyst probes the sustainability of growth by connecting volume expansion to pricing power and risk management strategies.",
+        "question_style": "When we look at our [Segment] book growing at a faster pace, what is driving the growth and have we increased yields in line with [Macro Factor]?",
+        "typical_follow_up": "Which specific sub-segments are we targeting, and how is the portfolio diversified from a risk perspective?",
+        "evidence_quarters": [
+          "q3fy22",
+          "q4fy23"
+        ]
+      }
+    ]
+  },
+  "Nitin Aggarwal": {
+    "analyst": "Nitin Aggarwal",
+    "patterns": [
+      {
+        "trigger": "Discrepancies or unexpected shifts in balance sheet ratios (e.g., CD ratio, LCR, or RWA to total assets).",
+        "reasoning_pattern": "He connects a high or rising ratio to a potential constraint on future business growth or capital adequacy, seeking to understand the management's 'comfort level' or threshold.",
+        "question_style": "Given that [Ratio] is hitting [Level], does this limit [Metric] growth, and what is your comfort level/threshold?",
+        "typical_follow_up": "He often pivots to the operational implications of these constraints, such as how they impact branch expansion or specific product segment targets.",
+        "evidence_quarters": [
+          "q1fy24",
+          "q2fy23",
+          "q2fy25"
+        ]
+      },
+      {
+        "trigger": "Management's disclosure of 'prudent' or 'technical' changes to provisioning or accounting policies.",
+        "reasoning_pattern": "He attempts to isolate the 'technical' impact from the underlying performance to determine if the change is a one-off or a structural shift in the bank's long-term credit cost trajectory.",
+        "question_style": "How much of the current number is driven by this policy change, and how should we look at a 'normalized' number going forward?",
+        "typical_follow_up": "He frequently compares the current provision coverage ratio or credit cost against historical averages to challenge whether the new policy implies a permanent increase in coverage.",
+        "evidence_quarters": [
+          "q1fy26",
+          "q3fy22",
+          "q3fy25"
+        ]
+      },
+      {
+        "trigger": "Significant deviations from previous management guidance or historical performance trends (e.g., margin jumps or opex spikes).",
+        "reasoning_pattern": "He identifies a 'positive surprise' or 'sharp decline' and seeks to deconstruct the specific drivers to determine if the trend is sustainable or a temporary anomaly.",
+        "question_style": "What has really changed to drive this [improvement/decline] that we didn't indicate in the last quarter?",
+        "typical_follow_up": "He asks for the specific levers or components that will drive future normalization or maintenance of the new baseline.",
+        "evidence_quarters": [
+          "q2fy23",
+          "q2fy24"
+        ]
+      }
+    ]
+  },
+  "MB Mahesh": {
+    "analyst": "MB Mahesh",
+    "patterns": [
+      {
+        "trigger": "Management provides high-level guidance or commentary on loan growth, margins, or asset quality.",
+        "reasoning_pattern": "The analyst attempts to reconcile management's qualitative narrative with observed quantitative discrepancies or historical trends to identify potential inconsistencies.",
+        "question_style": "Just trying to understand what has changed in the last few quarters that suggest...",
+        "typical_follow_up": "Asking for specific quantification or clarification on the underlying drivers of the trend.",
+        "evidence_quarters": [
+          "q1fy27",
+          "q3fy25"
+        ]
+      },
+      {
+        "trigger": "Management reports a change in a specific balance sheet metric (e.g., LCR, contingent buffers, or credit card outstanding).",
+        "reasoning_pattern": "The analyst probes the mechanics behind the movement to determine if the change is a result of strategic shifts or technical accounting adjustments.",
+        "question_style": "Can you reconcile those numbers, please?",
+        "typical_follow_up": "Asking for the impact of these technical changes on future performance or risk profiles.",
+        "evidence_quarters": [
+          "q1fy23",
+          "q2fy25"
+        ]
+      },
+      {
+        "trigger": "Management discusses a shift in product mix or credit strategy (e.g., corporate vs. retail, unsecured loans).",
+        "reasoning_pattern": "The analyst connects the strategic shift to the resulting impact on margins and risk-adjusted returns to challenge the sustainability of the current approach.",
+        "question_style": "If you look at the last few quarters, you pushed X... just trying to understand why chase that?",
+        "typical_follow_up": "Asking for the inflection point or the rationale behind the risk-adjusted return assumptions.",
+        "evidence_quarters": [
+          "q1fy27",
+          "q4fy24"
+        ]
+      },
+      {
+        "trigger": "Management provides forward-looking guidance on credit costs or provisioning.",
+        "reasoning_pattern": "The analyst attempts to map future guidance back to historical data points to test the materiality and validity of the bank's projections.",
+        "question_style": "Is it possible to quantify if you were to look at [previous period] as an example, what would that quantum look like?",
+        "typical_follow_up": "Asking for clarification on the specific variables or assumptions used to arrive at the guidance.",
+        "evidence_quarters": [
+          "q4fy25",
+          "q4fy26"
+        ]
+      }
+    ]
+  },
+  "Sameer Bhise": {
+    "analyst": "Sameer Bhise",
+    "patterns": [
+      {
+        "trigger": "Presentation slides containing granular segment-level data or specific balance sheet compositions.",
+        "reasoning_pattern": "The analyst uses specific slide data as a starting point to request a deeper, more granular breakdown of the underlying components or sub-segments.",
+        "question_style": "Starts with a reference to a specific slide or metric, followed by a request for a 'split' or 'breakup' of that data.",
+        "typical_follow_up": "Requests for specific ranges, trajectories, or segment-level slippage data.",
+        "evidence_quarters": [
+          "q2fy23",
+          "q3fy24",
+          "q4fy24"
+        ]
+      },
+      {
+        "trigger": "Macro-economic phenomena or industry-wide trends (e.g., liquidity tightness, peer performance).",
+        "reasoning_pattern": "The analyst attempts to map external market conditions to the bank's internal risk profile or competitive positioning to identify potential second-order impacts.",
+        "question_style": "Asks for management's 'thoughts' or 'sense' on how a macro trend translates into specific bank-level risks or performance drivers.",
+        "typical_follow_up": "Asks for specific signals or indicators that management monitors to validate their assessment.",
+        "evidence_quarters": [
+          "q3fy22",
+          "q3fy24"
+        ]
+      },
+      {
+        "trigger": "Management's disclosure of specific segment performance or strategic initiatives.",
+        "reasoning_pattern": "The analyst seeks to validate whether the bank's performance in a specific segment is driven by organic growth or external/tactical adjustments like PSLC acquisition.",
+        "question_style": "Asks for clarification on the 'how' behind a reported trend, specifically distinguishing between organic versus inorganic drivers.",
+        "typical_follow_up": "Requests for further details on sub-segment positioning or specific quantitative breakdowns.",
+        "evidence_quarters": [
+          "q3fy22",
+          "q4fy24"
+        ]
+      }
+    ]
+  },
+  "Saurabh Kumar": {
+    "analyst": "Saurabh Kumar",
+    "patterns": [
+      {
+        "trigger": "Observation of a specific trend in asset quality metrics (e.g., negative net slippages or high recovery momentum).",
+        "reasoning_pattern": "The analyst extrapolates current favorable credit trends into the future to determine if the current 'best-in-class' performance is sustainable or nearing a cyclical inflection point.",
+        "question_style": "How should we think about the sustainability of [metric] going into next year, and would you expect this momentum to moderate?",
+        "typical_follow_up": "Asking for the specific quantum of remaining write-offs or the duration of the current credit cycle.",
+        "evidence_quarters": [
+          "q3fy24",
+          "q4fy23",
+          "q4fy24"
+        ]
+      },
+      {
+        "trigger": "Management disclosure of specific balance sheet items or growth rates (e.g., CASA, unsecured book, or loan mix).",
+        "reasoning_pattern": "The analyst attempts to map current growth rates to future strategic limits or macroeconomic sensitivities (like interest rate changes).",
+        "question_style": "If [macro variable] were to change, would you expect [metric] to improve/change, and what is the comfortable limit for [portfolio mix]?",
+        "typical_follow_up": "Asking for a directional outlook or a specific percentage target for the full year.",
+        "evidence_quarters": [
+          "q2fy24",
+          "q2fy25"
+        ]
+      },
+      {
+        "trigger": "Discrepancies or specific movements in NIM or fee-to-asset ratios.",
+        "reasoning_pattern": "The analyst uses a bottom-up calculation based on previous quarter disclosures to verify their own model assumptions against management's guidance.",
+        "question_style": "So, is it fair to say that the cumulative impact/decline should be about [X] basis points?",
+        "typical_follow_up": "Transitioning to a secondary, unrelated operational concern like staff costs or specific portfolio growth.",
+        "evidence_quarters": [
+          "q1fy23",
+          "q1fy24"
+        ]
+      }
+    ]
+  },
+  "Param Subramanian": {
+    "analyst": "Param Subramanian",
+    "patterns": [
+      {
+        "trigger": "Management provides high-level metrics or growth figures (e.g., fee income, deposit growth, NIM) that appear to have internal inconsistencies or disconnects.",
+        "reasoning_pattern": "He compares two related metrics (e.g., fee growth vs. volume growth) to identify a mathematical gap, seeking to validate if the underlying business drivers are performing as expected.",
+        "question_style": "I just wanted to understand, would most of the [X] be sitting within [Y]? If so, [Z]... is that ballpark number correct?",
+        "typical_follow_up": "He asks for clarification on whether the figures are 'like-for-like' comparable or if there is a specific structural reason for the observed gap.",
+        "evidence_quarters": [
+          "q1fy24",
+          "q2fy24"
+        ]
+      },
+      {
+        "trigger": "Management introduces new accounting methodologies, technical recognition criteria, or contingent provisioning policies.",
+        "reasoning_pattern": "He attempts to isolate the impact of these changes on the 'back book' versus 'flow' to determine if the bank is being more prudent than peers or if the change is regulatory-driven.",
+        "question_style": "What exactly drove this? Is this a gap that you recognized versus peers or is this [Bank] being more prudent?",
+        "typical_follow_up": "He asks for the specific numerical impact of the change to ensure he can model the 'flow' impact for future quarters.",
+        "evidence_quarters": [
+          "q1fy26",
+          "q2fy25"
+        ]
+      },
+      {
+        "trigger": "Management makes qualitative statements about liquidity, LDR (Loan-to-Deposit Ratio), or LCR (Liquidity Coverage Ratio) constraints.",
+        "reasoning_pattern": "He connects management's commentary on liquidity to regulatory scrutiny or systemic constraints to determine if the bank's growth trajectory will be hampered by future regulatory requirements.",
+        "question_style": "So I just wanted to understand if there is any change in the operating environment there and especially on [Metric], do you look at [X] or [Y]?",
+        "typical_follow_up": "He asks whether the bank is proactively adjusting its operations to align with potential future regulatory guidelines (e.g., draft LCR rules).",
+        "evidence_quarters": [
+          "q2fy25",
+          "q3fy25"
+        ]
+      },
+      {
+        "trigger": "Management reports a specific movement in NIM or NII that does not align with the reported loan/asset growth.",
+        "reasoning_pattern": "He attempts to reconcile the timing of asset growth (back-ended vs. front-ended) with the reported margin to see if the current NIM reflects the full impact of recent mix shifts.",
+        "question_style": "So if I look at your [Metric]... it's largely in line with your [Growth Metric]. So is it that [X]... is my understanding correct there?",
+        "typical_follow_up": "He asks if the current quarter's results fully reflect the mix shift or if there is a 'pass-through' effect that will impact future quarters.",
+        "evidence_quarters": [
+          "q3fy26",
+          "q2fy24"
+        ]
+      }
+    ]
+  },
+  "Chintan Joshi": {
+    "analyst": "Chintan Joshi",
+    "patterns": [
+      {
+        "trigger": "Management provides guidance or a specific target (e.g., NIM, deposit growth) that appears optimistic or inconsistent with current market trends.",
+        "reasoning_pattern": "He contrasts management's stated target against observed macro headwinds or peer performance to identify potential risks to the guidance.",
+        "question_style": "Is that something you're fairly confident about or would you like to caveat that target with any kind of market dynamics?",
+        "typical_follow_up": "He asks how specific mix effects or structural constraints (like corporate vs. retail growth) might jeopardize the achievement of that target.",
+        "evidence_quarters": [
+          "q3fy26",
+          "q1fy26"
+        ]
+      },
+      {
+        "trigger": "Management reports a deviation in NIM or NII performance compared to previous expectations or market consensus.",
+        "reasoning_pattern": "He attempts to isolate the 'moving parts' of the NIM bridge by questioning the transmission speed of rate changes on specific balance sheet components (loans vs. borrowings).",
+        "question_style": "Has anything surprised you positively or negatively in the expected trajectory of the NIM?",
+        "typical_follow_up": "He asks for granular detail on specific line items like borrowings, SLR investments, or day-count conventions to verify the sustainability of the performance.",
+        "evidence_quarters": [
+          "q1fy26",
+          "q4fy25",
+          "q4fy26"
+        ]
+      },
+      {
+        "trigger": "Management highlights a specific growth area (e.g., corporate loans) or a change in balance sheet composition.",
+        "reasoning_pattern": "He probes whether the growth is a temporary tactical shift or a structural change, specifically looking for the trade-off between volume growth and margin/ROA dilution.",
+        "question_style": "Is this kind of matching up of temporary corporate loans with temporary wholesale funding, which can go away over time?",
+        "typical_follow_up": "He asks for evidence of how this growth benefits ROA or if it is purely NIM-dilutive, seeking to understand the long-term impact on profitability metrics.",
+        "evidence_quarters": [
+          "q1fy27",
+          "q4fy26"
+        ]
+      },
+      {
+        "trigger": "Management reports elevated credit costs or asset quality metrics that deviate from historical norms or peer benchmarks.",
+        "reasoning_pattern": "He challenges whether the current numbers represent a permanent shift in the business model or a temporary 'technical' impact that requires calibration.",
+        "question_style": "What is driving this elevated level and how should we think about this number going ahead?",
+        "typical_follow_up": "He asks for a comparison of internal policies or risk parameters (like PDs) against peers to determine if the bank is being more conservative than the market.",
+        "evidence_quarters": [
+          "q1fy26",
+          "q3fy25"
+        ]
+      }
+    ]
+  },
+  "Piran Engineer": {
+    "analyst": "Piran Engineer",
+    "patterns": [
+      {
+        "trigger": "Management provides a high-level strategic shift or change in guidance (e.g., LDR focus, growth targets).",
+        "reasoning_pattern": "The analyst attempts to reconcile the new strategic stance with external pressures or internal trade-offs to determine if the change is defensive or opportunistic.",
+        "question_style": "Is it fair to assume that [X] is the reason for [Y], or is it because of [Z]?",
+        "typical_follow_up": "Asking for confirmation of the underlying trade-off, such as whether loan growth will be sacrificed to meet the new target.",
+        "evidence_quarters": [
+          "q3fy24",
+          "q4fy24",
+          "q3fy26"
+        ]
+      },
+      {
+        "trigger": "A discrepancy between reported headline metrics (e.g., NIM, NII, loan growth) and expected mathematical outcomes.",
+        "reasoning_pattern": "The analyst performs a 'back-of-the-envelope' calculation to challenge the reported figures, looking for anomalies or hidden drivers that explain the delta.",
+        "question_style": "If [Metric A] moved by [X] and [Metric B] moved by [Y], then [Metric C] should have been [Z], so what am I missing?",
+        "typical_follow_up": "Asking for the 'actual' core performance metric once the perceived anomaly is stripped away.",
+        "evidence_quarters": [
+          "q1fy27",
+          "q2fy24"
+        ]
+      },
+      {
+        "trigger": "Management provides granular segment-level data (e.g., retail slippages, product-specific growth).",
+        "reasoning_pattern": "The analyst seeks to decompose the aggregate number into its constituent parts to understand the quality of the growth or the risk profile of the specific sub-segment.",
+        "question_style": "If you could help us with [X], how much of that was [Y] and what would be the comparable [Z]?",
+        "typical_follow_up": "Asking for qualitative context or industry-wide comparisons to see if the bank's performance is idiosyncratic or systemic.",
+        "evidence_quarters": [
+          "q1fy25",
+          "q3fy24",
+          "q3fy26"
+        ]
+      },
+      {
+        "trigger": "Management makes a claim about asset quality or product performance (e.g., personal loans vs. credit cards).",
+        "reasoning_pattern": "The analyst tests the consistency of management's logic by applying the same reasoning to a related product or customer segment to identify potential blind spots.",
+        "question_style": "If [X] is true for this product, why is that not also true for [Y]?",
+        "typical_follow_up": "Probing for the overlap between customer bases or the structural differences that justify the management's differing outlooks.",
+        "evidence_quarters": [
+          "q4fy25",
+          "q3fy26"
+        ]
+      }
+    ]
+  },
+  "Rikin Shah": {
+    "analyst": "Rikin Shah",
+    "patterns": [
+      {
+        "trigger": "Discrepancies between reported line-item growth and broader strategic guidance or peer trends.",
+        "reasoning_pattern": "He identifies a specific divergence (e.g., flat retail growth vs. corporate growth) and questions if this represents a tactical pivot or a fundamental shift in the bank's medium-term strategy.",
+        "question_style": "If [metric] is [state], does that imply a change in the underlying thought process or strategy?",
+        "typical_follow_up": "Asking for a medium-term view or confirmation of whether the current trend is an outlier or the new baseline.",
+        "evidence_quarters": [
+          "q1fy25",
+          "q3fy24"
+        ]
+      },
+      {
+        "trigger": "Changes in operating expense (opex) line items or the removal of specific cost guidance.",
+        "reasoning_pattern": "He treats cost fluctuations as indicators of management's ability to control levers, seeking to determine if a reduction is sustainable or a one-time event.",
+        "question_style": "Should we think of this as a beginning of moderation in opex going ahead?",
+        "typical_follow_up": "Asking for a breakdown of which specific levers were pulled or if the cost trajectory is changing.",
+        "evidence_quarters": [
+          "q1fy25",
+          "q3fy24"
+        ]
+      },
+      {
+        "trigger": "Specific asset quality metrics like slippages, recoveries, or technical write-offs.",
+        "reasoning_pattern": "He connects current slippage levels to future earnings potential, specifically looking for the 'uplift' in yields or margins once these headwinds subside.",
+        "question_style": "Why was [metric] weak, and how should we think about potential recoveries from here on?",
+        "typical_follow_up": "Asking for the specific impact on future loan yields or the timeline for normalization.",
+        "evidence_quarters": [
+          "q1fy27",
+          "q4fy25",
+          "q4fy26"
+        ]
+      },
+      {
+        "trigger": "Management's guidance on NIM or margin targets.",
+        "reasoning_pattern": "He attempts to reverse-engineer the bank's guidance by asking for a 'walk' or breakdown of the components (e.g., wholesale share, cost of funds) required to reach the target.",
+        "question_style": "Could you provide a walk of how much of that can come through via [variable A] and [variable B]?",
+        "typical_follow_up": "Pressing for a specific timeframe or level of confidence in achieving the stated target.",
+        "evidence_quarters": [
+          "q1fy27",
+          "q4fy26"
+        ]
+      }
+    ]
+  }
+}
