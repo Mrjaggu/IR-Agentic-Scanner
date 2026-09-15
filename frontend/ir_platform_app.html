@@ -279,6 +279,12 @@ details[open]>summary::before{content:"▾";}
 }
 .prompt-pill:hover{border-color:var(--accent); color:var(--ink); background:var(--accent-track);}
 .chat-empty .turn-body{max-width:none;}
+@media (min-width:821px){
+  .chat-empty{max-width:640px; margin:0 auto; text-align:center;}
+  .chat-empty .turn-head{justify-content:center;}
+  .chat-empty .prompt-group{text-align:center;}
+  .chat-empty .prompt-row{justify-content:center;}
+}
 
 /* ── Two-pane (profiles) ─────────────────────────────────────────────────── */
 .split{display:grid; grid-template-columns:292px 1fr; gap:16px; align-items:start;}
