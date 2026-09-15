@@ -136,12 +136,14 @@ def build_evidence_pool(analyst: str, topics: list[str], graph: dict, prior_quar
     for t in topics:
         narration = (_narration_for_topic(graph, target_quarter, t, disclosure_text)
                      if target_quarter else [])
-        cognitive_pattern = pattern_retrieval.retrieve_for_analyst(analyst, t, bank_id=bank_id)
+        cognitive_pattern = pattern_retrieval.retrieve_for_analyst(
+            analyst, t, bank_id=bank_id, exclude_quarter=target_quarter)
         pool[t] = {
             "precedent": _find_precedent(analyst, t, graph, prior_quarters),
             "cognitive_pattern": cognitive_pattern,
             "cognitive_pattern_overall": ([] if cognitive_pattern else
-                pattern_retrieval.retrieve_overall(t, exclude_analyst=analyst, bank_id=bank_id)),
+                pattern_retrieval.retrieve_overall(t, exclude_analyst=analyst, bank_id=bank_id,
+                                                    exclude_quarter=target_quarter)),
             "base_rate": global_rate.get(t, 0.0),
             "anomaly_score": anomaly_scores.get(t),
             "metrics": _metrics_for_topic(t, disclosed_metrics),

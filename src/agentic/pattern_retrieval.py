@@ -34,10 +34,12 @@ import json
 import os
 import re
 
-from src.config.settings import BASE_DIR
+from src.config.settings import BASE_DIR, paths_for
 from src.graphs.compiler import TOPICS as TOPIC_KEYWORDS
 
 _cache: dict[str, dict] = {}
+_graph_cache: dict[str, dict] = {}
+_question_text_cache: dict[str, dict[tuple[str, str], str]] = {}
 
 
 def _patterns_path(bank_id: str) -> str:
@@ -62,27 +64,78 @@ def is_available(bank_id: str = "axis") -> bool:
     return bool(_load(bank_id))
 
 
+def _load_question_text(bank_id: str) -> dict[tuple[str, str], str]:
+    """(analyst, quarter) -> that analyst's real question text that quarter,
+    from this bank's own graph.json. Used to break ties between same-topic
+    patterns on real grounded language instead of the LLM's short summary
+    fields, which are often too generic to tell two of one analyst's own
+    patterns apart (e.g. two patterns that both just say "NIM")."""
+    if bank_id in _question_text_cache:
+        return _question_text_cache[bank_id]
+    out: dict[tuple[str, str], str] = {}
+    try:
+        graph = json.load(open(paths_for(bank_id).graph_path))
+        for n in graph.get("nodes", []):
+            if n.get("type") != "Question":
+                continue
+            p = n["properties"]
+            key = (p.get("analyst"), p.get("quarter"))
+            out[key] = (out.get(key, "") + " " + (p.get("text") or "")).strip()
+    except Exception:
+        out = {}
+    _question_text_cache[bank_id] = out
+    return out
+
+
 def _topic_keywords(topic: str) -> list[str]:
     kws = [k.lower() for k in TOPIC_KEYWORDS.get(topic, [])]
     kws += [w for w in re.split(r"[^a-z]+", topic.lower()) if len(w) > 3]
     return kws
 
 
-def _score(pattern: dict, kws: list[str]) -> int:
+def _score(pattern: dict, kws: list[str], analyst: str = "", bank_id: str = "axis",
+           exclude_quarter: str | None = None) -> float:
+    """Primary score: does this pattern's own trigger/reasoning text mention
+    this topic's vocabulary at all -- cheap, coarse, and often TIED across a
+    few of one analyst's patterns (several can each just say "NIM").
+
+    Tie-break: reward patterns whose CITED evidence quarters actually contain
+    this topic's vocabulary in the analyst's own real question text that
+    quarter -- grounded signal, not the LLM's paraphrase. exclude_quarter
+    drops the quarter currently being predicted from that evidence text, so a
+    pattern never gets credit here for "matching" the very quarter it's being
+    used to forecast."""
     text = f"{pattern.get('trigger', '')} {pattern.get('reasoning_pattern', '')}".lower()
-    return sum(1 for k in kws if k in text)
+    primary = sum(1 for k in kws if k in text)
+
+    evidence_hits = 0
+    quarters = [q for q in pattern.get("evidence_quarters", []) if q != exclude_quarter]
+    if quarters and analyst:
+        qtext_map = _load_question_text(bank_id)
+        ev_text = " ".join(qtext_map.get((analyst, q), "") for q in quarters).lower()
+        if ev_text.strip():
+            evidence_hits = sum(1 for k in kws if k in ev_text)
+
+    return primary * 10 + evidence_hits
 
 
-def retrieve_for_analyst(analyst: str, topic: str, bank_id: str = "axis") -> dict | None:
+def retrieve_for_analyst(analyst: str, topic: str, bank_id: str = "axis",
+                          exclude_quarter: str | None = None) -> dict | None:
     """This analyst's own mined pattern whose trigger text is actually about
-    this topic (keyword overlap > 0). Highest-scoring pattern wins; None if
-    this analyst has no mined patterns at all, or none of them are about
-    this topic."""
+    this topic (keyword overlap > 0). Highest-scoring pattern wins, where
+    ties on the coarse trigger/reasoning overlap are broken by which
+    pattern's cited evidence quarters actually used this topic's vocabulary
+    in the analyst's own real question text (see _score). None if this
+    analyst has no mined patterns at all, or none of them are about this
+    topic. exclude_quarter should be the quarter currently being predicted,
+    so a pattern can't get evidence credit from the very quarter it's
+    forecasting."""
     entry = _load(bank_id).get(analyst)
     if not entry:
         return None
     kws = _topic_keywords(topic)
-    scored = [(_score(p, kws), p) for p in entry.get("patterns", [])]
+    scored = [(_score(p, kws, analyst=analyst, bank_id=bank_id, exclude_quarter=exclude_quarter), p)
+              for p in entry.get("patterns", [])]
     scored = [sp for sp in scored if sp[0] > 0]
     if not scored:
         return None
@@ -91,7 +144,8 @@ def retrieve_for_analyst(analyst: str, topic: str, bank_id: str = "axis") -> dic
 
 
 def retrieve_overall(topic: str, exclude_analyst: str | None = None,
-                     bank_id: str = "axis", top_k: int = 2) -> list[dict]:
+                     bank_id: str = "axis", top_k: int = 2,
+                     exclude_quarter: str | None = None) -> list[dict]:
     """Cross-analyst fallback: the best-matching mined patterns for this
     topic, pooled across every OTHER analyst in this bank's history. Used
     only when the target analyst has no pattern of their own for this topic
@@ -104,7 +158,7 @@ def retrieve_overall(topic: str, exclude_analyst: str | None = None,
         if name == exclude_analyst:
             continue
         for p in entry.get("patterns", []):
-            s = _score(p, kws)
+            s = _score(p, kws, analyst=name, bank_id=bank_id, exclude_quarter=exclude_quarter)
             if s > 0:
                 scored.append((s, name, p))
     scored.sort(key=lambda t: -t[0])
