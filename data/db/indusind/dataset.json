@@ -593,14 +593,6 @@
     ],
     "analysts": [
       {
-        "name": "Kunal Shah",
-        "firm": "Citigroup"
-      },
-      {
-        "name": "Jai Mundhra",
-        "firm": "ICICI Securities"
-      },
-      {
         "name": "Abhishek Murarka",
         "firm": "HSBC"
       },
@@ -609,12 +601,20 @@
         "firm": "Nuvama Wealth Management"
       },
       {
-        "name": "Piran Engineer",
-        "firm": "CLSA India"
+        "name": "Jai Mundhra",
+        "firm": "ICICI Securities"
       },
       {
         "name": "Krishnan ASV",
         "firm": "HDFC Securities"
+      },
+      {
+        "name": "Kunal Shah",
+        "firm": "Citigroup"
+      },
+      {
+        "name": "Piran Engineer",
+        "firm": "CLSA India"
       },
       {
         "name": "Rikin Shah",
