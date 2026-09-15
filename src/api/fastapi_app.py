@@ -24,20 +24,23 @@ import os
 import uuid
 from datetime import datetime
 
-from fastapi import FastAPI, UploadFile, File, Form
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
 from src.config.settings import (
-    BASE_DIR, VAL_QUARTER, TOPICS_LIST, TEST_QUARTERS, TRAIN_CUTOFF, CUTOFF_MODE,
+    BASE_DIR, VAL_QUARTER, TOPICS_LIST, TEST_QUARTERS, TRAIN_CUTOFF, CUTOFF_MODE, paths_for,
 )
+from src.config.banks import BANKS, DEFAULT_BANK
 from src.data.loader import load_dataset, load_graph
 from src.data.ingest_test import preview_ingest, commit_ingest
 from src.data.dossier import build_analyst_dossier
 from src.data.upcoming import parse_upcoming_document
 from src.ui_compiler import compile_analyst_profiles, compile_search_corpus
 from src.search.hybrid_search import SearchIndex
-from src.agentic.run_agentic import build_initial_state, main as run_agentic_full, OUT_JSON as AGENTIC_JSON
+from src.agentic.run_agentic import (
+    build_initial_state, main as run_agentic_full, _out_paths as _agentic_out_paths,
+)
 from src.agentic.planning_agent import run_planning_agent
 from src.agentic.overall_layer import build_overall_topics
 from src.agentic.analyst_layer import reweight_for_analyst, build_arithmetic_followups
@@ -56,41 +59,82 @@ APP_HTML_PATH = os.path.join(BASE_DIR, "frontend", "ir_platform_app.html")
 app = FastAPI(title="IR Question-Intelligence Platform")
 
 # ── Caches ──────────────────────────────────────────────────────────────────
-_cache: dict = {}
-_dossier_cache: dict[str, dict] = {}
+# 2026-09: every cache below is now keyed by bank_id (a plain dict-of-dicts,
+# or a "<bank_id>:..." string-prefixed key for the flatter eval/overall
+# caches) instead of holding exactly one bank's data -- so switching banks in
+# the UI doesn't require a server restart, and one bank's cached run never
+# leaks into another's. _disclosures stays global: a disclosure_id is already
+# a random uuid, unique regardless of which bank it was parsed for.
+_cache: dict[str, dict] = {}
+_dossier_cache: dict[str, dict[str, dict]] = {}
 _overall_cache: dict[str, dict] = {}
 _eval_cache: dict[str, dict] = {}
 _disclosures: dict[str, dict] = {}
 
 
-def _load_live():
-    dataset = load_dataset()
-    graph = load_graph()
-    _cache.clear()
-    _cache.update({
+def _bank(bank_id: str) -> str:
+    """Validates a bank query/body param, raising a clean 400 instead of the
+    500 get_bank()'s ValueError would give. Call at the top of every route
+    that takes a `bank` param, before touching any bank-scoped cache."""
+    if bank_id not in BANKS:
+        raise HTTPException(status_code=400,
+                            detail=f"Unknown bank {bank_id!r}. Valid: {sorted(BANKS)}")
+    return bank_id
+
+
+def _load_live(bank_id: str = DEFAULT_BANK) -> dict:
+    paths = paths_for(bank_id)
+    dataset = load_dataset(dataset_path=paths.dataset_path)
+    graph = load_graph(graph_path=paths.graph_path)
+    data = {
         "dataset": dataset,
         "graph": graph,
         "profiles": compile_analyst_profiles(dataset, graph),
         "corpus": compile_search_corpus(graph),
         "quarters": [q["quarter_id"] for q in dataset],
-    })
-    _cache["index"] = SearchIndex(_cache["corpus"])
-    _dossier_cache.clear()
-    _overall_cache.clear()
-    _eval_cache.clear()
-    return _cache
+    }
+    data["index"] = SearchIndex(data["corpus"])
+    _cache[bank_id] = data
+    _dossier_cache.pop(bank_id, None)
+    for k in [k for k in _overall_cache if k.startswith(f"{bank_id}:")]:
+        del _overall_cache[k]
+    for k in [k for k in _eval_cache if k.startswith(f"{bank_id}:")]:
+        del _eval_cache[k]
+    return data
 
 
-def _live():
-    if not _cache:
-        _load_live()
-    return _cache
+def _live(bank_id: str = DEFAULT_BANK) -> dict:
+    if bank_id not in _cache:
+        _load_live(bank_id)
+    return _cache[bank_id]
 
 
 @app.on_event("startup")
 def _startup():
-    _load_live()
+    # Only the default bank loads eagerly -- a thin/new bank (e.g. one added
+    # to the registry with no transcripts compiled yet) shouldn't be able to
+    # crash startup for everyone; it loads lazily on its first request.
+    _load_live(DEFAULT_BANK)
     client.probe_llm()
+
+
+@app.get("/api/banks")
+def get_banks():
+    """Registry introspection for the frontend's bank selector: which banks
+    exist, and how much data each one actually has, so a thin/new bank (e.g.
+    freshly registered with no transcripts compiled yet) can be shown as such
+    rather than silently 500ing when selected."""
+    out = []
+    for bank_id, cfg in BANKS.items():
+        paths = paths_for(bank_id)
+        out.append({
+            "bank_id": bank_id,
+            "display_name": cfg.display_name,
+            "has_dataset": os.path.exists(paths.dataset_path),
+            "has_graph": os.path.exists(paths.graph_path),
+            "has_personas": os.path.exists(paths.personas_path),
+        })
+    return {"banks": out, "default_bank": DEFAULT_BANK}
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -99,9 +143,9 @@ def index():
         return f.read()
 
 
-def _topic_recall_pct() -> float | None:
+def _topic_recall_pct(bank_id: str = DEFAULT_BANK) -> float | None:
     try:
-        mean_recall = _cached_holdout()["summary"]["mean_recall"]
+        mean_recall = _cached_holdout(bank_id=bank_id)["summary"]["mean_recall"]
         return round(mean_recall * 100, 1)
     except Exception:
         return None
@@ -109,8 +153,9 @@ def _topic_recall_pct() -> float | None:
 
 # ── Meta / data ─────────────────────────────────────────────────────────────
 @app.get("/api/meta")
-def get_meta():
-    live = _live()
+def get_meta(bank: str = DEFAULT_BANK):
+    bank_id = _bank(bank)
+    live = _live(bank_id)
     from src.data.loader import get_active_analysts
     try:
         n_active = len(get_active_analysts(live["dataset"], VAL_QUARTER))
@@ -123,13 +168,15 @@ def get_meta():
     # exists, so there is no live "next call in N days" countdown here — that
     # would be invented rather than measured.
     latest = max(live["dataset"], key=lambda r: r.get("sort_key", 0)) if live["dataset"] else None
-    from src.config.settings import DATASET_PATH
     try:
-        archive_refreshed = datetime.fromtimestamp(os.path.getmtime(DATASET_PATH)).isoformat()
+        archive_refreshed = datetime.fromtimestamp(
+            os.path.getmtime(paths_for(bank_id).dataset_path)).isoformat()
     except OSError:
         archive_refreshed = None
 
     return {
+        "bank": bank_id,
+        "display_name": BANKS[bank_id].display_name,
         "quarters": live["quarters"],
         "topics": TOPICS_LIST,
         "test_quarters": TEST_QUARTERS,
@@ -147,7 +194,7 @@ def get_meta():
         "latest_reported_quarter": latest.get("quarter_id") if latest else None,
         "latest_call_date": latest.get("call_date") if latest else None,
         "archive_last_refreshed": archive_refreshed,
-        "topic_recall_pct": _topic_recall_pct(),
+        "topic_recall_pct": _topic_recall_pct(bank_id),
     }
 
 
@@ -167,58 +214,61 @@ class PinRequest(BaseModel):
     title: str
     body: str
     meta: dict | None = None
+    bank: str = DEFAULT_BANK
 
 
 class ActivityRequest(BaseModel):
     kind: str
     label: str
     meta: dict | None = None
+    bank: str = DEFAULT_BANK
 
 
 @app.get("/api/brief")
-def api_get_brief():
-    return get_state()
+def api_get_brief(bank: str = DEFAULT_BANK):
+    return get_state(bank_id=_bank(bank))
 
 
 @app.post("/api/brief/pin")
 def api_pin(req: PinRequest):
-    return pin_item(req.kind, req.title, req.body, req.meta)
+    return pin_item(req.kind, req.title, req.body, req.meta, bank_id=_bank(req.bank))
 
 
 @app.delete("/api/brief/{item_id}")
-def api_unpin(item_id: str):
-    return unpin_item(item_id)
+def api_unpin(item_id: str, bank: str = DEFAULT_BANK):
+    return unpin_item(item_id, bank_id=_bank(bank))
 
 
 @app.post("/api/brief/clear")
-def api_clear_brief():
-    return clear_brief()
+def api_clear_brief(bank: str = DEFAULT_BANK):
+    return clear_brief(bank_id=_bank(bank))
 
 
 @app.get("/api/brief/export")
-def api_export_brief(quarter: str = ""):
+def api_export_brief(quarter: str = "", bank: str = DEFAULT_BANK):
     from fastapi.responses import PlainTextResponse
-    md = brief_as_markdown(quarter)
+    bank_id = _bank(bank)
+    md = brief_as_markdown(quarter, bank_id=bank_id)
     return PlainTextResponse(md, headers={
-        "Content-Disposition": f'attachment; filename="prep-brief-{quarter or "axis"}.md"'
+        "Content-Disposition": f'attachment; filename="prep-brief-{quarter or bank_id}.md"'
     })
 
 
 @app.post("/api/activity")
 def api_log_activity(req: ActivityRequest):
-    return log_activity(req.kind, req.label, req.meta)
+    return log_activity(req.kind, req.label, req.meta, bank_id=_bank(req.bank))
 
 
 @app.get("/api/activity")
-def api_get_activity():
-    return get_state()["activity"][::-1]   # newest first
+def api_get_activity(bank: str = DEFAULT_BANK):
+    return get_state(bank_id=_bank(bank))["activity"][::-1]   # newest first
 
 
 @app.get("/api/analysts")
-def get_analysts():
+def get_analysts(bank: str = DEFAULT_BANK):
     """Roster for the profile list: enough to render rows without the full
     question payload for all 43 analysts."""
-    live = _live()
+    live = _live(_bank(bank))
     out = []
     for p in live["profiles"]:
         top = sorted(p["topic_counts"].items(), key=lambda x: -x[1])[:3]
@@ -236,25 +286,28 @@ def get_analysts():
 
 
 @app.get("/api/dossier")
-def get_dossier(analyst: str):
+def get_dossier(analyst: str, bank: str = DEFAULT_BANK):
     """Full Q&A threads: the analyst's complete question, each named management
     responder, their own follow-up reaction, and why they asked."""
-    if analyst in _dossier_cache:
-        return _dossier_cache[analyst]
-    live = _live()
+    bank_id = _bank(bank)
+    bank_dossiers = _dossier_cache.setdefault(bank_id, {})
+    if analyst in bank_dossiers:
+        return bank_dossiers[analyst]
+    live = _live(bank_id)
     d = build_analyst_dossier(analyst, live["dataset"], live["graph"])
     profile = next((p for p in live["profiles"] if p["analyst"] == analyst), None)
     if profile:
         d["topic_counts"] = profile["topic_counts"]
         d["hand_curated_persona"] = profile.get("hand_curated_persona")
         d["measured_style"] = profile.get("measured_style")
-    _dossier_cache[analyst] = d
+    bank_dossiers[analyst] = d
     return d
 
 
 # ── Search ──────────────────────────────────────────────────────────────────
 class SearchRequest(BaseModel):
     query: str
+    bank: str = DEFAULT_BANK
 
 
 def _extract_filters(query: str, analyst_names: list[str]) -> dict:
@@ -293,8 +346,8 @@ def _who(doc: dict) -> str:
     return doc.get("speaker") or "Management"
 
 
-def _retrieve(query: str, filters: dict, top_k: int = 12) -> list[dict]:
-    live = _live()
+def _retrieve(query: str, filters: dict, top_k: int = 12, bank_id: str = DEFAULT_BANK) -> list[dict]:
+    live = _live(bank_id)
     index: SearchIndex = live["index"]
     pool = list(range(len(index.docs)))
     if filters["analyst"]:
@@ -311,7 +364,8 @@ def _retrieve(query: str, filters: dict, top_k: int = 12) -> list[dict]:
 
 @app.post("/api/search")
 def api_search(req: SearchRequest):
-    live = _live()
+    live_bank_id = _bank(req.bank)
+    live = _live(live_bank_id)
     names = [p["analyst"] for p in live["profiles"]]
     filters = _extract_filters(req.query, names)
 
@@ -328,7 +382,7 @@ def api_search(req: SearchRequest):
             return {"filters": filters, "mode": "relational_table",
                     "table": {"title": f'Analysts who have raised "{topic}"',
                               "columns": ["Analyst", "Times raised"], "rows": rows},
-                    "passages": _retrieve(req.query, filters)}
+                    "passages": _retrieve(req.query, filters, bank_id=live_bank_id)}
 
     if filters["intent"] == "comparative" and filters["topic"]:
         by_q = {q: 0 for q in live["quarters"]}
@@ -338,16 +392,17 @@ def api_search(req: SearchRequest):
         return {"filters": filters, "mode": "comparative_table",
                 "table": {"title": f'"{filters["topic"]}" questions by quarter',
                           "columns": ["Quarter", "Questions"], "rows": [[q, n] for q, n in by_q.items()]},
-                "passages": _retrieve(req.query, filters)}
+                "passages": _retrieve(req.query, filters, bank_id=live_bank_id)}
 
     return {"filters": filters, "mode": "prose", "table": None,
-            "passages": _retrieve(req.query, filters)}
+            "passages": _retrieve(req.query, filters, bank_id=live_bank_id)}
 
 
 # ── Chat (SSE streaming) ────────────────────────────────────────────────────
 class ChatRequest(BaseModel):
     message: str
     history: list[dict] | None = None
+    bank: str = DEFAULT_BANK
 
 
 def _build_chat_prompt(message: str, passages: list[dict], history: list[dict] | None,
@@ -391,10 +446,11 @@ def _extractive_answer(message: str, passages: list[dict]) -> str:
 
 @app.post("/api/chat/stream")
 async def chat_stream(req: ChatRequest):
-    live = _live()
+    bank_id = _bank(req.bank)
+    live = _live(bank_id)
     names = [p["analyst"] for p in live["profiles"]]
     filters = _extract_filters(req.message, names)
-    passages = _retrieve(req.message, filters, top_k=8)
+    passages = _retrieve(req.message, filters, top_k=8, bank_id=bank_id)
 
     async def gen():
         def sse(event: str, data) -> str:
@@ -413,7 +469,9 @@ async def chat_stream(req: ChatRequest):
         answer = None
         if mode == "llm":
             raw = await asyncio.to_thread(
-                client.call_llm, _build_chat_prompt(req.message, passages, req.history), 0.1)
+                client.call_llm,
+                _build_chat_prompt(req.message, passages, req.history,
+                                   bank_name=BANKS[bank_id].display_name), 0.1)
             if raw:
                 import re
                 clean = re.sub(r"^```(?:json)?\s*|```\s*$", "", raw.strip(), flags=re.MULTILINE)
@@ -445,10 +503,11 @@ async def chat_stream(req: ChatRequest):
 
 # ── Disclosure upload (upcoming quarter) ───────────────────────────────────
 @app.post("/api/disclosure/parse")
-async def disclosure_parse(file: UploadFile = File(...), holdout: str = Form("true")):
+async def disclosure_parse(file: UploadFile = File(...), holdout: str = Form("true"),
+                           bank: str = Form(DEFAULT_BANK)):
     """Parse an upcoming-quarter draft script / investor presentation /
     transcript into prediction inputs. Nothing is written to the archive."""
-    live = _live()
+    live = _live(_bank(bank))
     order = live["quarters"]
     use_holdout = holdout.lower() in ("1", "true", "yes")
     cutoff = order.index(TRAIN_CUTOFF) if TRAIN_CUTOFF in order else len(order) - 1
@@ -480,6 +539,7 @@ class RunRequest(BaseModel):
     quarter: str | None = None
     disclosure_id: str | None = None
     holdout: bool = False
+    bank: str = DEFAULT_BANK
 
 
 class AnalystRunRequest(RunRequest):
@@ -498,39 +558,44 @@ def get_llm_stats():
 
 
 @app.get("/api/agentic")
-def get_agentic():
-    if not os.path.exists(AGENTIC_JSON):
+def get_agentic(bank: str = DEFAULT_BANK):
+    bank_id = _bank(bank)
+    agentic_json, _ = _agentic_out_paths(bank_id)
+    if not os.path.exists(agentic_json):
         return {"present": False}
-    with open(AGENTIC_JSON) as f:
+    with open(agentic_json) as f:
         return {"present": True, "data": json.load(f)}
 
 
 @app.post("/api/run/overall")
 def run_overall(req: RunRequest):
+    bank_id = _bank(req.bank)
     quarter = req.quarter or VAL_QUARTER
     llm_reset()
     disclosure = _disclosure(req)
-    state = build_initial_state(quarter, holdout=req.holdout, upcoming=disclosure)
+    state = build_initial_state(quarter, holdout=req.holdout, upcoming=disclosure, bank_id=bank_id)
     bundles, tool_log = run_planning_agent(state["anomaly_scores"], state["graph"],
                                            state["prior_quarters"], state["global_rate"])
     overall = build_overall_topics(bundles, state["anomaly_scores"], state["global_rate"],
                                    state["momentum"], state["client"], disclosure=disclosure,
                                    bank_name=state.get("bank_name", "Axis Bank"))
-    key = f"{quarter}:{req.disclosure_id or 'none'}:{req.holdout}"
+    key = f"{bank_id}:{quarter}:{req.disclosure_id or 'none'}:{req.holdout}"
     _overall_cache[key] = {"state": state, "overall": overall, "tool_log": tool_log}
-    return {"quarter": quarter, "cache_key": key, "tool_log": tool_log, "overall": overall,
-            "train_cutoff": state.get("train_cutoff"),
+    return {"quarter": quarter, "bank": bank_id, "cache_key": key, "tool_log": tool_log,
+            "overall": overall, "train_cutoff": state.get("train_cutoff"),
             "disclosure_conditioned": bool(disclosure), "holdout": req.holdout,
             "llm_stats": llm_stats()}
 
 
 @app.post("/api/run/analyst")
 def run_analyst(req: AnalystRunRequest):
+    bank_id = _bank(req.bank)
     quarter = req.quarter or VAL_QUARTER
     llm_reset()
-    key = f"{quarter}:{req.disclosure_id or 'none'}:{req.holdout}"
+    key = f"{bank_id}:{quarter}:{req.disclosure_id or 'none'}:{req.holdout}"
     if key not in _overall_cache:
-        run_overall(RunRequest(quarter=quarter, disclosure_id=req.disclosure_id, holdout=req.holdout))
+        run_overall(RunRequest(quarter=quarter, disclosure_id=req.disclosure_id,
+                               holdout=req.holdout, bank=bank_id))
     cached = _overall_cache[key]
     state, overall = cached["state"], cached["overall"]
     disclosure = _disclosure(req)
@@ -558,20 +623,23 @@ def run_analyst(req: AnalystRunRequest):
 
 @app.post("/api/run/full")
 def run_full(req: RunRequest):
+    bank_id = _bank(req.bank)
     quarter = req.quarter or VAL_QUARTER
     llm_reset()
     disclosure = _disclosure(req)
     if not disclosure and not req.holdout:
-        run_agentic_full(quarter)
-        log_activity("prepare_call", f"Prepared {quarter}", {"quarter": quarter, "mode": "full"})
-        with open(AGENTIC_JSON) as f:
-            return {"quarter": quarter, "data": json.load(f), "disclosure_conditioned": False,
-                    "llm_stats": llm_stats()}
+        run_agentic_full(quarter, bank_id=bank_id)
+        log_activity("prepare_call", f"Prepared {quarter}",
+                     {"quarter": quarter, "mode": "full"}, bank_id=bank_id)
+        agentic_json, _ = _agentic_out_paths(bank_id)
+        with open(agentic_json) as f:
+            return {"quarter": quarter, "bank": bank_id, "data": json.load(f),
+                    "disclosure_conditioned": False, "llm_stats": llm_stats()}
 
     # Disclosure-conditioned or held-out runs stay in memory rather than
     # overwriting the archive's committed prediction file.
     from src.agentic.graph_app import run_pipeline
-    state = build_initial_state(quarter, holdout=req.holdout, upcoming=disclosure)
+    state = build_initial_state(quarter, holdout=req.holdout, upcoming=disclosure, bank_id=bank_id)
     result = run_pipeline(state)
     data = {
         "quarter": quarter,
@@ -586,35 +654,38 @@ def run_full(req: RunRequest):
     }
     log_activity("prepare_call", f"Prepared {quarter}",
                 {"quarter": quarter, "mode": "full", "disclosure_conditioned": bool(disclosure),
-                 "holdout": req.holdout})
-    return {"quarter": quarter, "data": data, "disclosure_conditioned": bool(disclosure),
+                 "holdout": req.holdout}, bank_id=bank_id)
+    return {"quarter": quarter, "bank": bank_id, "data": data,
+            "disclosure_conditioned": bool(disclosure),
             "holdout": req.holdout, "persisted": False, "llm_stats": llm_stats()}
 
 
 # ── Evaluation ──────────────────────────────────────────────────────────────
-def _cached_holdout(with_questions: bool = False, refresh: bool = False) -> dict:
-    key = f"holdout:{with_questions}"
+def _cached_holdout(with_questions: bool = False, refresh: bool = False,
+                    bank_id: str = DEFAULT_BANK) -> dict:
+    key = f"{bank_id}:holdout:{with_questions}"
     if refresh or key not in _eval_cache:
-        _eval_cache[key] = run_holdout_eval(with_questions=with_questions)
+        _eval_cache[key] = run_holdout_eval(with_questions=with_questions, bank_id=bank_id)
     return _eval_cache[key]
 
 
 @app.get("/api/eval/holdout")
-def eval_holdout(with_questions: bool = False, refresh: bool = False):
+def eval_holdout(with_questions: bool = False, refresh: bool = False, bank: str = DEFAULT_BANK):
     """The headline numbers: q4fy26 and q1fy27 scored separately against a
     q3fy26 training cutoff, plus the promotion gate."""
-    return _cached_holdout(with_questions=with_questions, refresh=refresh)
+    return _cached_holdout(with_questions=with_questions, refresh=refresh, bank_id=_bank(bank))
 
 
-def _cached_question_recall(refresh: bool = False) -> dict:
-    key = "question_recall"
+def _cached_question_recall(refresh: bool = False, bank_id: str = DEFAULT_BANK) -> dict:
+    key = f"{bank_id}:question_recall"
     if refresh or key not in _eval_cache:
-        _eval_cache[key] = run_holdout_eval(score_question_recall=True)
+        _eval_cache[key] = run_holdout_eval(score_question_recall=True, bank_id=bank_id)
     return _eval_cache[key]
 
 
 @app.get("/api/eval/question-recall")
-def eval_question_recall(refresh: bool = False, analysts: str = "", quarter: str = ""):
+def eval_question_recall(refresh: bool = False, analysts: str = "", quarter: str = "",
+                         bank: str = DEFAULT_BANK):
     """Question-level recall: did the FRAMED QUESTION TEXT anticipate what
     the analyst actually asked, not just whether the topic bucket matched.
     Topic recall (see /api/eval/holdout) answers "was the bucket on the
@@ -631,53 +702,57 @@ def eval_question_recall(refresh: bool = False, analysts: str = "", quarter: str
     a crawl by OpenRouter's free-tier rate limit. A scoped call bypasses the
     cache entirely (it's not the headline result and shouldn't overwrite or
     be served as it), so it always makes fresh LLM calls -- use sparingly."""
+    bank_id = _bank(bank)
     if analysts or quarter:
         analyst_list = [a.strip() for a in analysts.split(",") if a.strip()] or None
         quarter_list = [quarter.strip()] if quarter.strip() else None
         return run_holdout_eval(score_question_recall=True,
-                                analysts=analyst_list, quarters=quarter_list)
-    return _cached_question_recall(refresh=refresh)
+                                analysts=analyst_list, quarters=quarter_list, bank_id=bank_id)
+    return _cached_question_recall(refresh=refresh, bank_id=bank_id)
 
 
 class EvalCompareRequest(BaseModel):
     disclosure_ids: dict[str, str] | None = None
+    bank: str = DEFAULT_BANK
 
 
 @app.post("/api/eval/compare")
 def eval_compare(req: EvalCompareRequest):
     """History-only vs disclosure-conditioned on the held-out quarters, so the
     effect of the upload is a measured number rather than a claim."""
+    bank_id = _bank(req.bank)
     out = {}
     for q in TEST_QUARTERS:
-        base = evaluate_quarter(q, holdout=True)
+        base = evaluate_quarter(q, holdout=True, bank_id=bank_id)
         row = {"history_only": {"macro": base["macro"],
                                 "misses": base["failure_attribution"]["counts"],
                                 "ranked": base["topic_ranking"]["ranked_topics"],
                                 "actual": base["topic_ranking"]["actual_topics"]}}
         did = (req.disclosure_ids or {}).get(q)
         if did and did in _disclosures:
-            cond = evaluate_quarter(q, holdout=True, upcoming=_disclosures[did])
+            cond = evaluate_quarter(q, holdout=True, upcoming=_disclosures[did], bank_id=bank_id)
             row["disclosure_conditioned"] = {"macro": cond["macro"],
                                              "misses": cond["failure_attribution"]["counts"],
                                              "ranked": cond["topic_ranking"]["ranked_topics"]}
         out[q] = row
-    return {"train_cutoff": TRAIN_CUTOFF, "per_quarter": out}
+    return {"bank": bank_id, "train_cutoff": TRAIN_CUTOFF, "per_quarter": out}
 
 
 @app.get("/api/eval/error-report")
-def eval_error_report(with_questions: bool = False, refresh: bool = False):
+def eval_error_report(with_questions: bool = False, refresh: bool = False, bank: str = DEFAULT_BANK):
     """The 'Error Researcher': aggregates the held-out eval's per-miss failure
     attribution into a framework-level diagnosis -- which error category
     dominates, whether it's even fixable by reweighting, and which specific
     (analyst, topic) pairs are driving it. Reuses the same cached holdout run
     as /api/eval/holdout; no extra LLM calls."""
-    holdout = _cached_holdout(with_questions=with_questions, refresh=refresh)
+    holdout = _cached_holdout(with_questions=with_questions, refresh=refresh, bank_id=_bank(bank))
     return research_errors(holdout)
 
 
 class WeightBacktestRequest(BaseModel):
     weights: dict[str, float]
     with_questions: bool = False
+    bank: str = DEFAULT_BANK
 
 
 @app.post("/api/eval/backtest-weights")
@@ -696,7 +771,8 @@ def eval_backtest_weights(req: WeightBacktestRequest):
         return JSONResponse(status_code=400,
                             content={"error": f"unknown weight key(s): {sorted(unknown)}",
                                      "valid_keys": sorted(valid_keys)})
-    return backtest_and_promote_weights(req.weights, with_questions=req.with_questions)
+    return backtest_and_promote_weights(req.weights, with_questions=req.with_questions,
+                                        bank_id=_bank(req.bank))
 
 
 @app.get("/api/skills")
@@ -717,10 +793,17 @@ async def ingest_preview(file: UploadFile = File(...)):
 
 @app.post("/api/ingest/commit")
 async def ingest_commit(file: UploadFile = File(...), overwrite: str = Form("false")):
+    # Ingestion is still axis-only as of Phase 6 -- src.data.ingest_test's
+    # commit_ingest() writes through settings.py's flat DATASET_PATH/etc.
+    # shim, not paths_for(bank_id), so it always lands in data/db/axis/
+    # regardless of which bank is selected in the UI. Making ingestion itself
+    # bank-aware (accepting a target bank, writing to that bank's own
+    # dataset/graph) is out of scope for this phase; flagged here rather than
+    # silently letting a Kotak/IndusInd "upload" land in Axis's archive.
     was_overwrite = overwrite.lower() in ("1", "true", "yes")
     result = commit_ingest(await file.read(), file.filename, overwrite=was_overwrite)
     if result.get("status") == "ok":
-        _load_live()
+        _load_live(DEFAULT_BANK)
     # Real audit entry for a real write to the archive — this is the one
     # action in the app that isn't a read, so it is the one that most needs a
     # record of who/when/what, per the review's governance gap.

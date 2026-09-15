@@ -561,12 +561,14 @@ def research_errors(holdout_result: dict | None = None, top_n: int = 5) -> dict:
 # reuses the existing PromotionGate thresholds so a candidate is judged by
 # the identical bar production already has to clear.
 def backtest_and_promote_weights(candidate_weights: dict[str, float],
-                                 with_questions: bool = False) -> dict:
+                                 with_questions: bool = False,
+                                 bank_id: str = DEFAULT_BANK) -> dict:
     from src.agentic.overall_layer import DEFAULT_WEIGHTS
     from src.config.settings import PromotionGate
 
     def _run(weights):
-        results = [evaluate_quarter_with_weights(q, weights, with_questions=with_questions)
+        results = [evaluate_quarter_with_weights(q, weights, with_questions=with_questions,
+                                                  bank_id=bank_id)
                   for q in TEST_QUARTERS]
         recalls = [r["macro"]["recall"] for r in results]
         precisions = [r["macro"]["precision"] for r in results]
@@ -641,7 +643,8 @@ def synthetic_disclosure_for_quarter(quarter: str, graph: dict) -> dict:
 
 def evaluate_quarter_with_weights(quarter: str, weights: dict[str, float],
                                   with_questions: bool = False,
-                                  use_synthetic_disclosure: bool = True) -> dict:
+                                  use_synthetic_disclosure: bool = True,
+                                  bank_id: str = DEFAULT_BANK) -> dict:
     """Same as evaluate_quarter(), but injecting an alternate composite-weight
     set into the Overall layer instead of the module defaults -- the one extra
     hook backtest_and_promote_weights needs that evaluate_quarter() doesn't
@@ -651,7 +654,7 @@ def evaluate_quarter_with_weights(quarter: str, weights: dict[str, float],
     that quarter's own real narration through synthetic_disclosure_for_quarter
     so a weight change on disclosure/drill_flag is actually exercised by the
     backtest instead of scoring identically to baseline by construction."""
-    state = build_initial_state(quarter, probe=with_questions, holdout=True)
+    state = build_initial_state(quarter, probe=with_questions, holdout=True, bank_id=bank_id)
     disclosure = synthetic_disclosure_for_quarter(quarter, state["graph"]) if use_synthetic_disclosure else None
     bundles, _ = run_planning_agent(
         state["anomaly_scores"], state["graph"], state["prior_quarters"], state["global_rate"]
