@@ -11,3 +11,14 @@ langgraph==1.2.11
 langgraph-checkpoint==4.2.0
 langgraph-prebuilt==1.1.0
 langgraph-sdk==0.4.4
+
+# CPU-lightweight semantic retrieval signal for search/chat (src/search/embeddings.py).
+# Not a sentence-transformer: huggingface.co is unreachable from this project's
+# environment (verified 2026-09), but spaCy's model wheels are GitHub release
+# assets, not HF-hosted, and github.com IS reachable -- see that module's
+# docstring. Two install steps (pip alone won't fetch the model):
+#   pip install -r requirements.txt
+#   pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.8.0/en_core_web_md-3.8.0-py3-none-any.whl
+# Optional: retrieval falls back to BM25 + TF-IDF only (no crash) if this
+# model isn't installed on a given machine -- see meta.retrieval.semantic.
+spacy==3.8.16
