@@ -32,10 +32,13 @@ def load_dataset(canonicalize=True, dataset_path=None):
                     a["name"] = ANALYST_ALIASES[a["name"]]
     return dataset
 
-def load_graph(canonicalize=True):
-    if not os.path.exists(GRAPH_PATH):
-        raise FileNotFoundError(f"graph.json not found at {GRAPH_PATH}")
-    with open(GRAPH_PATH, "r") as f:
+def load_graph(canonicalize=True, graph_path=None):
+    # graph_path: same override pattern as load_dataset()'s dataset_path --
+    # defaults to the existing GRAPH_PATH shim (axis) for back-compat.
+    graph_path = graph_path or GRAPH_PATH
+    if not os.path.exists(graph_path):
+        raise FileNotFoundError(f"graph.json not found at {graph_path}")
+    with open(graph_path, "r") as f:
         graph = json.load(f)
         
     if canonicalize:
@@ -63,14 +66,22 @@ def get_active_analysts(dataset, val_quarter=VAL_QUARTER):
                 
     return sorted(list(active))
 
-def generate_prep_sheet():
-    print("Compiling preparation sheet from predictions and historical graph...")
+def generate_prep_sheet(bank_id: str = None):
+    from src.config.settings import paths_for
+    from src.config.banks import DEFAULT_BANK
+    bank_id = bank_id or DEFAULT_BANK
+    paths = paths_for(bank_id)
+    predictions_path = paths.predictions_path
+    persona_derived_path = paths.persona_derived_path
+    prep_sheet_path = paths.prep_sheet_path
+
+    print(f"Compiling preparation sheet from predictions and historical graph ({bank_id})...")
     
-    with open(PREDICTIONS_PATH, "r") as f:
+    with open(predictions_path, "r") as f:
         pred_data = json.load(f)
         
-    graph = load_graph()
-    dataset = load_dataset()
+    graph = load_graph(graph_path=paths.graph_path)
+    dataset = load_dataset(dataset_path=paths.dataset_path)
     
     predictions = pred_data["predictions"]
     
@@ -185,8 +196,8 @@ def generate_prep_sheet():
     }
 
     persona_derived = {}
-    if os.path.exists(PERSONA_DERIVED_PATH):
-        with open(PERSONA_DERIVED_PATH) as f:
+    if os.path.exists(persona_derived_path):
+        with open(persona_derived_path) as f:
             persona_derived = json.load(f)
 
     prep_sheet = {}
@@ -228,7 +239,8 @@ def generate_prep_sheet():
                 "peer_history": peers_qa[:2]
             })
             
-    with open(PREP_SHEET_PATH, "w") as f:
+    os.makedirs(os.path.dirname(prep_sheet_path), exist_ok=True)
+    with open(prep_sheet_path, "w") as f:
         json.dump(prep_sheet, f, indent=2)
         
-    print(f"IR Prep Sheet compiled successfully!\nFile saved to {PREP_SHEET_PATH}")
+    print(f"IR Prep Sheet compiled successfully!\nFile saved to {prep_sheet_path}")

@@ -4,9 +4,15 @@ pinned prep-brief items and a recent-activity log, persisted to disk so they
 survive a server restart and a browser reload — not just in-memory or
 localStorage, which would lose everything the moment uvicorn restarts.
 
-Single JSON file, single workspace (Axis Bank, one user). No concurrency
-control beyond a process-local lock, which is the right amount of
-engineering for what this is: nobody else is writing to this file.
+One JSON file PER BANK (data/outputs/<bank_id>/workspace_state.json), single
+user. No concurrency control beyond a process-local lock, which is the right
+amount of engineering for what this is: nobody else is writing these files.
+
+2026-09: every function below gained a `bank_id` param, default
+DEFAULT_BANK ("axis") -- so every existing caller (fastapi_app.py's brief
+routes, which don't pass bank_id yet -- that's a later phase) keeps working
+completely unchanged, pinned to axis's own workspace file, same as before
+this file had any notion of "bank" at all.
 """
 
 import json
@@ -16,12 +22,22 @@ import uuid
 from datetime import datetime, timezone
 
 from src.config.settings import BASE_DIR
+from src.config.banks import DEFAULT_BANK
 
-STATE_PATH = os.path.join(BASE_DIR, "data", "outputs", "workspace_state.json")
 _lock = threading.Lock()
 
 MAX_ACTIVITY = 50
 MAX_BRIEF_ITEMS = 200   # a sanity cap, not a real-world limit
+
+
+def _state_path(bank_id: str = DEFAULT_BANK) -> str:
+    return os.path.join(BASE_DIR, "data", "outputs", bank_id, "workspace_state.json")
+
+
+# Kept for any external code that still imports the flat constant directly
+# (introspection/back-compat only -- every function below resolves its own
+# path via _state_path(bank_id), this is not read internally).
+STATE_PATH = _state_path(DEFAULT_BANK)
 
 
 def _now() -> str:
@@ -32,11 +48,12 @@ def _empty() -> dict:
     return {"brief_items": [], "activity": []}
 
 
-def _read() -> dict:
-    if not os.path.exists(STATE_PATH):
+def _read(bank_id: str = DEFAULT_BANK) -> dict:
+    path = _state_path(bank_id)
+    if not os.path.exists(path):
         return _empty()
     try:
-        with open(STATE_PATH, "r") as f:
+        with open(path, "r") as f:
             d = json.load(f)
     except (json.JSONDecodeError, OSError):
         return _empty()
@@ -45,23 +62,25 @@ def _read() -> dict:
     return d
 
 
-def _write(d: dict) -> None:
-    os.makedirs(os.path.dirname(STATE_PATH), exist_ok=True)
-    tmp = STATE_PATH + ".tmp"
+def _write(d: dict, bank_id: str = DEFAULT_BANK) -> None:
+    path = _state_path(bank_id)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp = path + ".tmp"
     with open(tmp, "w") as f:
         json.dump(d, f, indent=2)
-    os.replace(tmp, STATE_PATH)   # atomic on the same filesystem
+    os.replace(tmp, path)   # atomic on the same filesystem
 
 
-def get_state() -> dict:
+def get_state(bank_id: str = DEFAULT_BANK) -> dict:
     with _lock:
-        return _read()
+        return _read(bank_id)
 
 
-def pin_item(kind: str, title: str, body: str, meta: dict | None = None) -> dict:
+def pin_item(kind: str, title: str, body: str, meta: dict | None = None,
+            bank_id: str = DEFAULT_BANK) -> dict:
     """Add one item to the prep brief. Returns the whole updated state."""
     with _lock:
-        d = _read()
+        d = _read(bank_id)
         item = {
             "id": uuid.uuid4().hex[:12],
             "kind": kind,               # "chat_answer" | "passage" | "predicted_question" | "search_result"
@@ -72,43 +91,44 @@ def pin_item(kind: str, title: str, body: str, meta: dict | None = None) -> dict
         }
         d["brief_items"].append(item)
         d["brief_items"] = d["brief_items"][-MAX_BRIEF_ITEMS:]
-        _write(d)
+        _write(d, bank_id)
         return d
 
 
-def unpin_item(item_id: str) -> dict:
+def unpin_item(item_id: str, bank_id: str = DEFAULT_BANK) -> dict:
     with _lock:
-        d = _read()
+        d = _read(bank_id)
         d["brief_items"] = [i for i in d["brief_items"] if i["id"] != item_id]
-        _write(d)
+        _write(d, bank_id)
         return d
 
 
-def clear_brief() -> dict:
+def clear_brief(bank_id: str = DEFAULT_BANK) -> dict:
     with _lock:
-        d = _read()
+        d = _read(bank_id)
         d["brief_items"] = []
-        _write(d)
+        _write(d, bank_id)
         return d
 
 
-def log_activity(kind: str, label: str, meta: dict | None = None) -> dict:
+def log_activity(kind: str, label: str, meta: dict | None = None,
+                 bank_id: str = DEFAULT_BANK) -> dict:
     """Append one line to the recent-activity feed. Best-effort — a failure
     here should never break the action that triggered it."""
     with _lock:
-        d = _read()
+        d = _read(bank_id)
         d["activity"].append({
             "kind": kind, "label": label, "meta": meta or {}, "at": _now(),
         })
         d["activity"] = d["activity"][-MAX_ACTIVITY:]
-        _write(d)
+        _write(d, bank_id)
         return d
 
 
-def brief_as_markdown(quarter_label: str = "") -> str:
+def brief_as_markdown(quarter_label: str = "", bank_id: str = DEFAULT_BANK) -> str:
     """Renders the current prep brief as a shareable markdown document —
     the review's "export/share prep brief" step."""
-    d = get_state()
+    d = get_state(bank_id)
     items = d["brief_items"]
     lines = [f"# Prep brief{' — ' + quarter_label if quarter_label else ''}", ""]
     if not items:
