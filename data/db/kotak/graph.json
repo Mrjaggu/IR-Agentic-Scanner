@@ -1,0 +1,1097 @@
+{
+  "nodes": [
+    {
+      "id": "Slippages & Asset Quality",
+      "type": "Topic",
+      "properties": {
+        "name": "Slippages & Asset Quality"
+      }
+    },
+    {
+      "id": "NIM & Yields",
+      "type": "Topic",
+      "properties": {
+        "name": "NIM & Yields"
+      }
+    },
+    {
+      "id": "Credit Cost & Provisions",
+      "type": "Topic",
+      "properties": {
+        "name": "Credit Cost & Provisions"
+      }
+    },
+    {
+      "id": "Citibank Integration",
+      "type": "Topic",
+      "properties": {
+        "name": "Citibank Integration"
+      }
+    },
+    {
+      "id": "Opex & Cost-to-Income",
+      "type": "Topic",
+      "properties": {
+        "name": "Opex & Cost-to-Income"
+      }
+    },
+    {
+      "id": "Loan & Advances Growth",
+      "type": "Topic",
+      "properties": {
+        "name": "Loan & Advances Growth"
+      }
+    },
+    {
+      "id": "Deposits & CASA",
+      "type": "Topic",
+      "properties": {
+        "name": "Deposits & CASA"
+      }
+    },
+    {
+      "id": "Credit Cards & Spends",
+      "type": "Topic",
+      "properties": {
+        "name": "Credit Cards & Spends"
+      }
+    },
+    {
+      "id": "Capital Adequacy",
+      "type": "Topic",
+      "properties": {
+        "name": "Capital Adequacy"
+      }
+    },
+    {
+      "id": "Subsidiaries' Performance",
+      "type": "Topic",
+      "properties": {
+        "name": "Subsidiaries' Performance"
+      }
+    },
+    {
+      "id": "Profitability & Returns",
+      "type": "Topic",
+      "properties": {
+        "name": "Profitability & Returns"
+      }
+    },
+    {
+      "id": "Strategy & Competitive Positioning",
+      "type": "Topic",
+      "properties": {
+        "name": "Strategy & Competitive Positioning"
+      }
+    },
+    {
+      "id": "q1fy27",
+      "type": "Quarter",
+      "properties": {
+        "name": "Q1FY27",
+        "sort_key": 271
+      }
+    },
+    {
+      "id": "q1fy27_narr_0",
+      "type": "NarrationSegment",
+      "properties": {
+        "speaker": "Management",
+        "text": "Mr. Ashok Vaswani - Managing Director & CEO Mr. Jaideep Hansraj - Whole-time Director Mr. Paritosh Kashyap - Whole-time Director Mr. Anup Kumar Saha - Whole-time Director Mr. Devang Gheewalla - Group Chief Financial Officer This is a Public document. Safe Harbour This document contains certain forward -looking statements based on current expectations of Kotak Mahindra management. Actual results may vary significantly from the forward -looking statements contained in this document due to various risks and uncertainti es. These risks and uncertainties include the effect of economic and political conditions in India and outside India, volatility in interest rates and in the securities market, new regulations and Government policies that may impact the businesses of Kotak Mahindra group as well as its ability to implement the strategy. Kotak Mahindra does not undertake to update these statements. Please also refer to the statement of f inancial results required by Indian regulations that has been filed with the stock exchanges in India and is available on our website ir.kotak.com. This document does not constitute an offer or recommendation to buy or sell any securities of Kotak Mahindra Bank or any of its subsidiaries and associate companies. This document also does not con stitute an offer or recommendation to buy or sell any financial products offered by Kotak Mahindra, including but not limited to units of its mutual fund and life insurance policies. All investments in mutual funds and securities are subject to market risk s and the NAV of the schemes may go up or down depending upon the factors and forces affecting the securities Mutual Fund or any schemes thereunder. This is a Public document. As a reminder, all participant lines will be in the listen -only mode and there will be an opportunity for you to ask questions after the presentation concludes. Should you need assistance during the conference call, please signal an operator by pressing star and then zero on your touchtone phone. Please note that this conference is being recorded. Thank you, and over to you, sir.",
+        "quarter": "q1fy27",
+        "topics": [
+          "Subsidiaries' Performance"
+        ]
+      }
+    },
+    {
+      "id": "q1fy27_narr_1",
+      "type": "NarrationSegment",
+      "properties": {
+        "speaker": "Ashok Vaswani",
+        "text": "Thank you, Sagar. Thank you so much and good afternoon everyone and thank you for joining us this afternoon. I will as usual begin with some opening remarks before handing over to Devang, who will take you through the financial performance. Anup and Paritosh will cover the Retail and Institutional businesses respectively. Jaideep will provide an update on our Subsidiary performance. For the quarter, the group delivered INR 5,480 crore in profit after tax, which is a growth of 23% on a Y-o-Y basis. Let me first talk about the Bank and then the subsidiaries. The Bank delivered profit after tax of INR 4,123 crore, up 26% Y-o-Y. I've always said we seek responsible and profitable growth and not just growth for growth 's sake. In the current environment, we have prioritized stability, profitability and efficiency, without any compromise to our overarching strategy around the four focus customer segments. We've calibrated growth in the low ROE businesses and businesses potentially affected by the geopolitical crisis. At the same time, we have taken advantage of bett er spreads in the Corporate segment and volatility in the treasury markets. Our focus on the Four Customer Segments, Independent Product Businesses and Driving Automation and Digitization continues to drive strong results. Customer assets growth of 16% on a Y-o-Y basis was driven primarily by our focus segments - SME and institutional banking. We continue to grow in absolute terms in the unsecured retail segment with encouraging sequential growth now also seen in Credit Cards and MFI. Total average deposits grew by 14% on a Y-o-Y basis. Within this, our CA and Fixed rate SA book grew by 15% and 16% on a Y-o-Y basis respectively. This is despite CA growth being affected by moderation in capital market deals. We continue to focus on increasing the granularity and stability of our deposits franchise and this is reflected in our cost of funds, which went up Q-on-Q by only 1 basis points. The discipline on quality of both deposits and advances helped us deliver steady NIMs at 4.53%. I had mentioned earlier that driving efficiencies through automation and digitization would be a key priority for this year. In Q1, our cost grew by 8% on a Y-o-Y basis, further reducing cost to total assets from 2.83% to 2.66% Y-o-Y. We will continue to drive this effort on an ongoing basis.  Our operating profits thus grew by 10% on a Y-o-Y basis. Credit cost remained well under control at 46 basis points. As you know, we entered into a definitive agreement to acquire Deutsche Bank\u2019s retail banking, private banking and wealth management businesses in India for INR 281 crore. The businesses comprise of 150,000 customers with INR This is a Public document. 29,000 crore of advances, INR 16,000 crore in deposits and INR 10,500 crore of wealth AUM. The transaction has a strong strategic fit with Kotak's affluent and SME franchise and is expected to be ROE accretive and creates incremental cross-sell opportunities. This is very much in line with our inorganic philosophy.  While the transaction is expected to close in September '27, this will help us deliver above system growth rates. These inorganic opportunities continue to form an integral part of our strategy. Coming to the subsidiaries, profit after tax grew by 20% Y-o-Y with standout performances from Kotak AMC, Kotak Prime, Kotak Securities  and our alternative asset businesses. Kotak Life also had a very good quarter. Geopolitical tensions impacted the capital market businesses, particularly investment banking. However, we have a very robust pipeline going forward.  With this, the subsidiaries contributed to 33% of consolidated profit after tax. The consolidated book value per share increased by 14% Y-o-Y. The operating environment remains extremely dynamic and there are several significant factors which will play out such as FCNR (B) and ECLGS. This requires us to be extremely nimble and agile while maintaining our focus on the relentless execution of our strategy. With that, let me hand it over to Devang to take you through the financials in greater detail.",
+        "quarter": "q1fy27",
+        "topics": [
+          "NIM & Yields",
+          "Credit Cost & Provisions",
+          "Deposits & CASA",
+          "Credit Cards & Spends",
+          "Subsidiaries' Performance",
+          "Profitability & Returns"
+        ]
+      }
+    },
+    {
+      "id": "q1fy27_narr_2",
+      "type": "NarrationSegment",
+      "properties": {
+        "speaker": "Devang Gheewalla",
+        "text": "Thank you, Ashok and good afternoon, everyone. Let me take you through the key highlights of Bank\u2019s standalone and consolidated performance for Q1FY27. Let me start with the standalone bank performance. Our end of period customer asset s including the credit substitutes grew 16% Y -o-Y and 5% Q -o-Q basis. Q1 growth was largely driven by Corporate and SME segment and in retail unsecured business segment by MFI and Credit card business. Our total deposits grew 12% Y-o-Y on EOP basis, while average deposits grew 14% Y-o-Y and 4% Q-o-Q. Within which the average current account balances grew 15% Y -o-Y, average fixed rate saving s account balance grew 16% Y -o-Y, and average term deposits grew 14% Y-o-Y. Bank delivered a profit before tax of INR 5,463 crore, which grew at 25% Y -o-Y with operating profit growth of 10% of INR 6,131 crore. The key contributors to profitability are NII growth of 9% ; fee income growth of 11%; consistent improvement in cost to asset which reduced from 2.83% to 2.66%; reduction in credit cost from 93 bps in Q1 last year to 46 bps in this quarter. All of the above resulted in increase in return on asset by 20 bps from 1.94 % to 2.14%. On a sequential basis, PBT grew 2% while operating profit increased by 5%. Net interest margin for the quarter 4.53%, remained consistent with Q3FY26 and adjusted Q4 margin. As you would recall, we had reported 4.67% NIM margin for Q4, but as it happens at every Q4 because of the anomaly in the number of days, the adjusted margin for Q4 was 4.54% and therefore the margin for the Q1 and the last three quarters, that means Q3, Q4 and Q1 remains at 4.53% - 4.54%. Cost of fund was stable at 4.46% similar to the previous quarter. This is a Public document. Non-interest income for Q1 included dividend from subsidiaries and FX higher gains. In comparison, as you know, Q4 includes higher income from distribution of insurance product. Trading gain on fixed income book, net of OIS and FRA accounted during Q4 '26 got reversed in Q1FY27 with market movement. The staff cost increase in this quarter reflects impact of annual salary increment and reversal of Q4 benefit in retirement cost arising from movement in the discount rates. Coming to the operating cost, Bank continues to invest in technology which continues to be around 13% of our total cost. Q4 operating cost included elevated marketing and brand awareness spending. Coming to the asset quality, the gross NPA reduced to 1.18% vis-a-vis 1.2% on a sequential quarter basis, net NPA of 0.27% as against 0.25% and the provision coverage ratio continue to remain over 78%. Credit cost  for the quarter stood at 46 bps compared to 39 bps in Q4. Slippages increased to INR 1,321 crore from INR 1,018 crore in the previous quarter. While the unsecured portfolio continues to show improvement, the increase in credit cost and slippages was largely driven by commercial vehicle and tractor finance portfolio, reflecting seasonal trends on expected lines. As of June 30th, the Bank\u2019s net worth stood at INR 1,40,924 crore, which includes INR 9,701 crore of mark-to-market gains on strategic investments. Of this, INR 1,592 crore gain accrued during Q1 itself. These gains, as you know, have been recognized directly in the AFS reserve, have not been routed through the profit and loss account. ROE for the Bank is 11.98% for the quarter at with CET -1 of 22.4%. If we were to adjust the mark-to-market gain on the equity investment which I just said, the ROE actually improves to 12.8%. Overall capital adequacy ratio of the Bank is 22.8%. To sum up, the quarter performance reflects stable margin, continuing improvement in the operating efficiency  and normalization of credit cost. Moving to the consolidated businesses, customer assets stood at INR 6,45,812 crore, growing 16% Y-o-Y. The group investment AUM increased to INR 8,05,531 crore, an increase of 8% on a Y-o-Y basis. The consolidated net worth stood at INR 1,88,214 crore at 30th June, while the book value per share increased to INR 189 with a 6 years CAGR of 17%. Consolidated PAT is at INR 5,480 crore, which grew at 23% Y-o-Y and 5% on a Q-o-Q basis. This is of course excluding the gains on Infina divestment which we had. Q4FY26 subsidiaries performance was impacted by adverse market movements, which were largely reversed during the Q1FY27. Jaideep of course will take you through the performance of key subsidiaries in greater detail. With that, I hand over to Anup to discuss the highlights of our retail businesses.",
+        "quarter": "q1fy27",
+        "topics": [
+          "Slippages & Asset Quality",
+          "NIM & Yields",
+          "Credit Cost & Provisions",
+          "Opex & Cost-to-Income",
+          "Deposits & CASA",
+          "Credit Cards & Spends",
+          "Capital Adequacy",
+          "Subsidiaries' Performance",
+          "Profitability & Returns"
+        ]
+      }
+    },
+    {
+      "id": "q1fy27_narr_3",
+      "type": "NarrationSegment",
+      "properties": {
+        "speaker": "Anup Kumar Saha",
+        "text": "Thank you, Devang. I'll take you through the retail business commentary. Our strategy remains anchored on two focus customer segments, High Net Worth Individual and Core India. The HNI franchise comprises of Private Banking and Solitaire is a relationship -led business, focused on deepening customer experience, relationships, and increasing wallet share. Solitaire's premium proposition continues to deliver strong outcomes.  As of 31st March 2026, the Bank managed a combined relationship value of approximately INR 12.7 lakh crore contributed by 78,200 families. This is a Public document. Kotak811, the Core India strategy, continues to be scalable digital -first platform for customer acquisition s, lifecycle engagement across branch, sales, and our corporate salary channels.  Engagement has strengthened through differentiated offerings such as Metal Debit Card, SuperX, a  4-in-1 bundled propositions. Kotak811, the Core India strategy, delivered a 32% Y-o-Y growth in savings balances, now contribute to 12.7% of Bank\u2019s total savings book. This two-segment strategy is reflected in the continued momentum of our liability franchise. For quarter ending June 2026, average CASA grew 13% Y-o-Y, average total deposits grew 13.6% Y-o-Y. Moving on to the asset side, Mortgage (Home Loans, and Loan Against Property) remains central to building long - term relationships, particularly among affluent and self -employed customers, while enhancing value through associated deposit s build-up. Supported by improved distribution, faster turnaround times, and enhanced digital journey, the Mortgage portfolio grew at 15% Y-o-Y. Gold loan, which remains a small business but is a significant important focus area for us, has continued to gain traction supported by distribution build-up at the branches and significant process improvements. The Bank\u2019s unsecured retail lending portfolio, comprising Personal Loan, Business Loan, Credit Card, and Microcredit, continues to drive engagement, portfolio yields, while maintaining disciplined risk management. The unsecured retail portfolio grew INR 707 crore in absolute terms this quarter. Personal Loan, Business Loan, And Consumer Durable grew 5% Y-o-Y. It still has some impact of run -down of the Standard Chartered portfolio, otherwise the growth has started in double digit. Excluding this portfolio, PL growth remained double digit as I spoke about. The credit costs has come down significantly in our unsecured. Traction is expected to improve , supported by distribution initiatives, offerings such as PL overdraft to our Solitaire and HNI customer in addition to personal loan term loans. The Credit Card portfolio has been strategically restacked around \u2018right product to right customers\u2019 philosophy. While Solitaire continues to scale among affluent, HNI and Private Banking; Air+, Cashback+ are gaining traction in emerging and mass market segments. Rising incremental acquisitions and healthy spends trend supported a 4% Q-o-Q growth on spends versus flat-to-negative trends seen after the embargo. Retail Microcredit grew 10% Y -o-Y and 5% Q -on-Q, following 8% Q -on-Q growth in March 2026 with credit costs declining due to risk-based underwriting within our appetite and coverage under full CGFMU scheme. This scheme is important in setting off future risk cost. In tractor finance, which we run like a non-bank model in a way, the bank retained its position as the second largest tractor financier in India with 11% Y -o-Y portfolio growth. However, we remain watchful of any adverse weather condition impacted by El Nino.",
+        "quarter": "q1fy27",
+        "topics": [
+          "NIM & Yields",
+          "Credit Cost & Provisions",
+          "Citibank Integration",
+          "Loan & Advances Growth",
+          "Deposits & CASA",
+          "Credit Cards & Spends"
+        ]
+      }
+    },
+    {
+      "id": "q1fy27_narr_4",
+      "type": "NarrationSegment",
+      "properties": {
+        "speaker": "Our digital strategy is built on two focused app platform s",
+        "text": "Kotak Mobile Banking for affluent, NRI and business, and Kotak811 for Core India's everyday banking needs. This dual app strategy enables tailored experience, stronger customer relevance and deeper digital engagement across segments. Investments in technology across retail business are delivering lower acquisition, servicing cost, reduced branch congestion, and improved service level, strengthening the scalable growth and improved customer experience. This is a Public document. I would now hand it over to Paritosh to take you through the wholesale and the SME banking.",
+        "quarter": "q1fy27",
+        "topics": [
+          "Citibank Integration"
+        ]
+      }
+    },
+    {
+      "id": "q1fy27_narr_5",
+      "type": "NarrationSegment",
+      "properties": {
+        "speaker": "Paritosh Kashyap",
+        "text": "Thank you, Anup. I will now take you through the performance of the institutional businesses. Our SME and institutional propositions continued to drive growth while leveraging the Group's diversified financial services platform. The SME franchise, which accounted for 24% of the Bank\u2019s advances, strengthens primary banking   relationships and delivers diversified balance sheet growth. The institutional business complements this with a capital -efficient fee- based model that generates higher ROE. During the quarter, fee income from Corporate Bank grew 27% Y -o-Y and contributed 20% of the Bank\u2019s total fee income.  Cross-selling Investment Banking and Institutional Brokerage products added about 85 basis points to Corporate Banking ROE during this quarter. Corporate Banking delivered healthy growth this quarter with the loan book growing 15.5% Y -o-Y and 4.8% Q-o-Q. Credit substitutes too grew at a strong pace of 27.2% Y-o-Y and 37.6% Q-o-Q. We continue to focus on granular expansion. Mid-market business continued its momentum this quarter with strong customer acquisitions. Growth was driven primarily by granular working capital lending, while maintaining prudent risk selection. In Large Corporates, we continue to focus on profitability through higher cross -sell, flow-based business and deeper transaction banking penetration. Our Trade Book grew strongly driven by domestic trade, supply chain finance and continued digitization. GIFT City continue d to scale both trade and non -trade loans and grew strongly this quarter. Asset quality across customer segments continue to be resilient. Now let me move to beyond balance sheet. In the Institutional Business, we continue to strengthen fee -led businesses. Fee lines including FX grew strongly this quarter , while Debt Capital Market maintained a strong momentum with a healthy pipeline. Our collections and payment franchise continue to expand through technology investments and deeper client engagement. Capital markets businesses including Investment Banking, Institutional Equities, and Custody were relatively muted during this quarter due to FII outflows and geopolitical uncertainty. However, we continue to maintain leadership position across these businesses and have a robust pipeline. Through our SME franchise, we continue to build a relationship -led business model. The franchise delivered healthy growth during the quarter with advances growing at 20.5% Y-o-Y and 2.6% Q-o-Q to about INR 1.26 lakh crore. Growth was driven by healthy working capital demand, new customer acquisitions and deeper wallet share with existing customers. Asset quality remained resilient through disciplined underwriting. The Bank has also been an active participant in the government's ECLGS program supporting MSME and businesses by extending close to INR 3,000 crore of ECLGS credit till 30th of June 2026. Turning to the Commercial Vehicle and Construction Equipment business. The business is managed as an independent product business within the bank and accounts for about 9% of advances with a portfolio of approximately INR 45,000 crore. This is a Public document. In the Commercial Vehicle space, the first quarter is seasonally weaker than the preceding quarter. We maintained a cautious stance, amid heightened geopolitical uncertainty while continuing our disciplined risk selection. In Construction Equipment, industry conditions remain soft though actively improved towards the latter part of the quarter. Recovery will depend on improved raw material availability and a pick-up in government spending. Finally, we continue to invest in enhancing our digital capabilities. Our fyn platform continues to witness strong traction with active users increasing 37% Y -o-Y. We further strengthened our digital merchant and collection capabilities, while digital loan disbursements and the proportion of customers servicing requests on a DIY jou rney continue to increase substantially. I'll now hand over to Jaideep to take us through the subsidiary performance.",
+        "quarter": "q1fy27",
+        "topics": [
+          "Slippages & Asset Quality",
+          "Loan & Advances Growth",
+          "Credit Cards & Spends",
+          "Subsidiaries' Performance",
+          "Profitability & Returns"
+        ]
+      }
+    },
+    {
+      "id": "q1fy27_narr_6",
+      "type": "NarrationSegment",
+      "properties": {
+        "speaker": "Jaideep Hansraj",
+        "text": "Thank you, Paritosh. Good afternoon everyone. Let me talk about our subsidiaries now. In Q1FY27, our subsidiaries reported profit of INR 2,022 crore, up 20% Y-o-Y, contributing to 33% of our consolidated profits. This reflects strength of our diversified and fully integrated financial conglomerate structure. With 100% ownership in subs, the group retains the entire profit and embedded value. The unique strength of this model lies in Kotak's ability to both manufacture and distribute every major financial product within a single platform. The PAT growth for the quarter was partially aided by reversal of the MTM loss recognized towards the end of March '26 on capital market linked equity investments and movement in yields during the quarter. I'll start with the Lending Subsidiary , Kotak Prime. Kotak Prime, PAT for Q1 FY27 stood at INR 354 crore, up 30% Y-o-Y. The business continues to benefit from healthy growth of 11% in customer assets to INR 45,960 crore while maintaining a disciplined approach towards portfolio quality. On the Capital Market side, Kotak Securities delivered a strong quarter with PAT of INR 533 crore, up 14% Y-o-Y. The cash market share improved to 10.4% from 9.8% sequentially, while derivatives market share increased to 15.9% from 15.3% with the overall market share rising to 13.8%. Interest income also benefited from growth in the MTF book with market share of about 14%. Q1FY27 was relatively muted for our institutional capital market businesses, that is Kotak Institutional Equities and the Investment Banking business (KMCC) due to subdued primary market activity. However, we continue to maintain our leadership position in these businesses. On the asset management business, the Kotak AMC and Trustee Company's PAT for Q1 FY27 stood at INR 399 crore, up 23% Y-o-Y. This was on the back of average AUM growth of 16% Y -o-Y, which stood at INR 6,09,499 crore. The scale of this business continues to translate into strong cost efficiency and operating leverage, supporting healthy margins and steady profitability through the cycle. On the alternate asset business, Kotak Alternate Assets continues to be one of the leading domestic alternate asset managers in India. Q1FY27 PAT stood at INR 126 crore, up 112% Y -o-Y, largely driven by gains from exits during the quarter. This is a Public document. On the insurance side, Kotak Life Insurance shareholders' PAT stood at INR 336 crore, up 3% Y-o-Y. The gross written premium grew 28% Y -o-Y reflecting good momentum in the franchise. The retail sum assured grew 57% Y -o-Y reinforcing our focus on protection-led growth and long-term value creation. I'll now request the operator to begin the Q&A session.",
+        "quarter": "q1fy27",
+        "topics": [
+          "NIM & Yields",
+          "Subsidiaries' Performance",
+          "Profitability & Returns",
+          "Strategy & Competitive Positioning"
+        ]
+      }
+    },
+    {
+      "id": "Piran Engineer",
+      "type": "Analyst",
+      "properties": {
+        "name": "Piran Engineer",
+        "firm": "CLSA"
+      }
+    },
+    {
+      "id": "q1fy27_q_0",
+      "type": "Question",
+      "properties": {
+        "text": "Yeah, hi team. Congrats on the quarter and thanks for taking my question. Just firstly, can you talk a bit about trends in the CV segment, more importantly in terms of collections and what are you waiting for, you know, in this space to kickstart growth again? Can we hit like 10%, 12% growth this year at least in this segment Y-o-Y? Understood. And just sorry, if I may follow up on your point. When you're saying you see improvement in collections, is it at a level where it used to be one and a half years back or is it still above steady state levels? As in are slippages still above steady state levels? Understood. Okay. Thanks. Secondly on personal loans, again here the book was flattish Q-o-Q and this is when we called out two quarters back that, you know, personal loans is now fine. So how do we really read into this? Organic loan book growth is double digit plus. Got it, got it. And just lastly, your customer count has been declining for the last few quarters. It was 54 million a year back, 50 million today. Is it just simply an MFI thing sort of clean up or is there something to read into this? This is a Public document. Understood. Okay. Yeah, that's it from my end. Thanks, and wish you all the best.",
+        "quarter": "q1fy27",
+        "analyst": "Piran Engineer",
+        "topics": [
+          "Loan & Advances Growth"
+        ],
+        "block_index": 0
+      }
+    },
+    {
+      "id": "q1fy27_a_0",
+      "type": "Answer",
+      "properties": {
+        "text": "Paritosh Kashyap: Hi. This is Paritosh. See, in the CV segment we have been consistently seeing improvement in our collections. As I'd mentioned during my commentary that Q1 is little slower compared to Q4, so the growth has been muted, but we expect that with the right selection between different segments, we should look at it going forward. Paritosh Kashyap: We don't we don't really give a forward guidance on the growth, but I would say, we will maintain the market share. Paritosh Kashyap: I would say -- our slippages are reducing and we've been maintaining the pace of improvement Q-o-Q. Anup Kumar Saha: Hi, Piran, this is Anup here. When you look at the personal loan, that comprises of personal loan, unsecured business loan, and consumer durable all in together. On the personal loan side, last year we had a Standard Chartered portfolio bought in, so that is of course is running down faster. If you net that, the growth on the organic personal loan growth is quite strong now, that is the first. On the unsecured business loan, this quarter we have been little more cautious because of whatever issues we are seeing on the SME side because of, you know, three months back things were looking very bad. But at aggregate level, we have started growing on a PL. You'd start seeing numbers improving from here because the organic growth is now on double digit plus. So that's my point. Anup Kumar Saha: Yes, on the PL side and consumer durable obviously is a business we now don't focus on. Ashok Vaswani: Yes, so couple of reasons for that. One is there is an MFI clean up and two also, you know, some amount of dormant and inactive customers,  which we are just kind of closing out. And in fact, that's a protective measure to make sure we don't get into that mules kind of problem. So, it's more about a clean-up of the book.",
+        "quarter": "q1fy27",
+        "topics": [
+          "Loan & Advances Growth"
+        ],
+        "block_index": 0
+      }
+    },
+    {
+      "id": "Paritosh Kashyap",
+      "type": "Management",
+      "properties": {
+        "name": "Paritosh Kashyap"
+      }
+    },
+    {
+      "id": "Anup Kumar Saha",
+      "type": "Management",
+      "properties": {
+        "name": "Anup Kumar Saha"
+      }
+    },
+    {
+      "id": "Ashok Vaswani",
+      "type": "Management",
+      "properties": {
+        "name": "Ashok Vaswani"
+      }
+    },
+    {
+      "id": "Kunal Shah",
+      "type": "Analyst",
+      "properties": {
+        "name": "Kunal Shah",
+        "firm": "Citigroup"
+      }
+    },
+    {
+      "id": "q1fy27_q_1",
+      "type": "Question",
+      "properties": {
+        "text": "Yeah, all good. Hi. So, Sir, particularly on the deposits side, so across the board if we just compare amongst the private banks, there has been the step -up on the deposit s growth, be it on end of period as well as the average deposit s growth has been quite strong across the board. For us, maybe we had seen some moderation out there.  So maybe what would be the strategy? We highlighted, we touched upon a lot in terms of the different initiatives on the deposits side, but it appears that amongst the top four banks, in fact, we still seem to be relatively lower in terms of the growth. So how do we tend to address that both on the average as well as EOP? And on that basis, maybe what is the LCR for the quarter? It appears maybe we would have seen some decline in the LCR. Yeah, no, so that's commendable that margins are sustained. Yeah, so that's good enough compared to the guidance which was there in the last call or maybe that trend. So that's good enough. And secondly, when we look at it now, credit cost even in, say sea sonally slower quarter, we had seen it settling much at a lower level. So now being This is a Public document. comfortable on the asset quality on the delinquency trend, would we look at stepping up on the advance growth as well? We have seen some uptick in say Corporate, SME, some of the unsecured segment, MFI and all, but all around when we look at it, it's been still like 15% -16% odd for quite a while, while we had seen like other banks stepping it up beyond the industry average. So when do we see that because there is a lot of comfort on asset quality? Okay. So including the inorganic one? Okay, okay. Got it. Yeah, thanks. That answers the question and all the best. Yeah.",
+        "quarter": "q1fy27",
+        "analyst": "Kunal Shah",
+        "topics": [
+          "Slippages & Asset Quality",
+          "NIM & Yields",
+          "Credit Cost & Provisions",
+          "Deposits & CASA"
+        ],
+        "block_index": 1
+      }
+    },
+    {
+      "id": "q1fy27_a_1",
+      "type": "Answer",
+      "properties": {
+        "text": "Ashok Vaswani: Kunal, how are you? Anup Kumar Saha: Kunal, hi, Anup here. On the deposit s strategy for us continue to remain multi -prong driven through four focus segments which we spoke about and it continues to yield result. As a Bank, we place greater emphasis on average balances rather than end of period balances. Overall average deposits grew 13.6% Y-o-Y, while average term deposits grew at 14% Y -o-Y. Our average CA balances grew 15.2% Y -o-Y. Trade and transaction balances continue to witness good traction, during Q1FY27. However, this quarter growth in CA was impacted due to moderation in capital market activity, which resulted in lower deal flow related balances. Moving specifically to SA, average fixed rate SA balances grew 16.4% Y -o-Y, again very granular, reflecting strength of our focus customer segment strategy as seen in our granular low -cost deposits mobilization. As I already spoke about the 811 SA, who grew 32% Y-o-Y, again fully granular, which now accounts for 12.7% of total SA. Similarly, we continue to see good traction on the HNI and Solitaire segment. However, this quarter we saw some moderation in balances primarily driven by flow movement from private banking segment of reallocation of funds from savings to investments. So to that extent, these are one-off, but we continue to remain focused on granular, focused on average rather than EOP. That too continue to remain our strategy because that flows into straight away to optimize the cost of fund rather than a template number of EOP. Ashok Vaswani: And Kunal, like last time you checked, you kind of asked the question on increase in deposit s rates in longer tenor buckets and will that have impact on our cost of funds. You can see that our cost of funds has only gone up by one basis points and it has had no such impact exactly as we had mentioned. Ashok Vaswani: So Kunal, I think you should look at it in multiple kind of perspectives, right? The first thing, yes, we are very comfortable with where we are from a credit perspective, right? A lot of the hard work over the last two years to clean up the credit cards portfolio, PL portfolio is now behind us. We are very comfortable, it's within our guardrails, it's all working quite well. Okay. Like we said, unsecured we will continue to grow in rupee terms, we continue to kind of do that. As Anup mentioned, business loans we were a little cautious this quarter because of all the stuff that's happening because of the supply chain disruption and impacts of that. We will continue to grow where we get opportunities. And think about growth, don't think about growth only in one quarter, right? Think about growth over a certain period of time. Both organic growth and inorganic growth, and between organic growth and inorganic growth, we will deliver over the system, nicely over the system  kind of growth rates on advances, both secured and unsecured. Ashok Vaswani: Yes, including inorganic. Ashok Vaswani: Thank you.",
+        "quarter": "q1fy27",
+        "topics": [
+          "Slippages & Asset Quality",
+          "NIM & Yields",
+          "Credit Cost & Provisions",
+          "Deposits & CASA"
+        ],
+        "block_index": 1
+      }
+    },
+    {
+      "id": "Ankit Bihani",
+      "type": "Analyst",
+      "properties": {
+        "name": "Ankit Bihani",
+        "firm": "Nomura"
+      }
+    },
+    {
+      "id": "q1fy27_q_2",
+      "type": "Question",
+      "properties": {
+        "text": "Yeah, hi,  thank you for taking my question. So my question is first on margin. So if we look at the reported margin decline of 14 bps Q -o-Q, so I think last quarter there could be some day count impact. So if you could share if you normalize the day count impact, what would be the decline? And the second question, does our margin commentary now change given that we have seen the wholesale funding rates also come down? So the funding environment is set to improve from here on. So any comment on that? But this doesn't change your guidance basically which you had provided in Q4. Anything on that? So you did provide some guidance in Q4, right? Okay, that's very clear now. And I missed out on the LCR part. So , what is the average LCR for the quarter for the standalone bank? And on the standalone, last quarter you had highlighted it was 125%. This quarter, any number on that for the standalone bank? And -- okay. And 1Q... It's 125? Okay. Thank you.",
+        "quarter": "q1fy27",
+        "analyst": "Ankit Bihani",
+        "topics": [
+          "NIM & Yields"
+        ],
+        "block_index": 2
+      }
+    },
+    {
+      "id": "q1fy27_a_2",
+      "type": "Answer",
+      "properties": {
+        "text": "Ashok Vaswani: Hi, Ankit. Devang Gheewalla: Hi Ankit, Devang here. So as I had indicated during Q4, the adjusted NIM as against 4.67, if you were to adjust for the day count, it would have been 4.54. And therefore, if you see, in fact, my colleague is reminding me, in fact, since Q2, if you see Q2 w as also 4.54, Q3 which is December quarter was 4.54. If you look at the March quarter, which is equivalent of 4.67 is 4.54, and for this quarter it is also 4.54. So, the margin has remained actually consistent. In terms of the future part, I think there are multiple variables which are governing the outcome of this and which are constantly changing. So we would not like to provide any specific guidance on the NIM going forward. This is a Public document. Devang Gheewalla: So, the guidance was at that point of time. But as you know, after that, so many things have changed, right? In terms of whether FCNR... Ashok Vaswani: One second, Ankit, one second. We didn't provide guidance. We basically said that there's an industry commentary and there was a Kotak specific commentary. And I think some of it got mixed up. We said on an industry basis, on an industry basis, we will see some margin declines. By the way, we were absolutely right for Q4 and Q1. We said as far as Kotak is concerned, because we've got multiple horses in the race on the deposits side and we'll manage the asset side in a nimble fashion, we will be fine. And that's exactly how it's played out in Q4 and Q1. The commentary about margin decline, I repeat, was an industry issue, not a Kotak specific issue. Devang Gheewalla: So we report the group LCR, which is actually improved from 134 in the Q4 to 143. The reason if you know that, we were of course having significant liquidity at March end itself. And from 1st April, as you know, there are norms on LCR have changed, which has effectively added approximately 9% to 10% incremental LCR. So, while on a n average basis, depending on the advance and deposit s mix, actually it is showing a increase. But I think for the month of June and going forward, it will obviously start utilizing as we efficiently utilize this LCR amount to fund our balance sheet growth. Devang Gheewalla: For standalone, I think again the advantage for this increase in this thing came only in the standalone. So , the standalone Q4 average will be around 125. Devang Gheewalla: Sorry, Q1, sorry, what I meant is Q1. Devang Gheewalla: Yes.",
+        "quarter": "q1fy27",
+        "topics": [
+          "NIM & Yields"
+        ],
+        "block_index": 2
+      }
+    },
+    {
+      "id": "Devang Gheewalla",
+      "type": "Management",
+      "properties": {
+        "name": "Devang Gheewalla"
+      }
+    },
+    {
+      "id": "Rikin Shah",
+      "type": "Analyst",
+      "properties": {
+        "name": "Rikin Shah",
+        "firm": "IIFL Capital"
+      }
+    },
+    {
+      "id": "q1fy27_q_3",
+      "type": "Question",
+      "properties": {
+        "text": "Hi, thanks for the opportunity. Just two questions. The first one, Kotak's loan and deposit s growth is now about 350 and 150 basis points below the system respectively. Despite having excess capital and lower scale, why is there a bit This is a Public document. more unwillingness to accelerate without diluting the ROEs when some larger peers are able to deliver this? So that's the first one. And second question is on Deutsche's portfolio acquisition. Could you talk a bit more about the profitability of the business acquired in terms of ROE etcetera? You did provide all the other details. Just was curious to know the comment on ROE being accretive for Kotak, was it because of the excess capital being put to use or if you could just provide some colors on ROEs as well. That's it? Thank you. Just a follow-up clarification on this second one Deutsche, sir, if I may. While of course I understand you can't talk about  the transaction ROA down the line, but what was that in FY26 if you could share that? And also had one additional  question if I may in terms of the new CEO appointment given your announcement. What should be the next steps and  the potential timelines that we should be looking forward to? This is a Public document. Fair. Thanks, Paritosh.",
+        "quarter": "q1fy27",
+        "analyst": "Rikin Shah",
+        "topics": [
+          "Citibank Integration",
+          "Deposits & CASA",
+          "Profitability & Returns"
+        ],
+        "block_index": 3
+      }
+    },
+    {
+      "id": "q1fy27_a_3",
+      "type": "Answer",
+      "properties": {
+        "text": "Ashok Vaswani: Yes, so look as far as the asset growth is concerned, our focus always has been responsible and profitable growth and not just growth for the sake of growth. So we focus on  growth in high ROE kind of businesses and businesses which from a credit perspective are good. And like I said, I don't think you should look at advance growth just for one quarter. Look at it for a longer period of time and between organic and inorganic, we will comfortably drive over system level kind of growth. I think deposits side Anup took you through a lot of detail on how we're thinking about it and how we're driving. We continue to be very, very focused on the four customer segments. It's worked really well for us. It's granular, it's low cost. You can see that we've maintained margins and therefore we are driving both growth on the asset side and on the deposits side in a sensible and a profitable and responsible kind of manner. As far as Deutsche is concerned, I mean these are opportunities that come along. Like I've already maintained, we look at every single inorganic opportunity there is. The first question we ask ourselves does this strategically make sense? Now Deutsche has 150,000 customers, affluent and SME customers. So, two of the customer segment focus areas which we are very, very focused on. So strategically it makes a lot of sense. It's a pretty sizeable transaction, INR 29,000 crore of advances and INR 16,000 crore of deposits, INR 10,500 crore of wealth AUM. So it will add meaningfully to the Kotak kind of transaction. And yes, we definitely believe that the price at which we paid at INR 281 crore, this will be ROE accretive to us. Now the transaction actually closes in September of 2027, so the full contours of the transaction will only be known then. So I'm not going to hazard a guess as to what  the ROE will be. And obviously this will , as we grow the balance sheet to this extent, it will consume some of our excess capital. Anup Kumar Saha: And also, as you look at the Deutsche portfolio, that goes into our core focus segment s philosophy of Solitaire HNI. That  strengthen that franchise, so it's a great fit for us from a customer segment point of view. Ashok Vaswani: 150,000 customers. Management: Customers yes, 150,000 HNI, Solitaire and SME Devang Gheewalla: So Deutsche, I don't know what ROA they made. It's difficult for us to quote that kind of number. So I don't know that's  a point. Plus it's also a function at what price we bought it and as you know we bought it at a pretty attractive price at  INR 281 crore. As far as the CEO succession is concerned, it's pretty straightforward, right? It's as per the RBI timeline  and the regulatory timeline that has been kind of set down. And the board and the NRC are totally committed to making sure that that gets done within the regulatory timeline. Paritosh Kashyap: Riken, hi, Riken, this is Paritosh to just to go back on your point about asset s growth. If you see this quarter we have grown our Corporate assets and SME assets, Corporate and the Credit Substitutes. We found the market gave an opportunity, short-term yields had gone up, so we took advantage and grew our credit substitutes book by 38% Q-o- Q and even the Corporate book also has gone up very significantly. SME we continued with our growth pace. So that's what I want to say that we will look at opportunity and if there is a opportunity, we will capture that. Devang Gheewalla: And just one correction, I had mentioned the LCR, the LCR for standalone bank in Q1 on an average basis is 134, not 124, my apologies. Thank you.",
+        "quarter": "q1fy27",
+        "topics": [
+          "Citibank Integration",
+          "Deposits & CASA",
+          "Profitability & Returns"
+        ],
+        "block_index": 3
+      }
+    },
+    {
+      "id": "Management",
+      "type": "Management",
+      "properties": {
+        "name": "Management"
+      }
+    },
+    {
+      "id": "Pranav Gundlapalle",
+      "type": "Analyst",
+      "properties": {
+        "name": "Pranav Gundlapalle",
+        "firm": "Bernstein"
+      }
+    },
+    {
+      "id": "General",
+      "type": "Topic",
+      "properties": {
+        "name": "General"
+      }
+    },
+    {
+      "id": "q1fy27_q_4",
+      "type": "Question",
+      "properties": {
+        "text": "Hey, thank you for taking my question. My question is more on the Core India segment which you highlighted as a key   area of focus for you. What percent of your 811 customers would have a credit account or credit relationship with you  today? Because you do share the contribution of 811 to SA, so what would be the equivalent on the credit side and how  high do you think it can go and what will it take for the Bank to get there? Understood. No, my question was just broader credit. Just trying to understand like what percent of these customers would be a segment that you are comfortable lending to with a very large base that you have right now. So just trying to understand lendable customer base? Understood. Thank you. Thank you very much for taking my question.",
+        "quarter": "q1fy27",
+        "analyst": "Pranav Gundlapalle",
+        "topics": [
+          "General"
+        ],
+        "block_index": 4
+      }
+    },
+    {
+      "id": "q1fy27_a_4",
+      "type": "Answer",
+      "properties": {
+        "text": "Ashok Vaswani: So look we don't disclose exactly the credit card numbers against 811 segment. Now what we have disclosed in the past is that when we got too aggressive about it about 3 years, 4 years ago, that did not pay very rich dividends. But I think the way you should think about this is that these are customers who are giving us low-cost granular SA deposits. And if we can just add any other product, whether that is a lending product, whether that is an insurance product, whether that is an investment product, whether that's a brokerage kind of product, the profitability and the SA balances go up dramatically. So the focus is not so much as putting a credit card product. In fact, the credit card product is a very complex product and customer education around how a credit card works and stuff like that is not an easy thing. So even when we get to lending products, the initial focus is on personal loans and only after the cu stomer has gone through a bunch of personal loans do we start getting into credit cards. Also, the one thing I must mention for this customer segment, what has worked really well is secured credit cards and that's doing quite well for us. Anup Kumar Saha: Yeah, as Ashok said we don't disclose that detail. But if you if you think about this two key segment, focus segment s, when you say Solitaire and HNI, you think about it as a value economics and when you think about Core India which is essentially mass affluent, which is the largest part of India as unit economics. This is a Public document. So, in a way, it will have the products which are more digitally given and digitally served, but more smaller lines. And over time, what we are seeing is as their CASA build -up is very granular and very strong, you will start getting an annuity benefit even on credit. We are cautiously growing it because the idea is we want them to go through the credit understanding and responsibly give them credit to grow. But over long period of time, if you start thinking or medium term, this this is superbly accretive. That's how you should think about it.",
+        "quarter": "q1fy27",
+        "topics": [
+          "General"
+        ],
+        "block_index": 4
+      }
+    },
+    {
+      "id": "Param Subramanian",
+      "type": "Analyst",
+      "properties": {
+        "name": "Param Subramanian",
+        "firm": "Investec"
+      }
+    },
+    {
+      "id": "q1fy27_q_8",
+      "type": "Question",
+      "properties": {
+        "text": "Yes, hi, thanks for taking my question. Just one question. Your yield on investments on a calculated basis, it  appears to be dropping for the last two -three quarters. So, what exactly is happening there because even in this quarter, I think, the investment book has grown 11%, but the interest on investments has not grown and neither has the MTM and treasury profit is not reflected in that as well. So, it's more a function of the average balances or is the yield really dropping in the investment book? Okay, okay. Maybe I'll take this offline. Yes.",
+        "quarter": "q1fy27",
+        "analyst": "Param Subramanian",
+        "topics": [
+          "NIM & Yields"
+        ],
+        "block_index": 8
+      }
+    },
+    {
+      "id": "q1fy27_a_8",
+      "type": "Answer",
+      "properties": {
+        "text": "Devang Gheewalla: Investment yield also goes through the number of days concept as the advances as I had explained. So that is -- we need to make adjustment according to them as well. So Q4 will be higher similar to the advances NIM, similarly for the investment as well. Devang Gheewalla: No, it is the number of days which actually breaks up that basically. Yes, and it basically evens out over the year.",
+        "quarter": "q1fy27",
+        "topics": [
+          "NIM & Yields"
+        ],
+        "block_index": 8
+      }
+    },
+    {
+      "id": "Jai Mundhra",
+      "type": "Analyst",
+      "properties": {
+        "name": "Jai Mundhra",
+        "firm": "your line is unmuted"
+      }
+    },
+    {
+      "id": "q1fy27_q_9",
+      "type": "Question",
+      "properties": {
+        "text": "Yes, hi, good afternoon, sir, and thanks for the opportunity. Sir, last time, you had shared your outlook for NIM for Bank and maybe for the system, if you can refresh that, that will be very helpful. Thank you. Okay, sure. And sir, any timeline for you to achieve the mid-teen number of unsecured loan? I mean that has started to grow up in absolute number, the unsecured retail, but how fast or how quickly can you reach to let's say you\u2019re desired 15% or mid-teen number? Okay, sure. Thank you, sir.",
+        "quarter": "q1fy27",
+        "analyst": "Jai Mundhra",
+        "topics": [
+          "NIM & Yields",
+          "Loan & Advances Growth"
+        ],
+        "block_index": 9
+      }
+    },
+    {
+      "id": "q1fy27_a_9",
+      "type": "Answer",
+      "properties": {
+        "text": "Ashok Vaswani: Yes, so Jai, like we said, last time we talked about the industry and what the NIM we thought was for the industry. By the way, we were completely right, both for Q4 and for Q1. We do not give any guidance as far as Kotak NIM is concerned. Like Devang said, Q2, Q3, sorry, Q3, Q4, Q1 has largely been  flat. I mean  it's a difference of one basis points or so. And it's very difficult to give guidance particularly with all that's kind of going on. Ashok Vaswani: Look Jai, you've got to be a little careful of these percentages, right? Because I don't want to hold back secured loan growth just to make a percentage, correct. So, what I try and do is I'm trying to grow it in rupee terms and like we promised, we said personal loans will come first out of the gate, then we'll see growth in microfinance, then we'll see growth in cards. This is a Public document. It's worked out exactly, exactly like we talked about for the last four or five quarters. So, we continue to say that, we will grow in rupee terms, and eventually the percentage will be really a function of both the growth in rupee terms as well as the growth in the secured book. We're not going to hold back secured just to make a percentage.",
+        "quarter": "q1fy27",
+        "topics": [
+          "NIM & Yields",
+          "Loan & Advances Growth"
+        ],
+        "block_index": 9
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "q1fy27_narr_0",
+      "target": "q1fy27",
+      "type": "IN_QUARTER"
+    },
+    {
+      "source": "q1fy27_narr_0",
+      "target": "Subsidiaries' Performance",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_1",
+      "target": "q1fy27",
+      "type": "IN_QUARTER"
+    },
+    {
+      "source": "q1fy27_narr_1",
+      "target": "NIM & Yields",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_1",
+      "target": "Credit Cost & Provisions",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_1",
+      "target": "Deposits & CASA",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_1",
+      "target": "Credit Cards & Spends",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_1",
+      "target": "Subsidiaries' Performance",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_1",
+      "target": "Profitability & Returns",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_2",
+      "target": "q1fy27",
+      "type": "IN_QUARTER"
+    },
+    {
+      "source": "q1fy27_narr_2",
+      "target": "Slippages & Asset Quality",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_2",
+      "target": "NIM & Yields",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_2",
+      "target": "Credit Cost & Provisions",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_2",
+      "target": "Opex & Cost-to-Income",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_2",
+      "target": "Deposits & CASA",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_2",
+      "target": "Credit Cards & Spends",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_2",
+      "target": "Capital Adequacy",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_2",
+      "target": "Subsidiaries' Performance",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_2",
+      "target": "Profitability & Returns",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_3",
+      "target": "q1fy27",
+      "type": "IN_QUARTER"
+    },
+    {
+      "source": "q1fy27_narr_3",
+      "target": "NIM & Yields",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_3",
+      "target": "Credit Cost & Provisions",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_3",
+      "target": "Citibank Integration",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_3",
+      "target": "Loan & Advances Growth",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_3",
+      "target": "Deposits & CASA",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_3",
+      "target": "Credit Cards & Spends",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_4",
+      "target": "q1fy27",
+      "type": "IN_QUARTER"
+    },
+    {
+      "source": "q1fy27_narr_4",
+      "target": "Citibank Integration",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_5",
+      "target": "q1fy27",
+      "type": "IN_QUARTER"
+    },
+    {
+      "source": "q1fy27_narr_5",
+      "target": "Slippages & Asset Quality",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_5",
+      "target": "Loan & Advances Growth",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_5",
+      "target": "Credit Cards & Spends",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_5",
+      "target": "Subsidiaries' Performance",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_5",
+      "target": "Profitability & Returns",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_6",
+      "target": "q1fy27",
+      "type": "IN_QUARTER"
+    },
+    {
+      "source": "q1fy27_narr_6",
+      "target": "NIM & Yields",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_6",
+      "target": "Subsidiaries' Performance",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_6",
+      "target": "Profitability & Returns",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_narr_6",
+      "target": "Strategy & Competitive Positioning",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_q_0",
+      "target": "Piran Engineer",
+      "type": "ASKED_BY"
+    },
+    {
+      "source": "q1fy27_q_0",
+      "target": "q1fy27",
+      "type": "IN_QUARTER"
+    },
+    {
+      "source": "q1fy27_q_0",
+      "target": "Loan & Advances Growth",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_a_0",
+      "target": "q1fy27",
+      "type": "IN_QUARTER"
+    },
+    {
+      "source": "q1fy27_a_0",
+      "target": "q1fy27_q_0",
+      "type": "RESPONDED_TO"
+    },
+    {
+      "source": "q1fy27_a_0",
+      "target": "Paritosh Kashyap",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_0",
+      "target": "Paritosh Kashyap",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_0",
+      "target": "Paritosh Kashyap",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_0",
+      "target": "Anup Kumar Saha",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_0",
+      "target": "Anup Kumar Saha",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_0",
+      "target": "Ashok Vaswani",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_q_1",
+      "target": "Kunal Shah",
+      "type": "ASKED_BY"
+    },
+    {
+      "source": "q1fy27_q_1",
+      "target": "q1fy27",
+      "type": "IN_QUARTER"
+    },
+    {
+      "source": "q1fy27_q_1",
+      "target": "Slippages & Asset Quality",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_q_1",
+      "target": "NIM & Yields",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_q_1",
+      "target": "Credit Cost & Provisions",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_q_1",
+      "target": "Deposits & CASA",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_a_1",
+      "target": "q1fy27",
+      "type": "IN_QUARTER"
+    },
+    {
+      "source": "q1fy27_a_1",
+      "target": "q1fy27_q_1",
+      "type": "RESPONDED_TO"
+    },
+    {
+      "source": "q1fy27_a_1",
+      "target": "Ashok Vaswani",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_1",
+      "target": "Anup Kumar Saha",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_1",
+      "target": "Ashok Vaswani",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_1",
+      "target": "Ashok Vaswani",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_1",
+      "target": "Ashok Vaswani",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_1",
+      "target": "Ashok Vaswani",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_q_2",
+      "target": "Ankit Bihani",
+      "type": "ASKED_BY"
+    },
+    {
+      "source": "q1fy27_q_2",
+      "target": "q1fy27",
+      "type": "IN_QUARTER"
+    },
+    {
+      "source": "q1fy27_q_2",
+      "target": "NIM & Yields",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_a_2",
+      "target": "q1fy27",
+      "type": "IN_QUARTER"
+    },
+    {
+      "source": "q1fy27_a_2",
+      "target": "q1fy27_q_2",
+      "type": "RESPONDED_TO"
+    },
+    {
+      "source": "q1fy27_a_2",
+      "target": "Ashok Vaswani",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_2",
+      "target": "Devang Gheewalla",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_2",
+      "target": "Devang Gheewalla",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_2",
+      "target": "Ashok Vaswani",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_2",
+      "target": "Devang Gheewalla",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_2",
+      "target": "Devang Gheewalla",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_2",
+      "target": "Devang Gheewalla",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_2",
+      "target": "Devang Gheewalla",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_q_2",
+      "target": "q1fy27_q_1",
+      "type": "CROSS_FOLLOWS_SAME_CALL"
+    },
+    {
+      "source": "q1fy27_q_3",
+      "target": "Rikin Shah",
+      "type": "ASKED_BY"
+    },
+    {
+      "source": "q1fy27_q_3",
+      "target": "q1fy27",
+      "type": "IN_QUARTER"
+    },
+    {
+      "source": "q1fy27_q_3",
+      "target": "Citibank Integration",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_q_3",
+      "target": "Deposits & CASA",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_q_3",
+      "target": "Profitability & Returns",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_a_3",
+      "target": "q1fy27",
+      "type": "IN_QUARTER"
+    },
+    {
+      "source": "q1fy27_a_3",
+      "target": "q1fy27_q_3",
+      "type": "RESPONDED_TO"
+    },
+    {
+      "source": "q1fy27_a_3",
+      "target": "Ashok Vaswani",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_3",
+      "target": "Anup Kumar Saha",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_3",
+      "target": "Ashok Vaswani",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_3",
+      "target": "Management",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_3",
+      "target": "Devang Gheewalla",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_3",
+      "target": "Paritosh Kashyap",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_3",
+      "target": "Devang Gheewalla",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_q_3",
+      "target": "q1fy27_q_1",
+      "type": "CROSS_FOLLOWS_SAME_CALL"
+    },
+    {
+      "source": "q1fy27_q_4",
+      "target": "Pranav Gundlapalle",
+      "type": "ASKED_BY"
+    },
+    {
+      "source": "q1fy27_q_4",
+      "target": "q1fy27",
+      "type": "IN_QUARTER"
+    },
+    {
+      "source": "q1fy27_q_4",
+      "target": "General",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_a_4",
+      "target": "q1fy27",
+      "type": "IN_QUARTER"
+    },
+    {
+      "source": "q1fy27_a_4",
+      "target": "q1fy27_q_4",
+      "type": "RESPONDED_TO"
+    },
+    {
+      "source": "q1fy27_a_4",
+      "target": "Ashok Vaswani",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_4",
+      "target": "Anup Kumar Saha",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_q_8",
+      "target": "Param Subramanian",
+      "type": "ASKED_BY"
+    },
+    {
+      "source": "q1fy27_q_8",
+      "target": "q1fy27",
+      "type": "IN_QUARTER"
+    },
+    {
+      "source": "q1fy27_q_8",
+      "target": "NIM & Yields",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_a_8",
+      "target": "q1fy27",
+      "type": "IN_QUARTER"
+    },
+    {
+      "source": "q1fy27_a_8",
+      "target": "q1fy27_q_8",
+      "type": "RESPONDED_TO"
+    },
+    {
+      "source": "q1fy27_a_8",
+      "target": "Devang Gheewalla",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_8",
+      "target": "Devang Gheewalla",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_q_8",
+      "target": "q1fy27_q_1",
+      "type": "CROSS_FOLLOWS_SAME_CALL"
+    },
+    {
+      "source": "q1fy27_q_8",
+      "target": "q1fy27_q_2",
+      "type": "CROSS_FOLLOWS_SAME_CALL"
+    },
+    {
+      "source": "q1fy27_q_9",
+      "target": "Jai Mundhra",
+      "type": "ASKED_BY"
+    },
+    {
+      "source": "q1fy27_q_9",
+      "target": "q1fy27",
+      "type": "IN_QUARTER"
+    },
+    {
+      "source": "q1fy27_q_9",
+      "target": "NIM & Yields",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_q_9",
+      "target": "Loan & Advances Growth",
+      "type": "DISCUSSES"
+    },
+    {
+      "source": "q1fy27_a_9",
+      "target": "q1fy27",
+      "type": "IN_QUARTER"
+    },
+    {
+      "source": "q1fy27_a_9",
+      "target": "q1fy27_q_9",
+      "type": "RESPONDED_TO"
+    },
+    {
+      "source": "q1fy27_a_9",
+      "target": "Ashok Vaswani",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_a_9",
+      "target": "Ashok Vaswani",
+      "type": "ANSWERED_BY"
+    },
+    {
+      "source": "q1fy27_q_9",
+      "target": "q1fy27_q_1",
+      "type": "CROSS_FOLLOWS_SAME_CALL"
+    },
+    {
+      "source": "q1fy27_q_9",
+      "target": "q1fy27_q_2",
+      "type": "CROSS_FOLLOWS_SAME_CALL"
+    },
+    {
+      "source": "q1fy27_q_9",
+      "target": "q1fy27_q_8",
+      "type": "CROSS_FOLLOWS_SAME_CALL"
+    },
+    {
+      "source": "q1fy27_q_9",
+      "target": "q1fy27_q_0",
+      "type": "CROSS_FOLLOWS_SAME_CALL"
+    }
+  ]
+}
