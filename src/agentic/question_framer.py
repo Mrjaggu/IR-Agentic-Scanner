@@ -167,7 +167,7 @@ def _fmt_metric(m: dict) -> str:
 
 
 def _build_frame_prompt(analyst: str, style_note: str, topics: list[str], pool: dict,
-                        target_quarter: str) -> str:
+                        target_quarter: str, bank_name: str = "Axis Bank") -> str:
     period = period_label(target_quarter)
     blocks = []
     for t in topics:
@@ -191,7 +191,7 @@ def _build_frame_prompt(analyst: str, style_note: str, topics: list[str], pool: 
                          "keep it a plain, open question with no numbers at all.")
         blocks.append("\n".join(lines))
 
-    return f"""You are drafting the questions {analyst} is most likely to ask on Axis Bank's
+    return f"""You are drafting the questions {analyst} is most likely to ask on {bank_name}'s
 {period} earnings call. Write them the way they would actually be spoken on the call.
 
 Analyst: {analyst}
@@ -264,13 +264,14 @@ def _strip_pleasantries(text: str | None) -> str | None:
 
 
 def frame_questions(analyst: str, style_note: str, topics: list[str], pool: dict, client,
-                    target_quarter: str = "", feedback: str = "") -> dict:
+                    target_quarter: str = "", feedback: str = "",
+                    bank_name: str = "Axis Bank") -> dict:
     """Returns {topic: question_text or None}. Retries live in
     verifier.grounding_gate, which calls this again with only the failing
     subset plus a `feedback` line saying what was wrong."""
     if not topics:
         return {}
-    prompt = _build_frame_prompt(analyst, style_note, topics, pool, target_quarter)
+    prompt = _build_frame_prompt(analyst, style_note, topics, pool, target_quarter, bank_name=bank_name)
     if feedback:
         prompt += f"\n\nThe previous attempt was rejected: {feedback}\nFix exactly that."
     raw = client.call_llm(prompt, temperature=0.15)
@@ -367,7 +368,7 @@ def _fmt_evidence(move: str, evidence) -> list[str]:
 
 
 def _build_move_prompt(analyst: str, style_note: str, slots: list[dict],
-                       pool: dict, target_quarter: str) -> str:
+                       pool: dict, target_quarter: str, bank_name: str = "Axis Bank") -> str:
     period = period_label(target_quarter)
     blocks = []
     for n, s in enumerate(slots):
@@ -381,7 +382,7 @@ def _build_move_prompt(analyst: str, style_note: str, slots: list[dict],
         lines.extend(ev or ["- No specific figure available — ask it plainly, with no numbers."])
         blocks.append("\n".join(lines))
 
-    return f"""You are drafting the questions {analyst} is most likely to ask on Axis Bank's
+    return f"""You are drafting the questions {analyst} is most likely to ask on {bank_name}'s
 {period} earnings call. Write them the way they would actually be spoken.
 
 Analyst: {analyst}
@@ -413,7 +414,8 @@ Include every item above, in the same order."""
 
 
 def frame_move_questions(analyst: str, style_note: str, slots: list[dict], pool: dict,
-                         client, target_quarter: str = "") -> list[dict]:
+                         client, target_quarter: str = "",
+                         bank_name: str = "Axis Bank") -> list[dict]:
     """Generate one question per (topic x move) slot.
 
     Falls back to the bare topic+move label when no LLM is reachable, so the
@@ -430,7 +432,8 @@ def frame_move_questions(analyst: str, style_note: str, slots: list[dict], pool:
     if client is None or not (getattr(client, "active_llm", None) or client.probe_llm()):
         return _bare()
 
-    raw = client.call_llm(_build_move_prompt(analyst, style_note, slots, pool, target_quarter),
+    raw = client.call_llm(_build_move_prompt(analyst, style_note, slots, pool, target_quarter,
+                                             bank_name=bank_name),
                           temperature=0.3)
     if not raw:
         return _bare()

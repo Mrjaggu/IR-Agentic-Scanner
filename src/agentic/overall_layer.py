@@ -101,14 +101,14 @@ def _format_evidence(topic: str, evidence_bundles: dict, global_rate: dict,
 
 def _build_rank_prompt(candidate_topics: list[str], evidence_bundles: dict,
                        global_rate: dict, momentum: dict, max_momentum: float,
-                       anomaly_scores: dict) -> str:
+                       anomaly_scores: dict, bank_name: str = "Axis Bank") -> str:
     blocks = []
     for t in candidate_topics:
         anomaly = anomaly_scores.get(t)
         anomaly_line = f"\n- THIS QUARTER'S metric anomaly score: {anomaly:.2f} (1.0 = biggest move ever)" if anomaly is not None else ""
         blocks.append(f"### {t}{anomaly_line}\n{_format_evidence(t, evidence_bundles, global_rate, momentum, max_momentum)}")
     evidence_text = "\n\n".join(blocks)
-    return f"""You are ranking topics likely to come up on Axis Bank's upcoming earnings
+    return f"""You are ranking topics likely to come up on {bank_name}'s upcoming earnings
 call, regardless of which specific analyst asks. Base this ONLY on the evidence
 given per topic below — do not invent numbers or facts not listed.
 
@@ -160,7 +160,8 @@ def _verify_rationale(topic: str, rationale: str, evidence_bundles: dict, global
 
 def build_overall_topics(evidence_bundles: dict, anomaly_scores: dict, global_rate: dict,
                          momentum: dict, client, disclosure: dict | None = None,
-                         weights: dict[str, float] | None = None) -> dict:
+                         weights: dict[str, float] | None = None,
+                         bank_name: str = "Axis Bank") -> dict:
     """disclosure: the parsed upcoming-quarter document (src/data/upcoming.py).
     When present, topics the disclosure actually talks about or flags become
     candidates in their own right -- that is how a theme with no historical
@@ -217,7 +218,7 @@ def build_overall_topics(evidence_bundles: dict, anomaly_scores: dict, global_ra
 
     while to_rank and attempt <= MAX_RETRIES:
         prompt = _build_rank_prompt(to_rank, evidence_bundles, global_rate, momentum,
-                                    max_momentum, anomaly_scores)
+                                    max_momentum, anomaly_scores, bank_name=bank_name)
         raw = client.call_llm(prompt, temperature=0.1)
         parsed = None
         if raw:
