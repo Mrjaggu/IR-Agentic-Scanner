@@ -703,8 +703,8 @@
     ],
     "analysts": [
       {
-        "name": "Piran Engineer",
-        "firm": "CLSA"
+        "name": "Ankit Bihani",
+        "firm": "Nomura"
       },
       {
         "name": "Jai Mundhra",
@@ -715,20 +715,20 @@
         "firm": "Citigroup"
       },
       {
-        "name": "Ankit Bihani",
-        "firm": "Nomura"
+        "name": "Param Subramanian",
+        "firm": "Investec"
       },
       {
-        "name": "Rikin Shah",
-        "firm": "IIFL Capital"
+        "name": "Piran Engineer",
+        "firm": "CLSA"
       },
       {
         "name": "Pranav Gundlapalle",
         "firm": "Bernstein"
       },
       {
-        "name": "Param Subramanian",
-        "firm": "Investec"
+        "name": "Rikin Shah",
+        "firm": "IIFL Capital"
       }
     ]
   }
