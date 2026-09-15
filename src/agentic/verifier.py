@@ -104,6 +104,7 @@ class GateState(TypedDict, total=False):
     pool: dict
     client: object
     target_quarter: str
+    bank_name: str
     remaining: list[str]
     drafts: dict
     accepted: dict
@@ -116,7 +117,8 @@ def _frame_node(state: GateState) -> GateState:
     drafts = frame_questions(state["analyst"], state["style_note"], state["remaining"],
                              state["pool"], state["client"],
                              target_quarter=state.get("target_quarter", ""),
-                             feedback=state.get("feedback", ""))
+                             feedback=state.get("feedback", ""),
+                             bank_name=state.get("bank_name", "Axis Bank"))
     return {"drafts": drafts}
 
 
@@ -156,13 +158,13 @@ _compiled_gate = _graph.compile()
 
 
 def grounding_gate(analyst: str, style_note: str, topics: list[str], pool: dict, client,
-                   target_quarter: str = "") -> tuple[list[dict], list[dict]]:
+                   target_quarter: str = "", bank_name: str = "Axis Bank") -> tuple[list[dict], list[dict]]:
     """Returns ([{topic, question_text, status}], log)."""
     if not topics:
         return [], []
     final = _compiled_gate.invoke({
         "analyst": analyst, "style_note": style_note, "pool": pool, "client": client,
-        "target_quarter": target_quarter,
+        "target_quarter": target_quarter, "bank_name": bank_name,
         "remaining": list(topics), "accepted": {}, "attempt": 0, "log": [], "feedback": "",
     })
     accepted = final.get("accepted", {})

@@ -137,10 +137,15 @@ def reset_stats():
                   "wait_seconds": 0.0, "last_error": None, "started_at": time.time()})
 
 
+# 2026-09: genericized off "Axis Bank" -- this platform now serves multiple
+# banks (see src.config.banks). Each individual prompt that needs to name a
+# specific bank does so itself (build_overall_topics/question_framer.py both
+# take a bank_name param); this system-level prompt only needs to state the
+# assistant's general role and output-format contract, which is bank-agnostic.
 _DEFAULT_SYSTEM_PROMPT = (
-    "You are a financial IR assistant helping Axis Bank prepare for analyst "
-    "earnings calls. Return ONLY valid JSON with the exact schema requested. "
-    "Do NOT include markdown code fences."
+    "You are a financial IR assistant helping a bank's investor relations team "
+    "prepare for analyst earnings calls. Return ONLY valid JSON with the exact "
+    "schema requested. Do NOT include markdown code fences."
 )
 
 

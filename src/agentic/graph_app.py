@@ -27,6 +27,8 @@ from src.agentic.question_framer import build_evidence_pool
 class PipelineState(TypedDict, total=False):
     graph: dict
     prior_quarters: list[str]
+    bank_id: str
+    bank_name: str
     val_quarter: str
     global_rate: dict
     momentum: dict
@@ -55,6 +57,7 @@ def _overall_node(state: PipelineState) -> PipelineState:
     overall = build_overall_topics(
         state["evidence_bundles"], state["anomaly_scores"], state["global_rate"],
         state["momentum"], state["client"], disclosure=state.get("upcoming"),
+        bank_name=state.get("bank_name", "Axis Bank"),
     )
     return {"overall": overall}
 
@@ -77,7 +80,8 @@ def _analyst_specific_node(state: PipelineState) -> PipelineState:
             disclosure_text=(state.get("upcoming") or {}).get("narration", ""),
         )
         results, gate_log = grounding_gate(analyst, style_note, ranked, pool, state["client"],
-                                           target_quarter=state["val_quarter"])
+                                           target_quarter=state["val_quarter"],
+                                           bank_name=state.get("bank_name", "Axis Bank"))
         outputs[analyst] = {"topics": results, "verifier_log": gate_log}
     return {"analyst_outputs": outputs}
 

@@ -256,7 +256,8 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
         state["anomaly_scores"], state["graph"], state["prior_quarters"], state["global_rate"]
     )
     overall = build_overall_topics(bundles, state["anomaly_scores"], state["global_rate"],
-                                   state["momentum"], state["client"], disclosure=upcoming)
+                                   state["momentum"], state["client"], disclosure=upcoming,
+                                   bank_name=state.get("bank_name", "Axis Bank"))
     ranked = overall["ranked_topics"]
 
     truth = ground_truth(quarter, state["graph"])
@@ -308,7 +309,8 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
                                        target_quarter=quarter,
                                        disclosure_text=(upcoming or {}).get("narration", ""))
             results, _ = grounding_gate(analyst, style, predicted, pool, state["client"],
-                                        target_quarter=quarter)
+                                        target_quarter=quarter,
+                                        bank_name=state.get("bank_name", "Axis Bank"))
             total_slots += len(results)
             grounded_slots += sum(1 for r in results if r["status"] == "grounded")
 
@@ -656,7 +658,7 @@ def evaluate_quarter_with_weights(quarter: str, weights: dict[str, float],
     )
     overall = build_overall_topics(bundles, state["anomaly_scores"], state["global_rate"],
                                    state["momentum"], state["client"], disclosure=disclosure,
-                                   weights=weights)
+                                   weights=weights, bank_name=state.get("bank_name", "Axis Bank"))
     ranked = overall["ranked_topics"]
     truth = ground_truth(quarter, state["graph"])
     scored_analysts = [a for a in state["active_analysts"] if a in truth]
@@ -710,7 +712,8 @@ def sweep_slot_policy(configs: list[tuple[int, int]] | None = None,
         bundles, _ = run_planning_agent(state["anomaly_scores"], state["graph"],
                                         state["prior_quarters"], state["global_rate"])
         overall = build_overall_topics(bundles, state["anomaly_scores"], state["global_rate"],
-                                       state["momentum"], state["client"])
+                                       state["momentum"], state["client"],
+                                       bank_name=state.get("bank_name", "Axis Bank"))
         truth = ground_truth(q, state["graph"])
         prepared.append((q, state, overall["ranked_topics"], truth))
 

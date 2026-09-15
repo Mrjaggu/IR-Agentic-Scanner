@@ -350,7 +350,14 @@ class ChatRequest(BaseModel):
     history: list[dict] | None = None
 
 
-def _build_chat_prompt(message: str, passages: list[dict], history: list[dict] | None) -> str:
+def _build_chat_prompt(message: str, passages: list[dict], history: list[dict] | None,
+                       bank_name: str = "Axis Bank") -> str:
+    # bank_name default only -- chat/search still runs off a single global
+    # corpus (_cache), not yet bank-scoped (that is a further phase: the
+    # search index itself, not just this prompt, needs to become per-bank).
+    # This param exists so the prompt text stops hardcoding "Axis Bank" the
+    # moment the corpus is scoped; it is not wired to anything bank-specific
+    # yet.
     evidence = "\n\n".join(
         f'[{i + 1}] ({p["quarter"]} · {p["type"]} · {p["who"]}) "{p["text"][:900]}"'
         for i, p in enumerate(passages))
@@ -358,7 +365,7 @@ def _build_chat_prompt(message: str, passages: list[dict], history: list[dict] |
     if history:
         hist = "\n".join(f'{h["role"]}: {h["content"]}' for h in history[-6:]) + "\n\n"
     return (
-        "You are an analyst-relations assistant for Axis Bank's IR team, answering "
+        f"You are an analyst-relations assistant for {bank_name}'s IR team, answering "
         "questions about the earnings-call transcript archive.\n"
         "Use ONLY the evidence passages below. Do not use outside knowledge and do not "
         "invent numbers. Cite passages inline as [n]. Use markdown: short paragraphs, "
@@ -507,7 +514,8 @@ def run_overall(req: RunRequest):
     bundles, tool_log = run_planning_agent(state["anomaly_scores"], state["graph"],
                                            state["prior_quarters"], state["global_rate"])
     overall = build_overall_topics(bundles, state["anomaly_scores"], state["global_rate"],
-                                   state["momentum"], state["client"], disclosure=disclosure)
+                                   state["momentum"], state["client"], disclosure=disclosure,
+                                   bank_name=state.get("bank_name", "Axis Bank"))
     key = f"{quarter}:{req.disclosure_id or 'none'}:{req.holdout}"
     _overall_cache[key] = {"state": state, "overall": overall, "tool_log": tool_log}
     return {"quarter": quarter, "cache_key": key, "tool_log": tool_log, "overall": overall,
@@ -540,7 +548,8 @@ def run_analyst(req: AnalystRunRequest):
                                target_quarter=quarter,
                                disclosure_text=(disclosure or {}).get("narration", ""))
     results, gate_log = grounding_gate(req.analyst, style, ranked, pool, state["client"],
-                                       target_quarter=quarter)
+                                       target_quarter=quarter,
+                                       bank_name=state.get("bank_name", "Axis Bank"))
     return {"quarter": quarter, "analyst": req.analyst, "style_note": style,
             "train_cutoff": state.get("train_cutoff"),
             "topics": results, "verifier_log": gate_log,
