@@ -4,16 +4,29 @@ reciprocal-rank-fusion retrieval used client-side in the static UI
 (frontend/_ui_template.html), so /api/chat and /api/search can ground
 answers the same way whether or not an LLM is reachable.
 
-No embedding model is used deliberately: this session's network couldn't
-reach any embedding/LLM API from either the cloud sandbox or the bridge to
-the user's Mac (see AGENTIC_ARCHITECTURE.md), so TF-IDF cosine is the
-"semantic proxy" -- a real, defensible fallback, not a placeholder pretending
-to be an embedding search.
+2026-09 update: TF-IDF cosine was previously called the "semantic proxy"
+here, but it isn't one -- it's still literal token overlap, just weighted
+differently than BM25. Verified against this platform's own Axis corpus
+that a plain-English paraphrase of CASA ("low cost deposits") surfaced an
+unrelated passage as its #1 result under BM25+TF-IDF alone, because the
+query and the right passage share zero tokens. A real (if CPU-light)
+semantic signal is now layered in via src/search/embeddings.py -- spaCy
+word vectors, chosen specifically because huggingface.co (where sentence-
+transformer weights live) is unreachable from this environment but
+github.com, where spaCy's model wheels are hosted, is. See that module's
+docstring for the full reachability check and the before/after numbers.
+
+That signal is optional at the SearchIndex level (embed_vecs=None skips it
+entirely) and degrades honestly if the model isn't installed on a given
+machine -- BM25 + TF-IDF alone (today's behavior) is always the floor, not
+a placeholder pretending to be semantic search.
 """
 
 import math
 import re
 from collections import Counter
+
+from src.search import embeddings
 
 STOPWORDS = {
     'the','a','an','is','are','was','were','of','on','in','to','for','and','or','what','did',
@@ -28,7 +41,7 @@ def tokenize(text: str) -> list[str]:
 
 
 class SearchIndex:
-    def __init__(self, corpus: list[dict]):
+    def __init__(self, corpus: list[dict], embed_vecs: list[list[float]] | None = None):
         self.docs = corpus
         self.tokens = [tokenize(d["text"]) for d in corpus]
         self.n = len(corpus)
@@ -37,6 +50,12 @@ class SearchIndex:
             self.df.update(set(toks))
         self.avgdl = sum(len(t) for t in self.tokens) / max(self.n, 1)
         self.tfidf_vecs = [self._tfidf_vec(t) for t in self.tokens]
+        # Precomputed at load time (see fastapi_app.py's _load_live), one
+        # vector per corpus doc in the same order -- None on a machine
+        # where the embedding model isn't installed, in which case search()
+        # below simply doesn't add the semantic ranked list to the fusion.
+        self.embed_vecs = embed_vecs
+        self.has_semantic = embed_vecs is not None
 
     def idf(self, term: str) -> float:
         df = self.df.get(term, 0)
@@ -78,9 +97,24 @@ class SearchIndex:
         sem_ranked = sorted(pool, key=lambda i: -self.cosine(q_vec, i))
         sem_ranked = [i for i in sem_ranked if self.cosine(q_vec, i) > 0]
 
+        # Real semantic signal (word-vector cosine), additive to the two
+        # lexical rankers above -- see this module's docstring. Skipped
+        # entirely (embed_ranked stays []) if no embedding vectors were
+        # precomputed for this corpus, or the query itself fails to embed.
+        embed_ranked = []
+        if self.embed_vecs is not None:
+            qv = embeddings.embed_one(query)
+            if qv is not None:
+                sims = {i: embeddings.cosine(qv, self.embed_vecs[i]) for i in pool}
+                # A higher floor than the lexical rankers' ">0": GloVe cosine
+                # is noisy near zero (unrelated pairs land anywhere from
+                # -0.1 to 0.15), so a low bar would let noise vote in the
+                # fusion below rather than genuinely related passages.
+                embed_ranked = sorted((i for i in pool if sims[i] > 0.2), key=lambda i: -sims[i])
+
         k = 60
         scores = {}
-        for rank_list in (bm25_ranked, sem_ranked):
+        for rank_list in (bm25_ranked, sem_ranked, embed_ranked):
             for rank, i in enumerate(rank_list):
                 scores[i] = scores.get(i, 0.0) + 1 / (k + rank + 1)
 

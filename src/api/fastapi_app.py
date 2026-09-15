@@ -38,6 +38,7 @@ from src.data.dossier import build_analyst_dossier
 from src.data.upcoming import parse_upcoming_document
 from src.ui_compiler import compile_analyst_profiles, compile_search_corpus
 from src.search.hybrid_search import SearchIndex
+from src.search import embeddings as search_embeddings
 from src.agentic.run_agentic import (
     build_initial_state, main as run_agentic_full, _out_paths as _agentic_out_paths,
 )
@@ -93,7 +94,11 @@ def _load_live(bank_id: str = DEFAULT_BANK) -> dict:
         "corpus": compile_search_corpus(graph),
         "quarters": [q["quarter_id"] for q in dataset],
     }
-    data["index"] = SearchIndex(data["corpus"])
+    # None (not a list of zero vectors) when the embedding model isn't
+    # installed on this machine -- SearchIndex then just runs BM25+TF-IDF,
+    # same as before this signal existed. See src/search/embeddings.py.
+    embed_vecs = search_embeddings.embed_many([d["text"] for d in data["corpus"]])
+    data["index"] = SearchIndex(data["corpus"], embed_vecs=embed_vecs)
     _cache[bank_id] = data
     _dossier_cache.pop(bank_id, None)
     for k in [k for k in _overall_cache if k.startswith(f"{bank_id}:")]:
@@ -186,6 +191,11 @@ def get_meta(bank: str = DEFAULT_BANK):
         "active_analysts": n_active,
         "llm": {"active": client.active_llm, "available": bool(client.active_llm),
                 "limits": RATE_LIMITS},
+        # Same honesty pattern as "llm" above: whether this run actually has
+        # a semantic signal in search/chat retrieval, or is BM25+TF-IDF only
+        # because the embedding model isn't installed on this machine.
+        "retrieval": {"semantic": live["index"].has_semantic,
+                      "semantic_model": "en_core_web_md (spaCy, 300d GloVe)" if live["index"].has_semantic else None},
         "counts": {
             "analysts": len(live["profiles"]),
             "quarters": len(live["quarters"]),
