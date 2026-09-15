@@ -348,7 +348,14 @@ def main(bank_id: str = DEFAULT_BANK):
         for turn in qa:
             if turn["analyst_name"] and turn["analyst_name"] not in ["Moderator", "Operator"]:
                 q_analysts.add((turn["analyst_name"], turn["analyst_firm"]))
-                
+
+        # 2026-09: q_analysts is a set of (name, firm) tuples -- its iteration
+        # order depends on Python's per-process hash randomization
+        # (PYTHONHASHSEED), so serializing it directly made this list reorder
+        # itself, with no content change, on every single recompile. Sorted
+        # here so two compiles of the exact same transcripts produce a
+        # byte-identical dataset.json -- caught while diffing a Phase 10
+        # regression recompile against the committed baseline.
         dataset.append({
             "quarter_id": qid,
             "sort_key": skey,
@@ -356,7 +363,7 @@ def main(bank_id: str = DEFAULT_BANK):
             "call_date": call_date,
             "narration": narr,
             "qa": qa,
-            "analysts": [{"name": n, "firm": f} for n, f in q_analysts]
+            "analysts": [{"name": n, "firm": f} for n, f in sorted(q_analysts)]
         })
         
     os.makedirs(os.path.dirname(dataset_path), exist_ok=True)

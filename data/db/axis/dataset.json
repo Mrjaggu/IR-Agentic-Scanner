@@ -751,32 +751,16 @@
     ],
     "analysts": [
       {
-        "name": "Antariksha Banerjee",
-        "firm": "ICICI Prudential AMC"
+        "name": "Abhishek Murarka",
+        "firm": "HSBC"
       },
       {
         "name": "Adarsh Parasrampuria",
         "firm": "CLSA"
       },
       {
-        "name": "Sumeet Kariwala",
-        "firm": "Morgan Stanley"
-      },
-      {
-        "name": "Rahul Jain",
-        "firm": "Goldman Sachs"
-      },
-      {
-        "name": "Prakhar Agarwal",
-        "firm": "Edelweiss"
-      },
-      {
-        "name": "Abhishek Murarka",
-        "firm": "HSBC"
-      },
-      {
-        "name": "Nilanjan Karfa",
-        "firm": "Nomura"
+        "name": "Antariksha Banerjee",
+        "firm": "ICICI Prudential AMC"
       },
       {
         "name": "Kunal Shah",
@@ -785,6 +769,22 @@
       {
         "name": "Mahrukh Adajania",
         "firm": "Elara Capital"
+      },
+      {
+        "name": "Nilanjan Karfa",
+        "firm": "Nomura"
+      },
+      {
+        "name": "Prakhar Agarwal",
+        "firm": "Edelweiss"
+      },
+      {
+        "name": "Rahul Jain",
+        "firm": "Goldman Sachs"
+      },
+      {
+        "name": "Sumeet Kariwala",
+        "firm": "Morgan Stanley"
       }
     ]
   },
@@ -1220,12 +1220,12 @@
     ],
     "analysts": [
       {
-        "name": "Anand Dama",
-        "firm": "Emkay Global"
-      },
-      {
         "name": "Abhishek Murarka",
         "firm": "HSBC"
+      },
+      {
+        "name": "Anand Dama",
+        "firm": "Emkay Global"
       },
       {
         "name": "Jai Mundhra",
@@ -1829,52 +1829,52 @@
     ],
     "analysts": [
       {
-        "name": "Anand Dama",
-        "firm": "Emkay Global"
-      },
-      {
-        "name": "Sum eet Kariwala",
-        "firm": "Morgan Stanley"
-      },
-      {
-        "name": "Nitin Aggarwal",
-        "firm": "Motilal Oswal Securities"
+        "name": "Abhishek Murarka",
+        "firm": "HSBC"
       },
       {
         "name": "Adarsh Parasrampuria",
         "firm": "CLSA"
       },
       {
-        "name": "Ma hrukh Adajania",
-        "firm": "Elara Capital"
+        "name": "Alpesh Mehta",
+        "firm": "IIFL Securities"
+      },
+      {
+        "name": "Anand Dama",
+        "firm": "Emkay Global"
       },
       {
         "name": "Gaurav Kochar",
         "firm": "Mirae Asset"
       },
       {
-        "name": "Alpesh Mehta",
-        "firm": "IIFL Securities"
-      },
-      {
-        "name": "Abhishek Murarka",
-        "firm": "HSBC"
-      },
-      {
-        "name": "Sam eer Bhise",
-        "firm": "JM Financial"
+        "name": "Kunal Shah",
+        "firm": "ICICI Securities"
       },
       {
         "name": "MB Mahesh",
         "firm": "Ambit Asset Management"
       },
       {
+        "name": "Ma hrukh Adajania",
+        "firm": "Elara Capital"
+      },
+      {
         "name": "Nilanjan Karfa",
         "firm": "Nomura"
       },
       {
-        "name": "Kunal Shah",
-        "firm": "ICICI Securities"
+        "name": "Nitin Aggarwal",
+        "firm": "Motilal Oswal Securities"
+      },
+      {
+        "name": "Sam eer Bhise",
+        "firm": "JM Financial"
+      },
+      {
+        "name": "Sum eet Kariwala",
+        "firm": "Morgan Stanley"
       }
     ]
   },
@@ -2427,10 +2427,6 @@
     ],
     "analysts": [
       {
-        "name": "Parag",
-        "firm": "White Oak Capital"
-      },
-      {
         "name": "Adarsh Parasrampuria",
         "firm": "CLSA"
       },
@@ -2439,24 +2435,28 @@
         "firm": "B&K Securities"
       },
       {
-        "name": "Mahrukh Adajania",
-        "firm": "Edelweiss Financial Service"
-      },
-      {
         "name": "Krishnan",
         "firm": "HDFC Securities"
       },
       {
-        "name": "Rohan Mandora",
-        "firm": "Equirus"
+        "name": "Kunal Shah",
+        "firm": "ICICI Securities"
+      },
+      {
+        "name": "Mahrukh Adajania",
+        "firm": "Edelweiss Financial Service"
       },
       {
         "name": "Nilanjan",
         "firm": "Nomura"
       },
       {
-        "name": "Kunal Shah",
-        "firm": "ICICI Securities"
+        "name": "Parag",
+        "firm": "White Oak Capital"
+      },
+      {
+        "name": "Rohan Mandora",
+        "firm": "Equirus"
       }
     ]
   },
@@ -2926,24 +2926,24 @@
     ],
     "analysts": [
       {
-        "name": "Saurabh Kumar",
-        "firm": "JP Morgan"
-      },
-      {
-        "name": "Mahrukh Adajania",
-        "firm": "Edelweiss Financial Service"
-      },
-      {
-        "name": "MB Mahesh",
-        "firm": "K otak Securities"
-      },
-      {
         "name": "Abhishek Murarka",
         "firm": "HSBC"
       },
       {
         "name": "Kunal Shah",
         "firm": "ICICI Securities"
+      },
+      {
+        "name": "MB Mahesh",
+        "firm": "K otak Securities"
+      },
+      {
+        "name": "Mahrukh Adajania",
+        "firm": "Edelweiss Financial Service"
+      },
+      {
+        "name": "Saurabh Kumar",
+        "firm": "JP Morgan"
       }
     ]
   },
@@ -3401,40 +3401,40 @@
     ],
     "analysts": [
       {
-        "name": "Sameer Bhise",
-        "firm": "JM Financial"
+        "name": "Abhishek Murarka",
+        "firm": "HSBC"
       },
       {
         "name": "Adarsh Parasrampuria",
         "firm": "CLSA"
       },
       {
+        "name": "Ajit Kumar",
+        "firm": "Goldman Sachs"
+      },
+      {
         "name": "Jiten Doshi",
         "firm": "Enam Asset Management"
-      },
-      {
-        "name": "MB Mahesh",
-        "firm": "Kotak Securities"
-      },
-      {
-        "name": "Abhishek Murarka",
-        "firm": "HSBC"
       },
       {
         "name": "Kunal Shah",
         "firm": "ICICI Securities"
       },
       {
-        "name": "Nitin Aggarwal",
-        "firm": "Motilal Oswal"
-      },
-      {
-        "name": "Ajit Kumar",
-        "firm": "Goldman Sachs"
+        "name": "MB Mahesh",
+        "firm": "Kotak Securities"
       },
       {
         "name": "Mahrukh Adajania",
         "firm": "Nuvama"
+      },
+      {
+        "name": "Nitin Aggarwal",
+        "firm": "Motilal Oswal"
+      },
+      {
+        "name": "Sameer Bhise",
+        "firm": "JM Financial"
       }
     ]
   },
@@ -4091,24 +4091,12 @@
     ],
     "analysts": [
       {
-        "name": "Prakhar Agarwal",
-        "firm": "Elara Capital"
-      },
-      {
-        "name": "Rakesh Kumar",
-        "firm": "Systematix Group"
-      },
-      {
         "name": "Adarsh Parasrampuria",
         "firm": "CLSA"
       },
       {
         "name": "Jai Mundhra",
         "firm": "B&K Securities"
-      },
-      {
-        "name": "Saurabh Kumar",
-        "firm": "JPMorgan"
       },
       {
         "name": "Mahrukh Adajania",
@@ -4119,12 +4107,24 @@
         "firm": "Motilal Oswal"
       },
       {
+        "name": "Pankaj Agarwal",
+        "firm": "Ambit Capital"
+      },
+      {
+        "name": "Prakhar Agarwal",
+        "firm": "Elara Capital"
+      },
+      {
+        "name": "Rakesh Kumar",
+        "firm": "Systematix Group"
+      },
+      {
         "name": "Rohan Mandora",
         "firm": "Equirus Securities"
       },
       {
-        "name": "Pankaj Agarwal",
-        "firm": "Ambit Capital"
+        "name": "Saurabh Kumar",
+        "firm": "JPMorgan"
       }
     ]
   },
@@ -4675,8 +4675,8 @@
     ],
     "analysts": [
       {
-        "name": "Jai Mundhra",
-        "firm": "ICICI Securities"
+        "name": "Abhishek Murarka",
+        "firm": "HSBC"
       },
       {
         "name": "Adarsh Parasrampuria",
@@ -4691,24 +4691,24 @@
         "firm": "Goldman Sachs"
       },
       {
+        "name": "Jai Mundhra",
+        "firm": "ICICI Securities"
+      },
+      {
+        "name": "Kunal Shah",
+        "firm": "Citigroup"
+      },
+      {
         "name": "MB Mahesh",
         "firm": "Kotak Securities"
-      },
-      {
-        "name": "Abhishek Murarka",
-        "firm": "HSBC"
-      },
-      {
-        "name": "Saurabh Kumar",
-        "firm": "JPMorgan"
       },
       {
         "name": "Mahrukh Adajania",
         "firm": "Nuvama"
       },
       {
-        "name": "Kunal Shah",
-        "firm": "Citigroup"
+        "name": "Saurabh Kumar",
+        "firm": "JPMorgan"
       }
     ]
   },
@@ -5110,36 +5110,36 @@
     ],
     "analysts": [
       {
-        "name": "Adarsh Parasrampuria",
-        "firm": "CLSA"
-      },
-      {
         "name": "Abhishek Murarka",
         "firm": "HSBC"
       },
       {
-        "name": "Param Subramanian",
-        "firm": "Nomura"
+        "name": "Adarsh Parasrampuria",
+        "firm": "CLSA"
       },
       {
         "name": "Arvind R",
         "firm": "Sundaram Alternates"
       },
       {
-        "name": "Rakesh Kumar",
-        "firm": "B&K Securities"
+        "name": "Kunal Shah",
+        "firm": "Citigroup"
       },
       {
         "name": "Nitin Aggarwal",
         "firm": "Motilal Oswal"
       },
       {
-        "name": "Saurabh Kumar",
-        "firm": "JPMorgan"
+        "name": "Param Subramanian",
+        "firm": "Nomura"
       },
       {
-        "name": "Kunal Shah",
-        "firm": "Citigroup"
+        "name": "Rakesh Kumar",
+        "firm": "B&K Securities"
+      },
+      {
+        "name": "Saurabh Kumar",
+        "firm": "JPMorgan"
       }
     ]
   },
@@ -5699,28 +5699,20 @@
     ],
     "analysts": [
       {
-        "name": "Jai Mundhra",
-        "firm": "ICICI Securities"
-      },
-      {
-        "name": "Saurabh Kumar",
-        "firm": "JP Morgan"
-      },
-      {
-        "name": "Piran Engineer",
-        "firm": "CLSA India"
-      },
-      {
         "name": "Abhishek Murarka",
         "firm": "HSBC"
       },
       {
-        "name": "Param Subramanian",
-        "firm": "Nomura"
-      },
-      {
         "name": "Chintan Joshi",
         "firm": "Autonomous"
+      },
+      {
+        "name": "Jai Mundhra",
+        "firm": "ICICI Securities"
+      },
+      {
+        "name": "Kunal Shah",
+        "firm": "Citigroup"
       },
       {
         "name": "Mahrukh Adajania",
@@ -5731,8 +5723,16 @@
         "firm": "Motilal Oswal"
       },
       {
-        "name": "Kunal Shah",
-        "firm": "Citigroup"
+        "name": "Param Subramanian",
+        "firm": "Nomura"
+      },
+      {
+        "name": "Piran Engineer",
+        "firm": "CLSA India"
+      },
+      {
+        "name": "Saurabh Kumar",
+        "firm": "JP Morgan"
       }
     ]
   },
@@ -6514,28 +6514,24 @@
     ],
     "analysts": [
       {
-        "name": "Suresh Ganapathy",
-        "firm": "Macquarie Research"
-      },
-      {
-        "name": "Sameer Bhise",
-        "firm": "JM Financial"
+        "name": "Chintan Joshi",
+        "firm": "Individual Investor"
       },
       {
         "name": "Jai Mundhra",
         "firm": "ICICI Securities"
       },
       {
-        "name": "Saurabh Kumar",
-        "firm": "JP Morgan"
+        "name": "Kunal Shah",
+        "firm": "Citigroup"
       },
       {
-        "name": "Rikin Shah",
-        "firm": "IIFL"
+        "name": "Mahrukh Adajania",
+        "firm": "Nuvama"
       },
       {
-        "name": "Chintan Joshi",
-        "firm": "Individual Investor"
+        "name": "Param Subramanian",
+        "firm": "Nomura"
       },
       {
         "name": "Piran Engineer",
@@ -6546,20 +6542,24 @@
         "firm": "Bernstein"
       },
       {
-        "name": "Param Subramanian",
-        "firm": "Nomura"
+        "name": "Rikin Shah",
+        "firm": "IIFL"
+      },
+      {
+        "name": "Sameer Bhise",
+        "firm": "JM Financial"
+      },
+      {
+        "name": "Saurabh Kumar",
+        "firm": "JP Morgan"
       },
       {
         "name": "Shubranshu Mishra",
         "firm": "Philip Capital"
       },
       {
-        "name": "Mahrukh Adajania",
-        "firm": "Nuvama"
-      },
-      {
-        "name": "Kunal Shah",
-        "firm": "Citigroup"
+        "name": "Suresh Ganapathy",
+        "firm": "Macquarie Research"
       }
     ]
   },
@@ -7181,12 +7181,32 @@
     ],
     "analysts": [
       {
-        "name": "Sameer Bhise",
-        "firm": "JM Financial"
+        "name": "Chintan Joshi",
+        "firm": "Autonomous"
       },
       {
         "name": "Jai Mundhra",
         "firm": "ICICI Securities"
+      },
+      {
+        "name": "Kunal Shah",
+        "firm": "Citi"
+      },
+      {
+        "name": "MB Mahesh",
+        "firm": "Kotak Securities"
+      },
+      {
+        "name": "Mahrukh Adajania",
+        "firm": "Nuvama Wealth"
+      },
+      {
+        "name": "Param Subramanian",
+        "firm": "Nomura"
+      },
+      {
+        "name": "Piran Engineer",
+        "firm": "CLSA"
       },
       {
         "name": "Rikin Shah",
@@ -7197,28 +7217,8 @@
         "firm": "India Infoline"
       },
       {
-        "name": "MB Mahesh",
-        "firm": "Kotak Securities"
-      },
-      {
-        "name": "Piran Engineer",
-        "firm": "CLSA"
-      },
-      {
-        "name": "Kunal Shah",
-        "firm": "Citi"
-      },
-      {
-        "name": "Chintan Joshi",
-        "firm": "Autonomous"
-      },
-      {
-        "name": "Mahrukh Adajania",
-        "firm": "Nuvama Wealth"
-      },
-      {
-        "name": "Param Subramanian",
-        "firm": "Nomura"
+        "name": "Sameer Bhise",
+        "firm": "JM Financial"
       },
       {
         "name": "Saurabh Kumar",
@@ -7876,40 +7876,40 @@
     ],
     "analysts": [
       {
-        "name": "Anand Dama",
-        "firm": "Emkay Global"
+        "name": "Abhishek Murarka",
+        "firm": "HSBC"
       },
       {
-        "name": "Punit",
-        "firm": "Macquarie Capital"
+        "name": "Anand Dama",
+        "firm": "Emkay Global"
       },
       {
         "name": "Jai Mundhra",
         "firm": "ICICI Securities"
       },
       {
-        "name": "Rikin Shah",
-        "firm": "IIFL"
-      },
-      {
-        "name": "Rahul Jain",
-        "firm": "Goldman Sachs"
-      },
-      {
-        "name": "Abhishek Murarka",
-        "firm": "HSBC"
-      },
-      {
-        "name": "Piran Engineer",
-        "firm": "CLSA"
+        "name": "Kunal Shah",
+        "firm": "Citigroup"
       },
       {
         "name": "Mahrukh Adajania",
         "firm": "Nuvama"
       },
       {
-        "name": "Kunal Shah",
-        "firm": "Citigroup"
+        "name": "Piran Engineer",
+        "firm": "CLSA"
+      },
+      {
+        "name": "Punit",
+        "firm": "Macquarie Capital"
+      },
+      {
+        "name": "Rahul Jain",
+        "firm": "Goldman Sachs"
+      },
+      {
+        "name": "Rikin Shah",
+        "firm": "IIFL"
       }
     ]
   },
@@ -8622,44 +8622,44 @@
     ],
     "analysts": [
       {
+        "name": "Chintan Joshi",
+        "firm": "Autonomous"
+      },
+      {
         "name": "Jai Mundhra",
         "firm": "ICICI Securities"
       },
       {
-        "name": "Rikin Shah",
-        "firm": "IIFL Securities"
+        "name": "Kunal Shah",
+        "firm": "Citigroup"
       },
       {
         "name": "MB Mahesh",
         "firm": "Kotak Securities"
       },
       {
-        "name": "Chintan Joshi",
-        "firm": "Autonomous"
-      },
-      {
-        "name": "Pranav Gundlapalle",
-        "firm": "Bernstein"
-      },
-      {
-        "name": "Param Subramanian",
-        "firm": "Nomura"
+        "name": "Mahrukh Adajania",
+        "firm": "Nuvama"
       },
       {
         "name": "Nitin Aggarwal",
         "firm": "Motilal Oswal"
       },
       {
+        "name": "Param Subramanian",
+        "firm": "Nomura"
+      },
+      {
+        "name": "Pranav Gundlapalle",
+        "firm": "Bernstein"
+      },
+      {
+        "name": "Rikin Shah",
+        "firm": "IIFL Securities"
+      },
+      {
         "name": "Saurabh Kumar",
         "firm": "JPMorgan"
-      },
-      {
-        "name": "Mahrukh Adajania",
-        "firm": "Nuvama"
-      },
-      {
-        "name": "Kunal Shah",
-        "firm": "Citigroup"
       }
     ]
   },
@@ -9150,40 +9150,40 @@
     ],
     "analysts": [
       {
-        "name": "Rikin Shah",
-        "firm": "IIFL"
-      },
-      {
-        "name": "Pra khar Sharma",
-        "firm": "Jefferies"
-      },
-      {
-        "name": "MB Mahesh",
-        "firm": "Kotak Securities"
-      },
-      {
         "name": "Abhishek Murarka",
         "firm": "HSBC"
-      },
-      {
-        "name": "Suresh Ganapathy",
-        "firm": "Macquarie Capital"
       },
       {
         "name": "Chintan Joshi",
         "firm": "Autonomous"
       },
       {
-        "name": "Param Subramanian",
-        "firm": "Nomura"
+        "name": "MB Mahesh",
+        "firm": "Kotak Securities"
+      },
+      {
+        "name": "Mahrukh Adajania",
+        "firm": "Nuvama"
       },
       {
         "name": "Nitin Aggarwal",
         "firm": "Motilal Oswal"
       },
       {
-        "name": "Mahrukh Adajania",
-        "firm": "Nuvama"
+        "name": "Param Subramanian",
+        "firm": "Nomura"
+      },
+      {
+        "name": "Pra khar Sharma",
+        "firm": "Jefferies"
+      },
+      {
+        "name": "Rikin Shah",
+        "firm": "IIFL"
+      },
+      {
+        "name": "Suresh Ganapathy",
+        "firm": "Macquarie Capital"
       }
     ]
   },
@@ -9824,52 +9824,52 @@
     ],
     "analysts": [
       {
-        "name": "Ankit Bihani",
-        "firm": "Nomura"
-      },
-      {
-        "name": "Harsh Wardhan Modi",
-        "firm": "JPMorgan"
-      },
-      {
-        "name": "Rikin Shah",
-        "firm": "IIFL Securities"
+        "name": "Abhishek Murarka",
+        "firm": "HSBC"
       },
       {
         "name": "Akshat Agrawal",
         "firm": "SMIFS Institutional Research"
       },
       {
+        "name": "Anand Swaminathan",
+        "firm": "Bank of America"
+      },
+      {
+        "name": "Ankit Bihani",
+        "firm": "Nomura"
+      },
+      {
         "name": "Chintan Joshi",
         "firm": "Autonomous Research"
+      },
+      {
+        "name": "Harsh Wardhan Modi",
+        "firm": "JPMorgan"
       },
       {
         "name": "Krishnan ASV",
         "firm": "HDFC Securities"
       },
       {
-        "name": "Abhishek Murarka",
-        "firm": "HSBC"
-      },
-      {
-        "name": "Piran Engineer",
-        "firm": "CLSA"
+        "name": "Kunal Shah",
+        "firm": "Citigroup"
       },
       {
         "name": "MB Mahesh",
         "firm": "Kotak"
       },
       {
-        "name": "Anand Swaminathan",
-        "firm": "Bank of America"
-      },
-      {
         "name": "Mahrukh Adajania",
         "firm": "Nuvama"
       },
       {
-        "name": "Kunal Shah",
-        "firm": "Citigroup"
+        "name": "Piran Engineer",
+        "firm": "CLSA"
+      },
+      {
+        "name": "Rikin Shah",
+        "firm": "IIFL Securities"
       }
     ]
   },
@@ -10447,26 +10447,6 @@
     ],
     "analysts": [
       {
-        "name": "Jai Mundhra",
-        "firm": "ICICI Securities"
-      },
-      {
-        "name": "Param Subramanian",
-        "firm": "Investec"
-      },
-      {
-        "name": "Yy Tsai",
-        "firm": "Eastspring"
-      },
-      {
-        "name": "MB Mahesh",
-        "firm": "Kotak Securities"
-      },
-      {
-        "name": "Suraj Das",
-        "firm": "Sundaram Mutual Fund"
-      },
-      {
         "name": "Abhishek Murarka",
         "firm": "HSBC"
       },
@@ -10475,16 +10455,36 @@
         "firm": "Autonomous Investments"
       },
       {
-        "name": "Nitin Aggarwal",
-        "firm": "Motilal Oswal"
+        "name": "Jai Mundhra",
+        "firm": "ICICI Securities"
+      },
+      {
+        "name": "Kunal Shah",
+        "firm": "Citigroup"
+      },
+      {
+        "name": "MB Mahesh",
+        "firm": "Kotak Securities"
       },
       {
         "name": "Mahrukh Adajania",
         "firm": "Nuvama"
       },
       {
-        "name": "Kunal Shah",
-        "firm": "Citigroup"
+        "name": "Nitin Aggarwal",
+        "firm": "Motilal Oswal"
+      },
+      {
+        "name": "Param Subramanian",
+        "firm": "Investec"
+      },
+      {
+        "name": "Suraj Das",
+        "firm": "Sundaram Mutual Fund"
+      },
+      {
+        "name": "Yy Tsai",
+        "firm": "Eastspring"
       }
     ]
   },
@@ -11080,44 +11080,44 @@
     ],
     "analysts": [
       {
-        "name": "Subramanian",
-        "firm": "Investec"
-      },
-      {
-        "name": "Ma hrukh Adajania",
-        "firm": "Nuvama"
-      },
-      {
-        "name": "Harsh Modi",
-        "firm": "J.P. Morgan"
-      },
-      {
-        "name": "Suresh Ganapathy",
-        "firm": "Macquarie Capital"
-      },
-      {
-        "name": "Rikin Shah",
-        "firm": "IIFL Capital"
-      },
-      {
-        "name": "Chintan Joshi",
-        "firm": "Autonomous"
-      },
-      {
-        "name": "Pranav Gundlapalle",
-        "firm": "Bernstein"
-      },
-      {
-        "name": "Kunal Shah",
-        "firm": "Citigroup"
+        "name": "Adarsh Parasrampuria",
+        "firm": "Enam"
       },
       {
         "name": "Anand Swaminathan",
         "firm": "Bank of America"
       },
       {
-        "name": "Adarsh Parasrampuria",
-        "firm": "Enam"
+        "name": "Chintan Joshi",
+        "firm": "Autonomous"
+      },
+      {
+        "name": "Harsh Modi",
+        "firm": "J.P. Morgan"
+      },
+      {
+        "name": "Kunal Shah",
+        "firm": "Citigroup"
+      },
+      {
+        "name": "Ma hrukh Adajania",
+        "firm": "Nuvama"
+      },
+      {
+        "name": "Pranav Gundlapalle",
+        "firm": "Bernstein"
+      },
+      {
+        "name": "Rikin Shah",
+        "firm": "IIFL Capital"
+      },
+      {
+        "name": "Subramanian",
+        "firm": "Investec"
+      },
+      {
+        "name": "Suresh Ganapathy",
+        "firm": "Macquarie Capital"
       }
     ]
   },
@@ -11720,32 +11720,20 @@
     ],
     "analysts": [
       {
-        "name": "Jai Mundhra",
-        "firm": "ICICI Securities"
-      },
-      {
-        "name": "Param Subramanian",
-        "firm": "Investec"
-      },
-      {
         "name": "Abhishek Murarka",
         "firm": "HSBC"
       },
       {
-        "name": "Rikin Shah",
-        "firm": "IIFL Capital"
-      },
-      {
-        "name": "Piran Engineer",
-        "firm": "CLSA"
+        "name": "Adarsh Parasrampuria",
+        "firm": "Enam"
       },
       {
         "name": "Chintan Joshi",
         "firm": "Autonomous"
       },
       {
-        "name": "Rahul Jain",
-        "firm": "MFS Investment"
+        "name": "Jai Mundhra",
+        "firm": "ICICI Securities"
       },
       {
         "name": "Kunal Shah",
@@ -11756,8 +11744,20 @@
         "firm": "Nuvama"
       },
       {
-        "name": "Adarsh Parasrampuria",
-        "firm": "Enam"
+        "name": "Param Subramanian",
+        "firm": "Investec"
+      },
+      {
+        "name": "Piran Engineer",
+        "firm": "CLSA"
+      },
+      {
+        "name": "Rahul Jain",
+        "firm": "MFS Investment"
+      },
+      {
+        "name": "Rikin Shah",
+        "firm": "IIFL Capital"
       }
     ]
   },
@@ -12205,20 +12205,8 @@
     ],
     "analysts": [
       {
-        "name": "Mahrukh Adajania",
-        "firm": "Tara Capital"
-      },
-      {
-        "name": "MB Mahesh",
-        "firm": "Kotak Securities"
-      },
-      {
         "name": "Abhishek Murarka",
         "firm": "HSBC"
-      },
-      {
-        "name": "Rikin Shah",
-        "firm": "IIFL Capital"
       },
       {
         "name": "Chintan Joshi",
@@ -12227,6 +12215,18 @@
       {
         "name": "Kunal Shah",
         "firm": "Citigroup"
+      },
+      {
+        "name": "MB Mahesh",
+        "firm": "Kotak Securities"
+      },
+      {
+        "name": "Mahrukh Adajania",
+        "firm": "Tara Capital"
+      },
+      {
+        "name": "Rikin Shah",
+        "firm": "IIFL Capital"
       }
     ]
   },
@@ -12859,40 +12859,40 @@
     ],
     "analysts": [
       {
-        "name": "Mahrukh Adajania",
-        "firm": "Tara Capital"
+        "name": "Abhishek Murarka",
+        "firm": "HSBC"
       },
       {
         "name": "Ankit Bihani",
         "firm": "Nomura"
       },
       {
+        "name": "Chintan Joshi",
+        "firm": "Autonomous"
+      },
+      {
+        "name": "Kunal Shah",
+        "firm": "Citigroup"
+      },
+      {
         "name": "MB Mahesh",
         "firm": "Kotak Securities"
       },
       {
-        "name": "Abhishek Murarka",
-        "firm": "HSBC"
-      },
-      {
-        "name": "Rikin Shah",
-        "firm": "IIFL Capital"
+        "name": "Mahrukh Adajania",
+        "firm": "Tara Capital"
       },
       {
         "name": "Piran Engineer",
         "firm": "CLSA"
       },
       {
-        "name": "Chintan Joshi",
-        "firm": "Autonomous"
+        "name": "Rikin Shah",
+        "firm": "IIFL Capital"
       },
       {
         "name": "Zhixuan Gao",
         "firm": "Schonfeld"
-      },
-      {
-        "name": "Kunal Shah",
-        "firm": "Citigroup"
       }
     ]
   }
