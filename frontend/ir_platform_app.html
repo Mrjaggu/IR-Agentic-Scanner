@@ -772,7 +772,7 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
     <div id="searchPane" style="display:none;">
       <div class="card"><div class="pad">
         <input type="search" id="searchBox" placeholder='e.g. "who else covers Slippages & Asset Quality" · "compare Credit Cost across quarters"' aria-label="Search">
-        <div class="xs muted" style="margin-top:8px;">Query understanding extracts analyst / quarter / topic filters and detects relational and comparative intent. Retrieval fuses BM25 with a TF-IDF cosine semantic proxy via reciprocal rank fusion.</div>
+        <div class="xs muted" style="margin-top:8px;">Query understanding extracts analyst / quarter / topic filters and detects relational and comparative intent. Retrieval fuses BM25, TF-IDF cosine, and (when available) a lightweight word-vector semantic signal via reciprocal rank fusion.</div>
         <div class="starters" id="searchStarters" aria-label="Suggested searches">
           <div class="starters-head">
             <span class="sec-label" style="margin:0;">Try one of these</span>
