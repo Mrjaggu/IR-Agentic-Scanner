@@ -1,7 +1,8 @@
 import json
 import os
 import re
-from src.config.settings import ANALYST_ALIASES, GRAPH_PATH
+from src.config.settings import ANALYST_ALIASES, GRAPH_PATH, paths_for
+from src.config.banks import DEFAULT_BANK, get_bank
 from src.data.loader import load_dataset
 
 # Thematic topics and keywords
@@ -47,8 +48,11 @@ TOPICS = {
         "capital ratio", "capital ratios", "tier one"
     ],
     "Subsidiaries' Performance": [
-        "subsidiary", "subsidiaries", "axis amc", "axis finance", "axis capital", "axis securities",
-        "max life", "subsidiary profit", "subsidiary performance"
+        # Generic vocabulary only -- a bank's OWN subsidiary names (e.g. Axis's
+        # "axis amc"/"max life") come from src.config.banks.BankConfig.subsidiary_keywords
+        # and get merged in by classify_topics(), so each bank is graded on its
+        # own subsidiaries rather than everyone being graded on Axis's.
+        "subsidiary", "subsidiaries", "subsidiary profit", "subsidiary performance"
     ],
     "Profitability & Returns": [
         "roe", "roa", "raroc", "rarocs", "return on equity", "return on assets", "return on asset",
@@ -63,21 +67,28 @@ TOPICS = {
     ]
 }
 
-def classify_topics(text):
+def classify_topics(text, subsidiary_keywords=None):
     if not text:
         return []
     text_lower = text.lower()
     matched = []
     for topic, keywords in TOPICS.items():
+        if topic == "Subsidiaries' Performance" and subsidiary_keywords:
+            keywords = keywords + subsidiary_keywords
         for kw in keywords:
             if re.search(r'\b' + re.escape(kw) + r'\b', text_lower):
                 matched.append(topic)
                 break
     return matched
 
-def main():
-    print("Compiling document graph.json from dataset.json...")
-    dataset = load_dataset(canonicalize=False) # Load raw, compiler handles canonicalization
+def main(bank_id: str = DEFAULT_BANK):
+    bank = get_bank(bank_id)
+    paths = paths_for(bank_id)
+    graph_path = paths.graph_path
+    subsidiary_keywords = bank.subsidiary_keywords
+
+    print(f"Compiling document graph.json from dataset.json for {bank.display_name}...")
+    dataset = load_dataset(dataset_path=paths.dataset_path, canonicalize=False) # Load raw, compiler handles canonicalization
 
     nodes = []
     edges = []
@@ -119,7 +130,7 @@ def main():
             text = turn["text"]
             
             nid = f"{qid}_narr_{turn_idx}"
-            topics = classify_topics(text)
+            topics = classify_topics(text, subsidiary_keywords=subsidiary_keywords)
             
             add_node(nid, "NarrationSegment", {
                 "speaker": spk,
@@ -193,7 +204,7 @@ def main():
             q_nid = f"{qid}_q_{block_idx}"
             a_nid = f"{qid}_a_{block_idx}"
             
-            topics = classify_topics(q_text)
+            topics = classify_topics(q_text, subsidiary_keywords=subsidiary_keywords)
             if not topics:
                 topics = ["General"]
                 add_node("General", "Topic", {"name": "General"})
@@ -269,10 +280,11 @@ def main():
         "edges": edges
     }
     
-    with open(GRAPH_PATH, "w") as f:
+    os.makedirs(os.path.dirname(graph_path), exist_ok=True)
+    with open(graph_path, "w") as f:
         json.dump(graph_data, f, indent=2)
         
-    print("\nGraph compiled successfully!")
+    print(f"\nGraph compiled successfully for {bank.display_name}!")
     print(f"Total Nodes: {len(nodes)}")
     print(f"Total Edges: {len(edges)}")
-    print(f"File saved to {GRAPH_PATH}")
+    print(f"File saved to {graph_path}")

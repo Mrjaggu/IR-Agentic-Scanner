@@ -11,10 +11,17 @@ from src.config.settings import (
     PERSONA_DERIVED_PATH,
 )
 
-def load_dataset(canonicalize=True):
-    if not os.path.exists(DATASET_PATH):
-        raise FileNotFoundError(f"dataset.json not found at {DATASET_PATH}")
-    with open(DATASET_PATH, "r") as f:
+def load_dataset(canonicalize=True, dataset_path=None):
+    # dataset_path: optional override so a caller can load a SPECIFIC bank's
+    # dataset.json (e.g. graphs/compiler.py compiling a non-default bank)
+    # without this function itself needing full bank_id threading yet --
+    # that's a later phase (see src/config/settings.py::paths_for). Defaults
+    # to the existing DATASET_PATH shim (currently axis) so every unmodified
+    # caller behaves exactly as before.
+    dataset_path = dataset_path or DATASET_PATH
+    if not os.path.exists(dataset_path):
+        raise FileNotFoundError(f"dataset.json not found at {dataset_path}")
+    with open(dataset_path, "r") as f:
         dataset = json.load(f)
     dataset.sort(key=lambda x: x["sort_key"])
     

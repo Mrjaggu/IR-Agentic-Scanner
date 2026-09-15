@@ -99,6 +99,8 @@ def main():
     compile_group = compile_parser.add_mutually_exclusive_group(required=True)
     compile_group.add_argument("--dataset", action="store_true", help="Parse PDF transcripts and compile dataset.json")
     compile_group.add_argument("--graph", action="store_true", help="Generate Neo4j-style document graph.json from dataset.json")
+    compile_parser.add_argument("--bank", type=str, default=None,
+                                help="Bank id to compile (default: axis). See src/config/banks.py for the registry.")
 
     args = parser.parse_args()
 
@@ -168,12 +170,14 @@ def main():
         ui_main()
 
     elif args.command == "compile":
+        from src.config.banks import DEFAULT_BANK
+        bank_id = args.bank or DEFAULT_BANK
         if args.dataset:
             from src.data.dataset_compiler import main as compiler_main
-            compiler_main()
+            compiler_main(bank_id)
         elif args.graph:
             from src.graphs.compiler import main as graph_main
-            graph_main()
+            graph_main(bank_id)
 
 if __name__ == "__main__":
     main()
