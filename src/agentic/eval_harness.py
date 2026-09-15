@@ -35,6 +35,7 @@ import statistics
 from src.config.settings import (
     TEST_QUARTERS, TRAIN_CUTOFF, PromotionGate, F_BETA, SLOT_EXTRA, SLOT_CAP,
 )
+from src.config.banks import DEFAULT_BANK
 from src.agentic.run_agentic import build_initial_state
 from src.agentic.planning_agent import run_planning_agent
 from src.agentic.overall_layer import build_overall_topics
@@ -226,7 +227,8 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
                      with_questions: bool = False, upcoming: dict | None = None,
                      slot_extra: int | None = None, slot_cap: int | None = None,
                      score_question_recall: bool = False,
-                     analysts: list[str] | None = None) -> dict:
+                     analysts: list[str] | None = None,
+                     bank_id: str = DEFAULT_BANK) -> dict:
     """Run the agentic pipeline for one quarter under held-out conditions and
     score it. with_questions=True also runs the Question Framer + Verifier to
     measure grounding rate (costs LLM calls); default False keeps topic
@@ -248,7 +250,8 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
     depend on the per-analyst loop -- but per-analyst macro/coverage numbers
     then describe only the filtered subset, not the full held-out set, so
     callers must not treat a scoped run's macro numbers as the headline."""
-    state = build_initial_state(quarter, probe=with_questions, holdout=holdout, upcoming=upcoming)
+    state = build_initial_state(quarter, probe=with_questions, holdout=holdout, upcoming=upcoming,
+                                bank_id=bank_id)
     bundles, tool_log = run_planning_agent(
         state["anomaly_scores"], state["graph"], state["prior_quarters"], state["global_rate"]
     )
@@ -341,12 +344,14 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
 
     return {
         "quarter": quarter,
+        "bank_id": bank_id,
         "holdout": holdout,
         "train_cutoff": state.get("train_cutoff"),
         "cutoff_mode": state.get("cutoff_mode"),
         "quarters_ahead_of_cutoff": (
             state["quarter_order"].index(quarter) - state["quarter_order"].index(state["train_cutoff"])
-            if state.get("train_cutoff") in state["quarter_order"] else None
+            if quarter in state["quarter_order"] and state.get("train_cutoff") in state["quarter_order"]
+            else None
         ),
         "n_analysts_scored": len(scored_analysts),
         "topic_ranking": topic_metrics,
@@ -386,7 +391,8 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
 # ── Held-out test set: both quarters, separately, plus the gate ────────────
 def run_holdout_eval(with_questions: bool = False, score_question_recall: bool = False,
                      analysts: list[str] | None = None,
-                     quarters: list[str] | None = None) -> dict:
+                     quarters: list[str] | None = None,
+                     bank_id: str = DEFAULT_BANK) -> dict:
     """The headline result: q4fy26 and q1fy27 scored independently against a
     training cutoff of q3fy26, with the spread between them made explicit.
 
@@ -403,13 +409,20 @@ def run_holdout_eval(with_questions: bool = False, score_question_recall: bool =
     with_questions = with_questions or score_question_recall
     results = [evaluate_quarter(q, holdout=True, with_questions=with_questions,
                                 score_question_recall=score_question_recall,
-                                analysts=analysts)
+                                analysts=analysts, bank_id=bank_id)
                for q in (quarters or TEST_QUARTERS)]
 
-    f1s = [r["macro"]["f1"] for r in results]
-    f2s = [r["macro"]["f2"] for r in results]
-    precisions = [r["macro"]["precision"] for r in results]
-    recalls = [r["macro"]["recall"] for r in results]
+    # None entries happen when a quarter has zero scored analysts (e.g. a
+    # newly-registered, thin-history bank being run against the shared
+    # TEST_QUARTERS default, which wasn't chosen with it in mind -- see
+    # evaluate_quarter's _macro() helper). Filtered out here rather than
+    # crashing the whole holdout run; a bank in that state should pass its
+    # OWN quarters via the `quarters` param instead of relying on this
+    # aggregate, but this keeps run_holdout_eval from raising on it.
+    f1s = [v for r in results if (v := r["macro"]["f1"]) is not None]
+    f2s = [v for r in results if (v := r["macro"]["f2"]) is not None]
+    precisions = [v for r in results if (v := r["macro"]["precision"]) is not None]
+    recalls = [v for r in results if (v := r["macro"]["recall"]) is not None]
     cov_r = [r["coverage"]["micro_recall"] for r in results]
 
     mean_p = round(sum(precisions) / len(precisions), 4) if precisions else 0.0
@@ -440,9 +453,10 @@ def run_holdout_eval(with_questions: bool = False, score_question_recall: bool =
     mean_question_recall = round(sum(qr_macros) / len(qr_macros), 4) if qr_macros else None
 
     return {
+        "bank_id": bank_id,
         "train_cutoff": {r["quarter"]: r["train_cutoff"] for r in results},
         "cutoff_mode": results[0].get("cutoff_mode") if results else None,
-        "test_quarters": TEST_QUARTERS,
+        "test_quarters": quarters or TEST_QUARTERS,
         "per_quarter": results,
         "objective": {"headline": "recall", "fbeta": F_BETA,
                       "note": "Recall-first: over-prediction is cheap, an unprepared "
