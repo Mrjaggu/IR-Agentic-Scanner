@@ -2742,23 +2742,56 @@ $("#ingCommit").addEventListener("click", () => ingCall("/api/ingest/commit", $(
    (boot() already clears the backend-side caches on its own), re-runs
    boot(), and repaints whatever view is currently open so a switch is
    visible immediately rather than only on the next navigation. */
+// STATE.bank is one shared global, read LIVE (not captured) by every
+// bank-scoped fetch (withBank()/postJSON() above) at the moment each
+// request is dispatched. boot() fires a long sequential chain of such
+// fetches. If a second switchBank() ran concurrently with a first one's
+// still-pending boot(), it would flip STATE.bank out from under the first
+// call mid-chain -- so the first call's LATER fetches would silently
+// start pulling the SECOND bank's data, and whichever call's boot()
+// happened to finish last would call show("workspace") last and paint a
+// mix of both banks' data, regardless of which one the user actually
+// clicked last. (Reported symptom: click Kotak -- nothing visible yet;
+// click Axis -- opens after a delay, then flips back to showing Kotak.)
+//
+// Fix: serialize. Only one boot() run is ever in flight; a switch
+// requested while one is running is remembered as the pending TARGET
+// (not queued as its own run) and, once the in-flight run settles,
+// re-dispatched -- so a burst of clicks collapses to exactly one boot()
+// for whichever bank was requested last, never two racing runs.
+let _bankSwitchInFlight = false;
+let _bankSwitchPending = null;
+
 async function switchBank(bankId) {
   if (!bankId || bankId === STATE.bank) { show("workspace"); return; }
-  STATE.bank = bankId;
-  try { localStorage.setItem("ir-bank", bankId); } catch (e) {}
-  STATE.disclosure = null; STATE.evalData = null; STATE.errResearchLoaded = false;
-  STATE.skillsLoaded = false; STATE.dossier = null; STATE.selected = null;
-  STATE.briefCount = null;
-  chatHistory = [];
-  const sel = $("#bankSelect");
-  if (sel) sel.value = bankId;
-  renderEmptyChat();
+  if (_bankSwitchInFlight) { _bankSwitchPending = bankId; return; }
+  _bankSwitchInFlight = true;
   try {
-    await boot();
-  } catch (err) {
-    console.error(err);
+    STATE.bank = bankId;
+    try { localStorage.setItem("ir-bank", bankId); } catch (e) {}
+    STATE.disclosure = null; STATE.evalData = null; STATE.errResearchLoaded = false;
+    STATE.skillsLoaded = false; STATE.dossier = null; STATE.selected = null;
+    STATE.briefCount = null;
+    chatHistory = [];
+    const sel = $("#bankSelect");
+    if (sel) sel.value = bankId;
+    renderEmptyChat();
+    try {
+      await boot();
+    } catch (err) {
+      console.error(err);
+    }
+    show("workspace");
+  } finally {
+    _bankSwitchInFlight = false;
   }
-  show("workspace");
+  if (_bankSwitchPending && _bankSwitchPending !== STATE.bank) {
+    const next = _bankSwitchPending;
+    _bankSwitchPending = null;
+    switchBank(next);
+  } else {
+    _bankSwitchPending = null;
+  }
 }
 
 async function initBankSelect() {
