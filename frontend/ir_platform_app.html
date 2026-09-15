@@ -269,17 +269,16 @@ details[open]>summary::before{content:"▾";}
 .icon-btn:hover{border-color:var(--accent); color:var(--ink);}
 .icon-btn svg{width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:2;}
 
-.prompt-group{margin-top:14px;}
-.prompt-group>.sec-label{margin-bottom:7px;}
-.prompt-row{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+.prompt-group{margin-top:16px;}
+.prompt-group>.sec-label{margin-bottom:8px;}
+.prompt-row{display:flex; flex-wrap:wrap; gap:8px;}
 .prompt-pill{
-  display:flex; align-items:flex-start; gap:8px; text-align:left; padding:9px 13px;
+  display:inline-flex; align-items:center; text-align:left; padding:8px 14px;
   border:1px solid var(--hairline); border-radius:20px; background:var(--surface);
-  color:var(--ink-2); font-size:13px; line-height:1.4;
+  color:var(--ink-2); font-size:13px; line-height:1.4; max-width:100%;
 }
-.prompt-pill::before{content:"•"; color:var(--accent); font-size:15px; line-height:1.1; flex:none;}
-.prompt-pill:hover{border-color:var(--accent); color:var(--ink);}
-@media (max-width:760px){.prompt-row{grid-template-columns:1fr;}}
+.prompt-pill:hover{border-color:var(--accent); color:var(--ink); background:var(--accent-track);}
+.chat-empty .turn-body{max-width:none;}
 
 /* ── Two-pane (profiles) ─────────────────────────────────────────────────── */
 .split{display:grid; grid-template-columns:292px 1fr; gap:16px; align-items:start;}
@@ -525,6 +524,22 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
   .hero{padding:14px 16px;}
   .landing-nav{flex-wrap:wrap;padding-bottom:16px;}.landing-links{gap:12px;margin-left:auto;}.landing-links button:not(.btn){display:none;}.landing-links .btn{white-space:nowrap;}.landing-hero{padding:32px 20px 22px;}.landing-hero::after{display:none;}.landing-title{font-size:34px;}.landing-status{margin-top:25px;}.start-grid,.bank-grid,.workspace-actions,.readiness-grid{grid-template-columns:1fr;}.workspace-grid{grid-template-columns:1fr;}.workspace-hero{padding:20px;}.workspace-hero h2{font-size:24px;}.feature-preview{grid-template-columns:1fr;}.feature-preview-nav{display:flex;flex-wrap:wrap;gap:4px;border-right:0;border-bottom:1px solid var(--hairline);}.feature-preview-nav p{width:100%;}.feature-preview-nav button{display:inline-block;width:auto;margin-right:0;}.preview-signals{grid-template-columns:1fr;}.workspace-card{grid-template-columns:1fr; align-items:start;}.landing-section-head{align-items:start; flex-direction:column; gap:3px;}
   .table-responsive{overflow-x:auto; -webkit-overflow-scrolling:touch;}
+  /* Grid/flex children default to min-width:auto, which lets a long nav row
+     or topbar title force the whole layout wider than the viewport instead
+     of wrapping/scrolling internally -- this is the actual cause of "the
+     whole app looks distorted on mobile", not any single component. */
+  main,.sidebar,nav,.topbar .row,#chatPane,.chat-shell,.chat-wrap,.chat-log,.composer,.composer-box{min-width:0;}
+  .topbar h1{font-size:19px;}
+  .topbar .sub{white-space:normal;}
+  .workspace-exit{display:none;}  /* #backHomeBtn in the topbar already covers this on mobile */
+  .chat-wrap{height:auto; min-height:0;}
+  .chat-log{overflow-y:visible;}
+  .composer{margin-top:8px;}
+  .bubble-user{max-width:90%;}
+  /* A long context chip ("Archive current through..." with nowrap) is wider
+     than a phone viewport on its own -- the row wraps between chips fine,
+     but nowrap inside one chip still overflows the page. Let it wrap. */
+  #topContext .chip{white-space:normal; max-width:100%;}
 }
 </style>
 </head>
@@ -1628,16 +1643,21 @@ const PROMPT_GROUPS = [
 let chatHistory = [], chatAbort = null;
 
 function renderEmptyChat() {
+  // Opens as a real first message from the assistant -- same avatar/bubble
+  // markup a real answer uses -- with quick-reply chips underneath, instead
+  // of a separate landing-page block above the conversation. Reads as a
+  // chat opening rather than a document.
   $("#chatLog").innerHTML = `
-    <div style="padding:26px 2px;">
-      <h2 style="font-size:18px;">Ask the transcript archive</h2>
-      <p class="small dim" style="max-width:66ch;margin-top:7px;">
-        Every question, answer and prepared-remarks segment from
-        ${STATE.meta?.counts.quarters ?? ""} ${esc(STATE.meta?.display_name || "the bank's")} earnings calls is indexed —
-        ${STATE.meta?.counts.corpus_docs ?? ""} passages in all. Answers quote them directly and
-        cite the quarter and speaker; nothing is summarised from outside the archive.
-      </p>
-      <div style="margin-top:10px;">
+    <div class="turn is-assistant chat-empty">
+      <div class="turn-head">
+        <span class="avatar av-bot" aria-hidden="true">IR</span>
+        <span class="turn-name">Archive assistant</span>
+      </div>
+      <div class="turn-body">
+        <p>Ask me anything about ${esc(STATE.meta?.display_name || "the bank's")} earnings calls. Every question,
+        answer and prepared-remarks segment from ${STATE.meta?.counts.quarters ?? ""} calls is indexed —
+        ${STATE.meta?.counts.corpus_docs ?? ""} passages in all — and I quote them directly, citing the
+        quarter and speaker, rather than summarising from outside the archive.</p>
         <span class="verified"><span class="tick">✓</span> Grounded in the transcripts · every claim cites its source</span>
       </div>
       ${PROMPT_GROUPS.map(([label, qs]) => `
@@ -1669,7 +1689,14 @@ function turnEl(role, name) {
   $("#chatLog").appendChild(el);
   return el;
 }
-const scrollChat = () => { const l = $("#chatLog"); l.scrollTop = l.scrollHeight; };
+const scrollChat = () => {
+  const l = $("#chatLog");
+  l.scrollTop = l.scrollHeight;
+  // No-op on desktop (chat-log's own scrollbar already covers it, and the
+  // composer is already onscreen there); on mobile, where the page scrolls
+  // as one unit, this is what actually brings the reply + input into view.
+  document.querySelector(".composer")?.scrollIntoView({ block: "nearest" });
+};
 
 /* ── Cited-source side panel ──────────────────────────────────────────────
    Clicking a [n] chip opens the passage beside the conversation rather than
