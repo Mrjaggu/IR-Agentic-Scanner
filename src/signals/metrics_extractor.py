@@ -21,6 +21,7 @@ Output: data/db/metrics_timeseries.json
 """
 
 import json
+import os
 import re
 
 from src.config.settings import GRAPH_PATH, METRICS_TIMESERIES_PATH
@@ -175,8 +176,9 @@ def extract_quarter_metrics(narration_text: str) -> dict[str, dict]:
     return result
 
 
-def build_metrics_timeseries(path: str = METRICS_TIMESERIES_PATH) -> dict:
-    with open(GRAPH_PATH) as f:
+def build_metrics_timeseries(path: str = METRICS_TIMESERIES_PATH, graph_path: str = None) -> dict:
+    graph_path = graph_path or GRAPH_PATH
+    with open(graph_path) as f:
         graph = json.load(f)
 
     by_quarter: dict[str, list[str]] = {}
@@ -224,7 +226,15 @@ def compute_topic_anomaly_scores(val_quarter: str, quarter_order: list[str],
     strictly before val_quarter -- same train/VAL_QUARTER split discipline as
     the rest of the engine, so this can't leak the answer into the signal used
     to predict it). Score = percentile rank in [0, 1]; 1.0 = the biggest move
-    that metric has ever had. Topic score = max across its mapped metrics."""
+    that metric has ever had. Topic score = max across its mapped metrics.
+
+    2026-09: returns {} (no anomaly signal, not a crash) if timeseries_path
+    doesn't exist -- a newly-registered bank (see src.config.banks) that
+    hasn't had `python run.py metrics --bank <id>` run for it yet still
+    needs build_initial_state() to succeed, just with this one signal
+    absent, same discipline as apply_ask_patterns()'s missing-file handling."""
+    if not os.path.exists(timeseries_path):
+        return {}
     with open(timeseries_path) as f:
         timeseries = json.load(f)
 

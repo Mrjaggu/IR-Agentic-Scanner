@@ -15,7 +15,9 @@ import os
 
 from src.config.settings import (
     VAL_QUARTER, BASE_DIR, METRICS_TIMESERIES_PATH, TEST_QUARTERS, TRAIN_CUTOFF, CUTOFF_MODE,
+    paths_for,
 )
+from src.config.banks import DEFAULT_BANK, get_bank
 from src.data.loader import load_dataset, load_graph, get_active_analysts
 from src.memory.history import get_global_rate, get_analyst_profile
 from src.signals.metrics_extractor import compute_topic_anomaly_scores
@@ -23,8 +25,15 @@ from src.signals.persona_synthesis import synthesize_personas, apply_ask_pattern
 from src.model_provider.llm_client import client
 from src.agentic.graph_app import run_pipeline
 
-OUT_JSON = os.path.join(BASE_DIR, "data", "outputs", "agentic_predictions.json")
-OUT_MD = os.path.join(BASE_DIR, "data", "outputs", "agentic_brief.md")
+
+def _out_paths(bank_id: str) -> tuple[str, str]:
+    d = os.path.join(BASE_DIR, "data", "outputs", bank_id)
+    return os.path.join(d, "agentic_predictions.json"), os.path.join(d, "agentic_brief.md")
+
+
+# Kept for back-compat introspection -- not read internally, every call site
+# below resolves its own paths via _out_paths(bank_id).
+OUT_JSON, OUT_MD = _out_paths(DEFAULT_BANK)
 
 
 def _compute_momentum(graph: dict, quarter_order: list[str], val_ord: int) -> dict:
@@ -45,7 +54,7 @@ def _compute_momentum(graph: dict, quarter_order: list[str], val_ord: int) -> di
 
 def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
                         holdout: bool = False, upcoming: dict | None = None,
-                        cutoff_mode: str | None = None) -> dict:
+                        cutoff_mode: str | None = None, bank_id: str = DEFAULT_BANK) -> dict:
     """Everything the pipeline needs, built once. Exposed separately from
     main() so the API layer can run just the Overall layer, or just one
     analyst's Analyst-Specific layer, without re-deriving all of this.
@@ -64,8 +73,10 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
     alone (Section 2.1's draft-script source / Section 3.3's in-call
     arithmetic follow-ups)."""
     cutoff_mode = cutoff_mode or CUTOFF_MODE
-    dataset = load_dataset()
-    graph = load_graph()
+    bank = get_bank(bank_id)
+    paths = paths_for(bank_id)
+    dataset = load_dataset(dataset_path=paths.dataset_path)
+    graph = load_graph(graph_path=paths.graph_path)
     quarter_order = [q["quarter_id"] for q in dataset]
     q_ord = {q: i for i, q in enumerate(quarter_order)}
     # Recency distances always use the TRUE calendar order, so holdout mode
@@ -94,11 +105,17 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
     momentum = _compute_momentum(graph, quarter_order, min(val_ord, len(quarter_order)))
     # Anomaly percentiles compare only against the training pool.
     anomaly_order = prior_quarters + [val_quarter]
-    anomaly_scores = compute_topic_anomaly_scores(val_quarter, anomaly_order)
+    anomaly_scores = compute_topic_anomaly_scores(val_quarter, anomaly_order,
+                                                  timeseries_path=paths.metrics_timeseries_path)
 
-    with open(METRICS_TIMESERIES_PATH) as f:
-        timeseries = json.load(f)
-    val_quarter_metrics = timeseries.get(val_quarter, {})
+    val_quarter_metrics = {}
+    if os.path.exists(paths.metrics_timeseries_path):
+        with open(paths.metrics_timeseries_path) as f:
+            timeseries = json.load(f)
+        val_quarter_metrics = timeseries.get(val_quarter, {})
+    # else: newly-registered bank with no metrics_timeseries.json yet (see
+    # compute_topic_anomaly_scores' matching guard below) -- val_quarter_metrics
+    # stays {} rather than crashing build_initial_state.
 
     # An uploaded upcoming-quarter disclosure overrides the archive: this is
     # the whole point of the upload -- predict against what management is
@@ -115,17 +132,23 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
         pref, N = get_analyst_profile(a, graph, prior_quarters, val_ord, q_ord, global_rate)
         analyst_prefs[a] = (pref, N)
 
-    persona_stats = synthesize_personas(exclude_quarters=persona_exclude, out_path=None)
+    persona_stats = synthesize_personas(intent_path=paths.question_intent_path,
+                                        exclude_quarters=persona_exclude, out_path=None)
     # Layer the hand-curated, cross-checked ask-pattern taxonomy on top -- see
     # persona_synthesis.apply_ask_patterns' docstring. Additive: analysts not in
-    # that file are unaffected.
-    persona_stats = apply_ask_patterns(persona_stats)
+    # that file are unaffected. Currently axis-only content (data/inputs/axis/
+    # analyst_ask_patterns.json); paths.ask_patterns_path resolves to a file
+    # that doesn't exist yet for other banks, which apply_ask_patterns already
+    # handles gracefully (returns persona_stats unchanged).
+    persona_stats = apply_ask_patterns(persona_stats, path=paths.ask_patterns_path)
 
     if probe:
         api_mode = client.probe_llm()
         print(f"[agentic] LLM mode: {api_mode or 'none available -- deterministic fallbacks only'}")
 
     return {
+        "bank_id": bank_id,
+        "bank_name": bank.display_name,
         "graph": graph,
         "dataset": dataset,
         "quarter_order": quarter_order,
@@ -146,18 +169,20 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
     }
 
 
-def main(val_quarter: str = VAL_QUARTER) -> dict:
-    initial_state = build_initial_state(val_quarter)
-    print(f"[agentic] Quarter: {val_quarter}  Active analysts: {len(initial_state['active_analysts'])}  "
+def main(val_quarter: str = VAL_QUARTER, bank_id: str = DEFAULT_BANK) -> dict:
+    initial_state = build_initial_state(val_quarter, bank_id=bank_id)
+    print(f"[agentic] Bank: {initial_state['bank_name']}  Quarter: {val_quarter}  "
+          f"Active analysts: {len(initial_state['active_analysts'])}  "
           f"Anomalous topics: {list(initial_state['anomaly_scores'].keys())}")
 
     result = run_pipeline(initial_state)
 
-    _write_outputs(val_quarter, result)
+    _write_outputs(val_quarter, result, bank_id=bank_id)
     return result
 
 
-def _write_outputs(val_quarter: str, result: dict) -> None:
+def _write_outputs(val_quarter: str, result: dict, bank_id: str = DEFAULT_BANK) -> None:
+    out_json, out_md = _out_paths(bank_id)
     serializable = {
         "quarter": val_quarter,
         "planning_agent_tool_log": result["tool_log"],
@@ -175,10 +200,10 @@ def _write_outputs(val_quarter: str, result: dict) -> None:
             for a, out in result["analyst_outputs"].items()
         },
     }
-    os.makedirs(os.path.dirname(OUT_JSON), exist_ok=True)
-    with open(OUT_JSON, "w") as f:
+    os.makedirs(os.path.dirname(out_json), exist_ok=True)
+    with open(out_json, "w") as f:
         json.dump(serializable, f, indent=2)
-    print(f"[agentic] Wrote {OUT_JSON}")
+    print(f"[agentic] Wrote {out_json}")
 
     lines = [f"# Agentic IR prep brief — {val_quarter}\n"]
     lines.append("## Overall topic ranking (Researcher -> Analyst -> Verifier)\n")
@@ -198,9 +223,9 @@ def _write_outputs(val_quarter: str, result: dict) -> None:
             else:
                 lines.append(f"- **{item['topic']}** *(bare topic — grounding gate rejected phrased text after retries)*")
         lines.append("")
-    with open(OUT_MD, "w") as f:
+    with open(out_md, "w") as f:
         f.write("\n".join(lines))
-    print(f"[agentic] Wrote {OUT_MD}")
+    print(f"[agentic] Wrote {out_md}")
 
 
 if __name__ == "__main__":

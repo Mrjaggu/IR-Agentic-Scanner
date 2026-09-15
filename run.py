@@ -34,6 +34,7 @@ def main():
 
     # 4. Prep
     prep_parser = subparsers.add_parser("prep", help="Compile the IR response prep sheet JSON")
+    prep_parser.add_argument("--bank", type=str, default=None, help="Bank id (default: axis)")
 
     # 5. Dashboard
     dashboard_parser = subparsers.add_parser("dashboard", help="Compile and generate the interactive HTML dashboard")
@@ -64,18 +65,21 @@ def main():
     intent_parser.add_argument("--analysts", type=str, default=None,
                                help="Comma-separated analyst names to scope down to (reduces "
                                     "request size / API usage), e.g. 'MB Mahesh,Piran Engineer'")
+    intent_parser.add_argument("--bank", type=str, default=None, help="Bank id (default: axis)")
 
     # 6d2. Metrics extraction (regex-based, no LLM)
-    subparsers.add_parser(
+    metrics_parser = subparsers.add_parser(
         "metrics",
         help="Regex-extract structured metrics (NIM, GNPA, PAT, ROE, ...) from narration "
-             "across all quarters (writes data/db/metrics_timeseries.json)")
+             "across all quarters (writes data/db/<bank>/metrics_timeseries.json)")
+    metrics_parser.add_argument("--bank", type=str, default=None, help="Bank id (default: axis)")
 
     # 6d. Persona synthesis (aggregate question_intent.json, no LLM)
-    subparsers.add_parser(
+    personas_derived_parser = subparsers.add_parser(
         "personas-derived",
-        help="Aggregate data/db/question_intent.json into per-analyst style rates "
-             "(writes data/inputs/analyst_personas_transcript_derived.json)")
+        help="Aggregate data/db/<bank>/question_intent.json into per-analyst style rates "
+             "(writes data/inputs/<bank>/analyst_personas_transcript_derived.json)")
+    personas_derived_parser.add_argument("--bank", type=str, default=None, help="Bank id (default: axis)")
 
     # 7. Compile
     # 9. UI compiler (Section 9 -- three-tab application layer)
@@ -94,6 +98,7 @@ def main():
              "and data/outputs/agentic_brief.md. Does not touch predictions.json.")
     agentic_parser.add_argument("--quarter", type=str, default=None,
                                 help="Target quarter (default: VAL_QUARTER from settings)")
+    agentic_parser.add_argument("--bank", type=str, default=None, help="Bank id (default: axis)")
 
     compile_parser = subparsers.add_parser("compile", help="Compile data and graph resources")
     compile_group = compile_parser.add_mutually_exclusive_group(required=True)
@@ -130,7 +135,7 @@ def main():
         
     elif args.command == "prep":
         from src.data.loader import generate_prep_sheet
-        generate_prep_sheet()
+        generate_prep_sheet(args.bank)
         
     elif args.command == "dashboard":
         from src.dashboard_gen import main as dashboard_main
@@ -147,6 +152,11 @@ def main():
     elif args.command == "intent":
         from src.signals.question_intent import compute_question_intent, compute_question_intent_recent
         analysts = set(a.strip() for a in args.analysts.split(",")) if args.analysts else None
+        # NOTE: question_intent.py itself isn't bank-threaded yet (still reads/
+        # writes via the settings.py shim, i.e. axis) -- --bank is accepted here
+        # for CLI consistency with the other data-building commands but is not
+        # yet wired further. Threading it through is future work if/when a
+        # non-axis bank needs its own LLM-classified question_intent.json.
         if args.quarter:
             compute_question_intent(args.quarter, analysts=analysts)
         else:
@@ -154,16 +164,25 @@ def main():
 
     elif args.command == "personas-derived":
         from src.signals.persona_synthesis import synthesize_personas
-        synthesize_personas()
+        from src.config.settings import paths_for
+        from src.config.banks import DEFAULT_BANK
+        bank_id = args.bank or DEFAULT_BANK
+        paths = paths_for(bank_id)
+        synthesize_personas(intent_path=paths.question_intent_path, out_path=paths.persona_derived_path)
 
     elif args.command == "metrics":
         from src.signals.metrics_extractor import build_metrics_timeseries
-        build_metrics_timeseries()
+        from src.config.settings import paths_for
+        from src.config.banks import DEFAULT_BANK
+        bank_id = args.bank or DEFAULT_BANK
+        paths = paths_for(bank_id)
+        build_metrics_timeseries(path=paths.metrics_timeseries_path, graph_path=paths.graph_path)
 
     elif args.command == "agentic":
         from src.agentic.run_agentic import main as agentic_main
         from src.config.settings import VAL_QUARTER
-        agentic_main(args.quarter or VAL_QUARTER)
+        from src.config.banks import DEFAULT_BANK
+        agentic_main(args.quarter or VAL_QUARTER, bank_id=args.bank or DEFAULT_BANK)
 
     elif args.command == "ui":
         from src.ui_compiler import main as ui_main

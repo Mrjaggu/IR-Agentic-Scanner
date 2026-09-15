@@ -57,7 +57,16 @@ def synthesize_personas(intent_path: str = QUESTION_INTENT_PATH,
                         exclude_quarters: set[str] | None = None) -> dict:
     """exclude_quarters: drop these quarters before aggregating -- use this to
     exclude VAL_QUARTER when the result will be used to predict that same
-    quarter, otherwise the persona stat leaks the answer it's predicting."""
+    quarter, otherwise the persona stat leaks the answer it's predicting.
+
+    2026-09: returns {} (no persona-derived signal, not a crash) if
+    intent_path doesn't exist -- a newly-registered bank (see
+    src.config.banks) that hasn't had the LLM `intent` pass run for it yet
+    still needs build_initial_state() to succeed, just with this one signal
+    absent. apply_ask_patterns() below already degrades the same way."""
+    import os
+    if not os.path.exists(intent_path):
+        return {}
     with open(intent_path) as f:
         records = json.load(f)
     if exclude_quarters:
