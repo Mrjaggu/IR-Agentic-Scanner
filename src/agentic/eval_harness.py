@@ -228,7 +228,8 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
                      slot_extra: int | None = None, slot_cap: int | None = None,
                      score_question_recall: bool = False,
                      analysts: list[str] | None = None,
-                     bank_id: str = DEFAULT_BANK) -> dict:
+                     bank_id: str = DEFAULT_BANK,
+                     use_cross_bank_signal: bool = False) -> dict:
     """Run the agentic pipeline for one quarter under held-out conditions and
     score it. with_questions=True also runs the Question Framer + Verifier to
     measure grounding rate (costs LLM calls); default False keeps topic
@@ -249,9 +250,15 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
     Topic-ranking metrics (precision_at_k etc.) are unaffected -- they don't
     depend on the per-analyst loop -- but per-analyst macro/coverage numbers
     then describe only the filtered subset, not the full held-out set, so
-    callers must not treat a scoped run's macro numbers as the headline."""
+    callers must not treat a scoped run's macro numbers as the headline.
+
+    use_cross_bank_signal=True (default False) blends each active analyst's
+    topic history on OTHER registered banks into their own-bank preference
+    before scoring -- see src/signals/cross_bank_persona.py's module
+    docstring for the empirical case and the pending-legal-sign-off caveat
+    this stays opt-in for. Passed straight through to build_initial_state."""
     state = build_initial_state(quarter, probe=with_questions, holdout=holdout, upcoming=upcoming,
-                                bank_id=bank_id)
+                                bank_id=bank_id, use_cross_bank_signal=use_cross_bank_signal)
     bundles, tool_log = run_planning_agent(
         state["anomaly_scores"], state["graph"], state["prior_quarters"], state["global_rate"]
     )
@@ -394,7 +401,8 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
 def run_holdout_eval(with_questions: bool = False, score_question_recall: bool = False,
                      analysts: list[str] | None = None,
                      quarters: list[str] | None = None,
-                     bank_id: str = DEFAULT_BANK) -> dict:
+                     bank_id: str = DEFAULT_BANK,
+                     use_cross_bank_signal: bool = False) -> dict:
     """The headline result: q4fy26 and q1fy27 scored independently against a
     training cutoff of q3fy26, with the spread between them made explicit.
 
@@ -411,7 +419,8 @@ def run_holdout_eval(with_questions: bool = False, score_question_recall: bool =
     with_questions = with_questions or score_question_recall
     results = [evaluate_quarter(q, holdout=True, with_questions=with_questions,
                                 score_question_recall=score_question_recall,
-                                analysts=analysts, bank_id=bank_id)
+                                analysts=analysts, bank_id=bank_id,
+                                use_cross_bank_signal=use_cross_bank_signal)
                for q in (quarters or TEST_QUARTERS)]
 
     # None entries happen when a quarter has zero scored analysts (e.g. a
@@ -456,6 +465,7 @@ def run_holdout_eval(with_questions: bool = False, score_question_recall: bool =
 
     return {
         "bank_id": bank_id,
+        "cross_bank_signal": use_cross_bank_signal,
         "train_cutoff": {r["quarter"]: r["train_cutoff"] for r in results},
         "cutoff_mode": results[0].get("cutoff_mode") if results else None,
         "test_quarters": quarters or TEST_QUARTERS,
