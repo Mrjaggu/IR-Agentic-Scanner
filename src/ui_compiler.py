@@ -92,7 +92,7 @@ def compile_search_corpus(graph: dict) -> list[dict]:
     return corpus
 
 
-def compile_analyst_profiles(dataset: list, graph: dict) -> list[dict]:
+def compile_analyst_profiles(dataset: list, graph: dict, bank_name: str = "Axis Bank") -> list[dict]:
     persona_stats_full = synthesize_personas(exclude_quarters=None, out_path=None)
     all_analysts = {}
     for n in graph["nodes"]:
@@ -103,7 +103,7 @@ def compile_analyst_profiles(dataset: list, graph: dict) -> list[dict]:
         if a in ("Moderator", "Operator"):
             continue
         rec = all_analysts.setdefault(a, {
-            "analyst": a, "bank": "Axis Bank", "quarters": set(),
+            "analyst": a, "bank": bank_name, "quarters": set(),
             "topic_counts": {}, "questions": [],
         })
         rec["quarters"].add(p["quarter"])
