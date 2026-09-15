@@ -22,6 +22,7 @@ import json
 import re
 
 from src.signals.metrics_extractor import METRIC_TOPIC_MAP
+from src.agentic import pattern_retrieval
 
 _TOPIC_METRICS: dict[str, list[str]] = {}
 for _m, _t in METRIC_TOPIC_MAP.items():
@@ -127,15 +128,20 @@ def _narration_for_topic(graph: dict, target_quarter: str, topic: str,
 def build_evidence_pool(analyst: str, topics: list[str], graph: dict, prior_quarters: set[str],
                         global_rate: dict, anomaly_scores: dict,
                         disclosed_metrics: dict | None = None,
-                        target_quarter: str = "", disclosure_text: str = "") -> dict:
+                        target_quarter: str = "", disclosure_text: str = "",
+                        bank_id: str = "axis") -> dict:
     """base_rate and anomaly_score stay in the pool for ranking and audit, but
     they are deliberately NOT shown to the model — see the module docstring."""
     pool = {}
     for t in topics:
         narration = (_narration_for_topic(graph, target_quarter, t, disclosure_text)
                      if target_quarter else [])
+        cognitive_pattern = pattern_retrieval.retrieve_for_analyst(analyst, t, bank_id=bank_id)
         pool[t] = {
             "precedent": _find_precedent(analyst, t, graph, prior_quarters),
+            "cognitive_pattern": cognitive_pattern,
+            "cognitive_pattern_overall": ([] if cognitive_pattern else
+                pattern_retrieval.retrieve_overall(t, exclude_analyst=analyst, bank_id=bank_id)),
             "base_rate": global_rate.get(t, 0.0),
             "anomaly_score": anomaly_scores.get(t),
             "metrics": _metrics_for_topic(t, disclosed_metrics),
@@ -176,6 +182,20 @@ def _build_frame_prompt(analyst: str, style_note: str, topics: list[str], pool: 
         if ev["precedent"]:
             lines.append(f'- How they put it in {period_label(ev["precedent"]["quarter"])}, in their own words: '
                          f'"{ev["precedent"]["text"]}"')
+        cp = ev.get("cognitive_pattern")
+        if cp:
+            follow_up = (cp.get("typical_follow_up") or "none noted").rstrip(". ")
+            lines.append(f'- This analyst has a recurring reasoning pattern here: {cp["trigger"]} '
+                         f'-> {cp["reasoning_pattern"]} They tend to phrase it like: '
+                         f'"{cp["question_style"]}" Typical follow-up: {follow_up}. '
+                         f'Apply this reasoning shape to the ACTUAL figures below -- do not just '
+                         f'describe the topic.')
+        elif ev.get("cognitive_pattern_overall"):
+            other = ev["cognitive_pattern_overall"][0]
+            lines.append(f'- No pattern on record for this analyst on this topic, but other analysts '
+                         f'covering this bank tend to reason this way here ({other["analyst"]}): '
+                         f'{other["trigger"]} -> {other["reasoning_pattern"]} Treat this as a weak hint '
+                         f'only, not this analyst\'s own established behavior.')
         for m in ev["metrics"]:
             lines.append(f"- Management is disclosing this quarter: {_fmt_metric(m)}")
         for snip in ev.get("narration", []) or []:

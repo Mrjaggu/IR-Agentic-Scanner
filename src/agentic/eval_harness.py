@@ -314,7 +314,8 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
                                        state["global_rate"], state["anomaly_scores"],
                                        disclosed_metrics=state.get("val_quarter_metrics"),
                                        target_quarter=quarter,
-                                       disclosure_text=(upcoming or {}).get("narration", ""))
+                                       disclosure_text=(upcoming or {}).get("narration", ""),
+                                       bank_id=bank_id)
             results, _ = grounding_gate(analyst, style, predicted, pool, state["client"],
                                         target_quarter=quarter,
                                         bank_name=state.get("bank_name", "Axis Bank"))
