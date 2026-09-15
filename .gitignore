@@ -51,3 +51,7 @@ Thumbs.db
 # Not sample data like the rest of data/outputs/, so it shouldn't be tracked.
 # One per bank as of 2026-09 (see src/data/workspace_state.py).
 data/outputs/*/workspace_state.json
+
+# Cowork/Claude desktop session screenshots (before/after UI captures) --
+# generated locally, not project source.
+Claude outputs/
