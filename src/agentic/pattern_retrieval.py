@@ -108,6 +108,14 @@ def _score(pattern: dict, kws: list[str], analyst: str = "", bank_id: str = "axi
     text = f"{pattern.get('trigger', '')} {pattern.get('reasoning_pattern', '')}".lower()
     primary = sum(1 for k in kws if k in text)
 
+    if primary == 0:
+        # Evidence text is a TIE-BREAKER among patterns already relevant on
+        # their own trigger/reasoning text, never a back door to relevance:
+        # a generic evidence-quarter word (e.g. "cost" in an unrelated
+        # deposit-stance question) must not manufacture a match for a
+        # pattern whose own summary says nothing about this topic.
+        return 0
+
     evidence_hits = 0
     quarters = [q for q in pattern.get("evidence_quarters", []) if q != exclude_quarter]
     if quarters and analyst:
