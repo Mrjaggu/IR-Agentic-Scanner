@@ -46,6 +46,7 @@ from src.agentic.planning_agent import run_planning_agent
 from src.agentic.overall_layer import build_overall_topics
 from src.agentic.analyst_layer import reweight_for_analyst, build_arithmetic_followups
 from src.agentic.verifier import grounding_gate
+from src.agentic import pattern_retrieval
 from src.agentic.question_framer import build_evidence_pool
 from src.agentic.eval_harness import (
     run_holdout_eval, evaluate_quarter, research_errors, backtest_and_promote_weights,
@@ -195,7 +196,8 @@ def get_meta(bank: str = DEFAULT_BANK):
         # a semantic signal in search/chat retrieval, or is BM25+TF-IDF only
         # because the embedding model isn't installed on this machine.
         "retrieval": {"semantic": live["index"].has_semantic,
-                      "semantic_model": "en_core_web_md (spaCy, 300d GloVe)" if live["index"].has_semantic else None},
+                      "semantic_model": "en_core_web_md (spaCy, 300d GloVe)" if live["index"].has_semantic else None,
+                      "cognitive_patterns": pattern_retrieval.is_available(bank_id)},
         "counts": {
             "analysts": len(live["profiles"]),
             "quarters": len(live["quarters"]),
@@ -621,7 +623,8 @@ def run_analyst(req: AnalystRunRequest):
                                state["global_rate"], state["anomaly_scores"],
                                disclosed_metrics=state.get("val_quarter_metrics"),
                                target_quarter=quarter,
-                               disclosure_text=(disclosure or {}).get("narration", ""))
+                               disclosure_text=(disclosure or {}).get("narration", ""),
+                               bank_id=bank_id)
     results, gate_log = grounding_gate(req.analyst, style, ranked, pool, state["client"],
                                        target_quarter=quarter,
                                        bank_name=state.get("bank_name", "Axis Bank"))
