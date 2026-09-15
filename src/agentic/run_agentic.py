@@ -54,7 +54,8 @@ def _compute_momentum(graph: dict, quarter_order: list[str], val_ord: int) -> di
 
 def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
                         holdout: bool = False, upcoming: dict | None = None,
-                        cutoff_mode: str | None = None, bank_id: str = DEFAULT_BANK) -> dict:
+                        cutoff_mode: str | None = None, bank_id: str = DEFAULT_BANK,
+                        use_cross_bank_signal: bool = False) -> dict:
     """Everything the pipeline needs, built once. Exposed separately from
     main() so the API layer can run just the Overall layer, or just one
     analyst's Analyst-Specific layer, without re-deriving all of this.
@@ -71,7 +72,14 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
     upcoming={"narration": str, "metrics": {...}, ...} conditions the run on the
     UPCOMING quarter's draft disclosure instead of predicting from history
     alone (Section 2.1's draft-script source / Section 3.3's in-call
-    arithmetic follow-ups)."""
+    arithmetic follow-ups).
+
+    use_cross_bank_signal=True (default False everywhere -- opt-in only, see
+    src/signals/cross_bank_persona.py's module docstring for why) blends each
+    active analyst's topic history on OTHER registered banks into their
+    own-bank preference, the same additive-prior pattern already used for the
+    hand-curated PERSONAS topic_prior. Leak-free: only cross-bank history
+    strictly before this run's own train_cutoff is used."""
     cutoff_mode = cutoff_mode or CUTOFF_MODE
     bank = get_bank(bank_id)
     paths = paths_for(bank_id)
@@ -132,6 +140,13 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
         pref, N = get_analyst_profile(a, graph, prior_quarters, val_ord, q_ord, global_rate)
         analyst_prefs[a] = (pref, N)
 
+    if use_cross_bank_signal:
+        from src.signals.cross_bank_persona import blend_cross_bank_prior
+        analyst_prefs = {
+            a: (blend_cross_bank_prior(a, bank_id, pref, as_of_quarter=train_cutoff), N)
+            for a, (pref, N) in analyst_prefs.items()
+        }
+
     persona_stats = synthesize_personas(intent_path=paths.question_intent_path,
                                         exclude_quarters=persona_exclude, out_path=None)
     # Layer the hand-curated, cross-checked ask-pattern taxonomy on top -- see
@@ -149,6 +164,7 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
     return {
         "bank_id": bank_id,
         "bank_name": bank.display_name,
+        "cross_bank_signal": use_cross_bank_signal,
         "graph": graph,
         "dataset": dataset,
         "quarter_order": quarter_order,
@@ -169,8 +185,10 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
     }
 
 
-def main(val_quarter: str = VAL_QUARTER, bank_id: str = DEFAULT_BANK) -> dict:
-    initial_state = build_initial_state(val_quarter, bank_id=bank_id)
+def main(val_quarter: str = VAL_QUARTER, bank_id: str = DEFAULT_BANK,
+        use_cross_bank_signal: bool = False) -> dict:
+    initial_state = build_initial_state(val_quarter, bank_id=bank_id,
+                                        use_cross_bank_signal=use_cross_bank_signal)
     print(f"[agentic] Bank: {initial_state['bank_name']}  Quarter: {val_quarter}  "
           f"Active analysts: {len(initial_state['active_analysts'])}  "
           f"Anomalous topics: {list(initial_state['anomaly_scores'].keys())}")

@@ -198,6 +198,19 @@ class EngineConfig:
     BASE_PROB = 0.04     # Probability floor for rare/new topics
     PRIOR_MIX = 0.35    # Global base-rate blend weight
     PERSONA_MIX = 0.45  # Web persona prior blend weight
+    # 2026-09: opt-in only (see src/signals/cross_bank_persona.py) -- an
+    # analyst's topic history on OTHER registered banks, blended in the same
+    # additive-prior style as PERSONA_MIX above. A standalone top-K backtest
+    # showed +21-23pp mean topic recall on Kotak/IndusInd's held-out
+    # quarters, but that did NOT reproduce when run through the real scored
+    # pipeline (eval_harness.run_holdout_eval, verified 2026-09): +0.0pp
+    # Kotak, -1.6pp IndusInd -- see cross_bank_persona.py's module docstring
+    # for why the two measurements diverge. Left off by default both for
+    # that reason and because it's pending confirmation that using one
+    # bank's analyst-behavior data to inform another bank's predictions has
+    # the sign-off this project's build notes flag it as needing (Section 8,
+    # "cross-bank coverage graph, pending legal sign-off").
+    CROSS_BANK_MIX = 0.25
     RECENT_WIN = 6.0    # Recent history window (quarters)
     # LLM narration-novelty (active only when narration_novelty.json exists for VAL_QUARTER).
     # Applied as ONE extra prep slot per analyst — never displaces top-N picks.
