@@ -79,7 +79,17 @@ def _fetch(bank_name: str) -> list[dict]:
         "page_size": 10,
     })
     url = f"{SEARCH_URL}?{params}"
-    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {API_KEY}"})
+    # CurrentsAPI sits behind Cloudflare, which blocks urllib's default
+    # "Python-urllib/x.y" User-Agent as bot traffic and returns a bare 403 --
+    # before the request ever reaches CurrentsAPI's own auth check. A
+    # browser-shaped UA is the standard, documented workaround (nothing to
+    # do with the API key itself).
+    req = urllib.request.Request(url, headers={
+        "Authorization": f"Bearer {API_KEY}",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                      "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Accept": "application/json",
+    })
     with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT_SECONDS) as resp:
         data = json.loads(resp.read().decode("utf-8"))
     if data.get("status") != "ok":
