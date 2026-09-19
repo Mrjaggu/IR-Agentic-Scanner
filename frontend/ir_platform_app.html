@@ -1132,7 +1132,14 @@ const TITLES = {
 };
 let STATE = { meta: null, analysts: [], selected: null, dossier: null,
               quarterFilter: "all", disclosure: null, evalData: null,
-              bank: (() => { try { return localStorage.getItem("ir-bank") || "axis"; } catch (e) { return "axis"; } })() };
+              bank: (() => { try { return localStorage.getItem("ir-bank") || "axis"; } catch (e) { return "axis"; } })(),
+              // Bumped by switchBank() every time STATE.bank changes. Any async
+              // render that fetches bank-scoped data captures this value before
+              // its await and checks it again after -- if it moved on, a NEWER
+              // switch (or the same one re-fired) has already superseded this
+              // call, so it must not paint its now-stale result over whatever
+              // is on screen for the CURRENT bank.
+              bankGen: 0 };
 
 // Landing-page previews educate prospective users without placing them inside
 // a customer workspace. Only the explicitly labelled workspace CTA changes
@@ -1394,6 +1401,7 @@ function quarterChips(quarters, active) {
 }
 
 async function selectAnalyst(name, keepFilter) {
+  const gen = STATE.bankGen;
   STATE.selected = name;
   if (!keepFilter) STATE.quarterFilter = "all";
   const pick = $("#analystPick");
@@ -1403,11 +1411,15 @@ async function selectAnalyst(name, keepFilter) {
   if (!STATE.dossier || STATE.dossier.analyst !== name) {
     host.innerHTML = `<div class="card"><div class="empty"><span class="spinner"></span> Loading ${esc(name)}…</div></div>`;
     $("#quarterChips").innerHTML = "";
-    try { STATE.dossier = await api("/api/dossier?analyst=" + encodeURIComponent(name)); }
+    let d;
+    try { d = await api("/api/dossier?analyst=" + encodeURIComponent(name)); }
     catch (err) {
+      if (gen !== STATE.bankGen) return;   // superseded by a bank switch -- drop it
       host.innerHTML = `<div class="card"><div class="empty">Could not load: ${esc(err.message)}</div></div>`;
       return;
     }
+    if (gen !== STATE.bankGen) return;   // a newer bank switch already moved past this
+    STATE.dossier = d;
     logActivity("view_analyst", name);
   }
   renderProfile();
@@ -1851,6 +1863,7 @@ async function sendChat() {
   scrollChat();
 
   let acc = "", passages = [], audioId = null;
+  const bankGenAtSend = STATE.bankGen;   // catches a chat reply that outlives a bank switch
   const paint = () => { body.innerHTML = md(acc) + `<span class="caret"></span>`; };
 
   try {
@@ -1861,9 +1874,12 @@ async function sendChat() {
       for (const w of demo.split(" ")) { acc += w + " "; paint(); await new Promise(r => setTimeout(r, 8)); }
     } else {
       chatAbort = new AbortController();
+      // bank was missing here -- the chat endpoint's ChatRequest.bank
+      // defaults to Axis server-side, so every chat answer was grounded in
+      // Axis's transcripts no matter which workspace was actually open.
       const resp = await fetch("/api/chat/stream", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: msg, history: chatHistory.slice(0, -1) }),
+        body: JSON.stringify({ message: msg, history: chatHistory.slice(0, -1), bank: STATE.bank }),
         signal: chatAbort.signal,
       });
       const reader = resp.body.getReader(), dec = new TextDecoder();
@@ -1891,6 +1907,17 @@ async function sendChat() {
     }
   } catch (err) {
     if (err.name !== "AbortError") acc += `\n\n_Error: ${err.message}_`;
+  }
+
+  if (bankGenAtSend !== STATE.bankGen) {
+    // The user switched to a different bank while this reply was still
+    // streaming. It answered a question about the bank they've since left,
+    // so it doesn't belong in the (now different) workspace's chat log --
+    // drop the in-progress turn rather than paint a mismatched answer in.
+    bt.remove();
+    chatAbort = null;
+    $("#chatSend").style.display = ""; $("#chatStop").style.display = "none";
+    return;
   }
 
   body.innerHTML = md(acc);
@@ -2386,11 +2413,13 @@ const KIND_LABEL = {
   predicted_question: "Predicted question", search_result: "Search result",
 };
 async function loadBrief() {
+  const gen = STATE.bankGen;
   const host = $("#briefResult");
   host.innerHTML = `<div class="card"><div class="empty"><span class="spinner"></span> Loading…</div></div>`;
   let d;
   try { d = await api("/api/brief"); }
   catch (err) {
+    if (gen !== STATE.bankGen) return;
     host.innerHTML = `<div class="card"><div class="pad">
         <div class="status st-bad" style="margin-bottom:8px;">${ICON.bad}Could not load the prep brief</div>
         <div class="small dim" style="margin-bottom:12px;">${esc(err.message)}</div>
@@ -2399,6 +2428,7 @@ async function loadBrief() {
     const rb = $("#briefRetryBtn"); if (rb) rb.addEventListener("click", loadBrief, { once: true });
     return;
   }
+  if (gen !== STATE.bankGen) return;   // a bank switch happened while this was loading
   const items = (d.brief_items || []).slice().reverse();   // most recently pinned first
   STATE.briefCount = items.length;
   renderBriefNavBadge();
@@ -2447,11 +2477,13 @@ $("#briefClearBtn").addEventListener("click", () => runTask(async () => {
    ═══════════════════════════════════════════════════════════════════════════ */
 $("#evalRefresh").addEventListener("click", () => loadEval(true));
 async function loadEval(refresh) {
+  const gen = STATE.bankGen;
   const host = $("#evalResult");
   host.innerHTML = `<div class="card"><div class="empty"><span class="spinner"></span> Scoring both held-out quarters…</div></div>`;
   let d;
   try { d = await api("/api/eval/holdout" + (refresh ? "?refresh=true" : "")); }
-  catch (err) { host.innerHTML = `<div class="card"><div class="empty">Could not run: ${esc(err.message)}</div></div>`; return; }
+  catch (err) { if (gen !== STATE.bankGen) return; host.innerHTML = `<div class="card"><div class="empty">Could not run: ${esc(err.message)}</div></div>`; return; }
+  if (gen !== STATE.bankGen) return;   // a bank switch happened while this was loading
   STATE.evalData = d;
   const s = d.summary, gate = d.promotion_gate;
   const pass = gate.verdict === "PASS";
@@ -2566,11 +2598,13 @@ async function loadEval(refresh) {
 /* ── Error Researcher ─────────────────────────────────────────────────────── */
 $("#errResearchRefresh").addEventListener("click", () => loadErrorResearch(true));
 async function loadErrorResearch(refresh) {
+  const gen = STATE.bankGen;
   const host = $("#errResearchResult");
   host.innerHTML = `<div class="card"><div class="empty"><span class="spinner"></span> Aggregating failure attribution…</div></div>`;
   let d;
   try { d = await api("/api/eval/error-report" + (refresh ? "?refresh=true" : "")); }
-  catch (err) { host.innerHTML = `<div class="card"><div class="empty">Could not run: ${esc(err.message)}</div></div>`; return; }
+  catch (err) { if (gen !== STATE.bankGen) return; host.innerHTML = `<div class="card"><div class="empty">Could not run: ${esc(err.message)}</div></div>`; return; }
+  if (gen !== STATE.bankGen) return;   // a bank switch happened while this was loading
 
   if (!d.total_misses) {
     host.innerHTML = `<div class="card"><div class="pad small muted">No misses in the current held-out run — nothing to diagnose.</div></div>`;
@@ -2658,11 +2692,13 @@ $("#qrRunBtn").addEventListener("click", async () => {
 
 /* ── Agentic Skills registry ──────────────────────────────────────────────── */
 async function loadSkills() {
+  const gen = STATE.bankGen;
   const host = $("#skillsResult");
   host.innerHTML = `<div class="card"><div class="empty"><span class="spinner"></span> Loading skill registry…</div></div>`;
   let d;
   try { d = await api("/api/skills"); }
-  catch (err) { host.innerHTML = `<div class="card"><div class="empty">Could not load: ${esc(err.message)}</div></div>`; return; }
+  catch (err) { if (gen !== STATE.bankGen) return; host.innerHTML = `<div class="card"><div class="empty">Could not load: ${esc(err.message)}</div></div>`; return; }
+  if (gen !== STATE.bankGen) return;   // a bank switch happened while this was loading
 
   const byCategory = {};
   (d.skills || []).forEach(s => { (byCategory[s.category] ||= []).push(s); });
@@ -2826,6 +2862,7 @@ async function switchBank(bankId) {
   _bankSwitchInFlight = true;
   try {
     STATE.bank = bankId;
+    STATE.bankGen++;
     try { localStorage.setItem("ir-bank", bankId); } catch (e) {}
     STATE.disclosure = null; STATE.evalData = null; STATE.errResearchLoaded = false;
     STATE.skillsLoaded = false; STATE.dossier = null; STATE.selected = null;
