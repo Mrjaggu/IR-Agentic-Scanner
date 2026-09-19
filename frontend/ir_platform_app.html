@@ -2943,13 +2943,13 @@ function drawQuarterTable(host) {
   </table></div>`;
 }
 
-/* ── News feeds: bank coverage + analyst-mention coverage (CurrentsAPI) ───────
+/* ── News feeds: bank coverage + analyst-mention coverage (TheNewsAPI) ────────
    ONE fetch per bank (see src.news.currents_api's cache/budget discipline --
    a second query per analyst would blow the 200/day free tier fast), split
    client-side into two panels: every article, and the subset whose title or
    description names one of THIS bank's own covering analysts (STATE.analysts,
    the same roster Analyst profiles uses). That's a real limitation worth
-   being upfront about: CurrentsAPI indexes general news, not paywalled
+   being upfront about: TheNewsAPI indexes general news, not paywalled
    sell-side research notes, so "analyst coverage" here means "a news article
    that quotes or names one of this bank's analysts," not literal report
    ingestion -- the closest honest proxy available from a general news feed.
@@ -3011,7 +3011,7 @@ async function loadNews(refresh) {
   analystHost.innerHTML = !names.length
     ? `<div class="empty small muted">No analyst roster loaded for this bank yet.</div>`
     : !analystHits.length
-      ? `<div class="empty small muted">None of today's headlines mention a covering analyst by name. This checks article text against CurrentsAPI's general news, not paywalled research notes -- a real report an analyst published may not show up here at all.</div>`
+      ? `<div class="empty small muted">None of today's headlines mention a covering analyst by name. This checks article text against TheNewsAPI's general news, not paywalled research notes -- a real report an analyst published may not show up here at all.</div>`
       : analystHits.map(articleHTML).join("");
 }
 

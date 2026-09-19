@@ -5,7 +5,7 @@ import argparse
 
 # Load .env into the real process environment *before* anything below can
 # import a module that reads an API key at import time (e.g.
-# src.news.currents_api's `API_KEY = os.environ.get(...)`, and the same
+# src.news.news_api's `API_TOKEN = os.environ.get(...)`, and the same
 # pattern in src.model_provider.llm_client). Without this, a key that only
 # lives in .env -- never separately exported in the shell -- is invisible
 # to os.environ no matter how many times the server is restarted; it only
