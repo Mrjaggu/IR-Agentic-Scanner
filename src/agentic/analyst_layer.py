@@ -160,7 +160,7 @@ def build_arithmetic_followups(active_analysts: list[str], persona_stats: dict,
     results = {}
     for analyst, style_note in eligible[:budget]:
         prompt = _build_arithmetic_prompt(analyst, style_note, tension)
-        raw = client.call_llm(prompt, temperature=0.1)
+        raw = client.call_llm(prompt, temperature=0.1, purpose="analyst_arithmetic_reweighting")
         if not raw:
             continue
         try:

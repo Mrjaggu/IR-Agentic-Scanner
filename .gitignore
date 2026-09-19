@@ -59,3 +59,8 @@ Claude outputs/
 # Piper TTS voice models (ONNX weights, tens of MB) -- downloaded locally
 # per requirements.txt's instructions, never committed.
 data/tts_voices/
+
+# Durable LLM call audit trail (src/audit/llm_audit.py) -- one JSONL file per
+# UTC day, generated at runtime, never committed. Same "runtime state, not
+# source" reasoning as workspace_state.json above.
+data/logs/

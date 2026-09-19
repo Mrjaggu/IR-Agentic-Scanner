@@ -51,6 +51,7 @@ from src.agentic.verifier import grounding_gate
 from src.agentic import pattern_retrieval
 from src.tts import piper_tts
 from src.news import news_api
+from src.audit import llm_audit
 from src.signals.metrics_extractor import METRIC_TOPIC_MAP
 from src.agentic.question_framer import build_evidence_pool
 from src.agentic.eval_harness import (
@@ -357,6 +358,27 @@ def get_metrics_timeseries(bank: str = DEFAULT_BANK):
     return {"bank": bank_id, "metrics_by_quarter": data, "metric_topics": METRIC_TOPIC_MAP}
 
 
+@app.get("/api/audit/summary")
+def get_audit_summary(days: int = 7):
+    """Usage & Audit view's stat tiles and chart data: aggregated LLM call
+    counts, token totals, and estimated cost over the last `days` UTC days,
+    plus a per-provider breakdown and a per-day series. Reads the durable
+    JSONL audit trail (src.audit.llm_audit), not the in-memory STATS counter
+    in src.model_provider.llm_client -- that one resets every run and was
+    never meant to answer "what did we spend this week". Not bank-scoped:
+    this is a platform-wide operational view, same as Evaluation."""
+    return llm_audit.summary(days=days)
+
+
+@app.get("/api/audit/log")
+def get_audit_log(limit: int = 50, provider: str = None, purpose: str = None):
+    """Usage & Audit view's recent-calls table: the most recent `limit` LLM
+    calls, newest first, optionally filtered by provider or purpose (the
+    string each call site passes to call_llm() naming which part of the app
+    made the call -- e.g. "question_framer", "chat", "verifier")."""
+    return {"calls": llm_audit.recent(limit=limit, provider=provider, purpose=purpose)}
+
+
 @app.get("/api/analysts")
 def get_analysts(bank: str = DEFAULT_BANK):
     """Roster for the profile list: enough to render rows without the full
@@ -562,9 +584,10 @@ async def chat_stream(req: ChatRequest):
         answer = None
         if mode == "llm":
             raw = await asyncio.to_thread(
-                client.call_llm,
-                _build_chat_prompt(req.message, passages, req.history,
-                                   bank_name=BANKS[bank_id].display_name), 0.1)
+                lambda: client.call_llm(
+                    _build_chat_prompt(req.message, passages, req.history,
+                                       bank_name=BANKS[bank_id].display_name), 0.1,
+                    purpose="chat", bank_id=bank_id))
             if raw:
                 import re
                 clean = re.sub(r"^```(?:json)?\s*|```\s*$", "", raw.strip(), flags=re.MULTILINE)

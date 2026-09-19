@@ -296,7 +296,7 @@ def frame_questions(analyst: str, style_note: str, topics: list[str], pool: dict
     prompt = _build_frame_prompt(analyst, style_note, topics, pool, target_quarter, bank_name=bank_name)
     if feedback:
         prompt += f"\n\nThe previous attempt was rejected: {feedback}\nFix exactly that."
-    raw = client.call_llm(prompt, temperature=0.15)
+    raw = client.call_llm(prompt, temperature=0.15, purpose="question_framer", bank_id=bank_name)
     if not raw:
         return {t: None for t in topics}
     clean = re.sub(r"^```(?:json)?\s*|```\s*$", "", raw.strip(), flags=re.MULTILINE)
@@ -456,7 +456,7 @@ def frame_move_questions(analyst: str, style_note: str, slots: list[dict], pool:
 
     raw = client.call_llm(_build_move_prompt(analyst, style_note, slots, pool, target_quarter,
                                              bank_name=bank_name),
-                          temperature=0.3)
+                          temperature=0.3, purpose="question_framer_move_classification", bank_id=bank_name)
     if not raw:
         return _bare()
     try:

@@ -412,7 +412,7 @@ Return JSON:
 }}
 Selected topics must be an exact subset of the 8 candidates above."""
 
-    raw = client.call_llm(prompt, temperature=0.15)
+    raw = client.call_llm(prompt, temperature=0.15, purpose="engine_topic_selection")
     if not raw:
         return None
     clean = re.sub(r"^```(?:json)?\s*|```\s*$", "", raw.strip(), flags=re.MULTILINE)
@@ -546,7 +546,7 @@ def predict_for_analyst(analyst: str, custom_narration: str | None = None,
         analyst, N, target_topics, pref,
         last_q, last_a, cross_ctx, matching_narr_filtered
     )
-    raw = client.call_llm(prompt, temperature=0.15)
+    raw = client.call_llm(prompt, temperature=0.15, purpose="engine_question_generation")
     preds = _parse_llm_response(raw)
 
     if preds and len(preds) == N:

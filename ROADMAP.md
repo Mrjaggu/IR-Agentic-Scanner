@@ -43,6 +43,16 @@ via a GitHub issue; see [CONTRIBUTING.md](CONTRIBUTING.md) for how.
   this matches general news mentions, not paywalled sell-side research notes
   -- see "Near-term" below)
 
+**Usage & Audit**
+- Durable, append-only audit trail for every LLM call across every provider in
+  the fallback chain (`src/audit/llm_audit.py`, `data/logs/llm_calls_*.jsonl`)
+  -- provider, model, purpose, token usage, latency, estimated cost, and
+  success/failure, captured at the call site rather than reconstructed after
+  the fact
+- Usage & Audit dashboard: daily call volume, token/cost totals, a
+  per-provider breakdown, and a filterable recent-calls log, backed by
+  `/api/audit/summary` and `/api/audit/log`
+
 **Other**
 - Offline, CPU-only text-to-speech for chat answers (Piper)
 - `.env`-driven configuration, loaded reliably at startup

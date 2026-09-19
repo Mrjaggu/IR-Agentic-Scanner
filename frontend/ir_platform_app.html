@@ -586,6 +586,9 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
     <button class="nav-item" data-view="eval">
       <svg viewBox="0 0 24 24"><path d="M5 20V10M12 20V5M19 20v-7"/></svg>
       Evaluation</button>
+    <button class="nav-item" data-view="audit">
+      <svg viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M2 7h6l2-3 4 8 2-3h6"/></svg>
+      Usage &amp; audit</button>
     <div class="nav-sep">Archive</div>
     <button class="nav-item" data-view="ingest">
       <svg viewBox="0 0 24 24"><path d="M12 15V4"/><path d="M8 8l4-4 4 4"/><path d="M4 16v2.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V16"/></svg>
@@ -977,6 +980,34 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
     <div id="skillsResult"></div>
   </section>
 
+  <!-- ══ USAGE & AUDIT ═══════════════════════════════════ -->
+  <section class="view" id="view-audit">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+      <div class="seg" role="group" aria-label="Window">
+        <button id="auditRange7" aria-pressed="true">Last 7 days</button>
+        <button id="auditRange30" aria-pressed="false">Last 30 days</button>
+        <button id="auditRange90" aria-pressed="false">Last 90 days</button>
+      </div>
+      <button class="btn btn-sm" id="auditRefreshBtn">Refresh</button>
+    </div>
+    <div class="xs muted" style="margin-bottom:14px;max-width:80ch;">
+      Every LLM call this platform makes — across every provider in the fallback chain — is logged here: who
+      called it, which provider/model answered, how many tokens it used, how long it took, and whether it
+      succeeded. This reads the durable append-only audit trail (<code>data/logs/llm_calls_*.jsonl</code>), not
+      the in-memory counters that reset on every restart — platform-wide, not scoped to the selected bank.
+    </div>
+    <div id="auditSummaryResult"><div class="card"><div class="empty"><span class="spinner"></span> Loading usage summary…</div></div></div>
+    <div class="card" style="margin-top:14px;">
+      <div class="card-head">
+        <h2>Recent calls</h2>
+        <div class="topbar-spacer"></div>
+        <select id="auditProviderFilter" class="btn btn-sm"><option value="">All providers</option></select>
+        <select id="auditPurposeFilter" class="btn btn-sm"><option value="">All purposes</option></select>
+      </div>
+      <div class="pad" id="auditLogResult"></div>
+    </div>
+  </section>
+
   <!-- ══ INGEST ═══════════════════════════════════════════════════════════ -->
   <section class="view" id="view-ingest">
     <div class="card">
@@ -1164,6 +1195,7 @@ const TITLES = {
   predict: ["Prepare next call", "Review the disclosure, then forecast the questions your team should prepare for"],
   brief: ["Prep brief", "Pinned questions, passages and answers — export it before the call"],
   eval: ["Evaluation", "Held-out results, promotion gate, and failure attribution"],
+  audit: ["Usage & audit", "Per-call LLM logging — provider, tokens, latency, and estimated cost for every call this platform makes"],
   ingest: ["Ingest transcript", "Parse, inspect extraction quality, then commit to the archive"],
 };
 let STATE = { meta: null, analysts: [], selected: null, dossier: null,
@@ -1310,6 +1342,7 @@ function show(view, syncRoute = true) {
   if (view === "brief") loadBrief();
   if (view === "quarter" && !QV.loaded) { QV.loaded = true; loadQuarterView(); }
   if (view === "news" && !NEWS.loaded) { NEWS.loaded = true; loadNews(); }
+  if (view === "audit" && !AUDIT.loaded) { AUDIT.loaded = true; loadAudit(); }
   if (view === "workspace" && STATE.meta) $("#pageTitle").textContent = `${STATE.meta.display_name || "Bank"} workspace`;
   if (syncRoute) history.pushState({ view }, "", `#/${view}`);
   window.scrollTo(0, 0);
@@ -3044,6 +3077,171 @@ async function loadNews(refresh) {
       ? `<div class="empty small muted">None of today's headlines mention a covering analyst by name. This checks article text against TheNewsAPI's general news, not paywalled research notes -- a real report an analyst published may not show up here at all.</div>`
       : analystHits.map(articleHTML).join("");
 }
+
+/* ── Usage & audit: durable per-call LLM logging ──────────────────────────────────────
+   Platform-wide, not bank-scoped (see src/api/fastapi_app.py's /api/audit/*
+   docstrings) -- reads the durable JSONL trail written by src.audit.llm_audit,
+   not the in-memory STATS counters in src.model_provider.llm_client, which
+   reset every restart. One chart, one metric (calls/day) -- tokens and cost
+   are read from the same series in the tooltip and stat tiles rather than a
+   second axis, per this app's "never plot two units on one axis" rule. */
+const AUDIT_COLORS = { ok: "var(--accent)", bad: "var(--s2)" };
+let AUDIT = { loaded: false, days: 7, providerFilter: "", purposeFilter: "" };
+
+function auditSetRange(days) {
+  if (AUDIT.days === days) return;
+  AUDIT.days = days;
+  $("#auditRange7").setAttribute("aria-pressed", String(days === 7));
+  $("#auditRange30").setAttribute("aria-pressed", String(days === 30));
+  $("#auditRange90").setAttribute("aria-pressed", String(days === 90));
+  loadAudit();
+}
+
+function auditMoney(v) {
+  if (v == null) return "—";
+  if (v === 0) return "$0.00";
+  return v < 0.01 ? "<$0.01" : "$" + v.toFixed(2);
+}
+function auditInt(v) { return v == null ? "—" : Number(v).toLocaleString(); }
+
+async function loadAudit() {
+  const summaryHost = $("#auditSummaryResult");
+  const logHost = $("#auditLogResult");
+  const hadContent = summaryHost.innerHTML.includes("tiles");
+  if (!hadContent) summaryHost.innerHTML = `<div class="card"><div class="empty"><span class="spinner"></span> Loading usage summary…</div></div>`;
+
+  let summary, log;
+  try {
+    [summary, log] = await Promise.all([
+      api(`/api/audit/summary?days=${AUDIT.days}`),
+      api(`/api/audit/log?limit=50${AUDIT.providerFilter ? "&provider=" + encodeURIComponent(AUDIT.providerFilter) : ""}${AUDIT.purposeFilter ? "&purpose=" + encodeURIComponent(AUDIT.purposeFilter) : ""}`),
+    ]);
+  } catch (err) {
+    summaryHost.innerHTML = `<div class="card"><div class="empty">Could not load usage data: ${esc(err.message)}</div></div>`;
+    logHost.innerHTML = "";
+    return;
+  }
+  AUDIT.lastSummary = summary;
+  renderAuditSummary(summary);
+  renderAuditFilters(summary, log.calls || []);
+  renderAuditLog(log.calls || []);
+}
+
+function renderAuditSummary(d) {
+  const host = $("#auditSummaryResult");
+  const t = d.totals;
+  if (!t.calls) {
+    host.innerHTML = `<div class="card"><div class="empty small muted">No LLM calls logged in the last ${d.days} days yet — use the app (chat, predict, evaluation) and check back.</div></div>`;
+    return;
+  }
+  const successRate = t.calls ? t.success / t.calls : null;
+  const costLabel = t.cost_has_unknown ? auditMoney(t.cost_usd) + " +" : auditMoney(t.cost_usd);
+
+  const providers = Object.entries(d.by_provider).sort((a, b) => b[1].calls - a[1].calls);
+  const provChips = providers.map(([name, pb], i) => `
+    <div class="tile">
+      <div class="tile-label">${esc(name)}</div>
+      <div class="tile-value" style="font-size:19px;">${auditInt(pb.calls)}</div>
+      <div class="tile-delta">${auditInt(pb.total_tokens)} tokens · ${auditMoney(pb.cost_usd)}${pb.failed ? ` · ${pb.failed} failed` : ""}</div>
+    </div>`).join("");
+
+  host.innerHTML = `<div class="card"><div class="pad">
+    <div class="tiles">
+      <div class="tile"><div class="tile-label">Total calls</div><div class="tile-value">${auditInt(t.calls)}</div><div class="tile-delta">last ${d.days} days</div></div>
+      <div class="tile"><div class="tile-label">Success rate</div><div class="tile-value">${pct(successRate)}</div><div class="tile-delta">${t.failed ? auditInt(t.failed) + " failed" : "no failures"}</div></div>
+      <div class="tile"><div class="tile-label">Total tokens</div><div class="tile-value">${auditInt(t.total_tokens)}</div><div class="tile-delta">${auditInt(t.prompt_tokens)} prompt · ${auditInt(t.completion_tokens)} completion</div></div>
+      <div class="tile"><div class="tile-label">Estimated cost</div><div class="tile-value">${costLabel}</div><div class="tile-delta">${t.cost_has_unknown ? "some models have no published price on file" : "across every provider"}</div></div>
+    </div>
+    <div id="auditChartHost" style="margin-top:16px;"></div>
+    ${providers.length ? `<div class="tiles" style="margin-top:16px;">${provChips}</div>` : ""}
+  </div></div>`;
+
+  drawAuditChart($("#auditChartHost"), d.by_day || []);
+}
+
+function drawAuditChart(host, byDay) {
+  if (!byDay.length) { host.innerHTML = ""; return; }
+  const W = 720, H = 200, padL = 40, padR = 16, padT = 12, padB = 24;
+  const innerW = W - padL - padR, innerH = H - padT - padB;
+  const maxCalls = Math.max(1, ...byDay.map(d => d.calls));
+  const bw = innerW / byDay.length;
+  const bars = byDay.map((d, i) => {
+    const h = (d.calls / maxCalls) * innerH;
+    const x = padL + i * bw + bw * 0.15;
+    const y = padT + innerH - h;
+    return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${(bw * 0.7).toFixed(1)}" height="${h.toFixed(1)}" fill="var(--accent)" rx="2"
+      data-day="${esc(d.day)}" data-calls="${d.calls}" data-tokens="${d.total_tokens}" data-cost="${d.cost_usd}"/>`;
+  }).join("");
+  const labelEvery = Math.ceil(byDay.length / 8) || 1;
+  const labels = byDay.map((d, i) => i % labelEvery !== 0 ? "" : `
+    <text x="${(padL + i * bw + bw / 2).toFixed(1)}" y="${H - 6}" text-anchor="middle" font-size="9.5" fill="var(--ink-muted)">${esc(d.day.slice(5))}</text>`).join("");
+
+  host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;" id="auditSvg">
+      <line x1="${padL}" y1="${padT + innerH}" x2="${W - padR}" y2="${padT + innerH}" stroke="var(--hairline)" stroke-width="1"/>
+      ${bars}${labels}
+    </svg>
+    <div class="xs muted" style="margin-top:4px;">Calls per day — hover a bar for tokens and estimated cost.</div>`;
+
+  host.querySelectorAll("rect").forEach(r => {
+    r.addEventListener("pointermove", e => {
+      tip.innerHTML = `<div style="font-weight:600;margin-bottom:4px;">${esc(r.dataset.day)}</div>
+        <div>${auditInt(Number(r.dataset.calls))} calls</div>
+        <div>${auditInt(Number(r.dataset.tokens))} tokens</div>
+        <div>${auditMoney(Number(r.dataset.cost))}</div>`;
+      tip.style.opacity = 1;
+      tip.style.left = Math.min(e.clientX + 12, innerWidth - tip.offsetWidth - 8) + "px";
+      tip.style.top = (e.clientY - tip.offsetHeight - 8) + "px";
+    });
+    r.addEventListener("pointerleave", () => { tip.style.opacity = 0; });
+  });
+}
+
+function renderAuditFilters(summary, calls) {
+  const provSel = $("#auditProviderFilter"), purpSel = $("#auditPurposeFilter");
+  const providers = Object.keys(summary.by_provider || {}).sort();
+  const purposes = [...new Set(calls.map(c => c.purpose).filter(Boolean))].sort();
+  if (provSel.dataset.built !== "1") {
+    provSel.innerHTML = `<option value="">All providers</option>` + providers.map(p => `<option value="${esc(p)}">${esc(p)}</option>`).join("");
+    provSel.dataset.built = "1";
+    provSel.addEventListener("change", () => { AUDIT.providerFilter = provSel.value; loadAudit(); });
+  }
+  if (purpSel.dataset.built !== "1") {
+    purpSel.addEventListener("change", () => { AUDIT.purposeFilter = purpSel.value; loadAudit(); });
+  }
+  // Purpose options depend on what's actually in the current result set, so
+  // rebuild them each time rather than gating on dataset.built like provider.
+  const curPurpose = AUDIT.purposeFilter;
+  purpSel.innerHTML = `<option value="">All purposes</option>` +
+    [...new Set([...purposes, curPurpose].filter(Boolean))].sort().map(p =>
+      `<option value="${esc(p)}"${p === curPurpose ? " selected" : ""}>${esc(p.replace(/_/g, " "))}</option>`).join("");
+}
+
+function renderAuditLog(calls) {
+  const host = $("#auditLogResult");
+  if (!calls.length) {
+    host.innerHTML = `<div class="empty small muted">No calls match this filter yet.</div>`;
+    return;
+  }
+  host.innerHTML = `<div style="overflow-x:auto;"><table>
+    <thead><tr><th>Time (UTC)</th><th>Provider</th><th>Model</th><th>Purpose</th><th class="num">Tokens</th><th class="num">Latency</th><th class="num">Cost</th><th>Status</th></tr></thead>
+    <tbody>${calls.map(c => `<tr>
+      <td class="xs" style="white-space:nowrap;">${esc((c.ts || "").replace("T", " ").replace("Z", ""))}</td>
+      <td>${esc(c.provider || "—")}</td>
+      <td class="xs">${esc(c.model || "—")}</td>
+      <td class="xs">${esc((c.purpose || "—").replace(/_/g, " "))}</td>
+      <td class="num" style="font-variant-numeric:tabular-nums;">${auditInt(c.total_tokens)}${c.tokens_estimated ? " *" : ""}</td>
+      <td class="num" style="font-variant-numeric:tabular-nums;">${c.latency_ms != null ? Math.round(c.latency_ms) + "ms" : "—"}</td>
+      <td class="num" style="font-variant-numeric:tabular-nums;">${auditMoney(c.cost_usd)}</td>
+      <td>${c.success ? statusHTML(true, "ok") : `<span title="${esc(c.error || "")}">${statusHTML(false, "failed")}</span>`}</td>
+    </tr>`).join("")}</tbody>
+  </table></div>
+  <div class="xs muted" style="margin-top:8px;">* tokens estimated — the provider's response didn't include a usage field for this call.</div>`;
+}
+
+$("#auditRange7")?.addEventListener("click", () => auditSetRange(7));
+$("#auditRange30")?.addEventListener("click", () => auditSetRange(30));
+$("#auditRange90")?.addEventListener("click", () => auditSetRange(90));
+$("#auditRefreshBtn")?.addEventListener("click", () => loadAudit());
 
 /* ── Framework Loop: weight backtest ──────────────────────────────────────── */
 const WT_FIELDS = [

@@ -12,6 +12,7 @@ An intelligent, multi-tenant capable investor relations platform and predictive 
 * **Interactive Dashboard & Search**: Hybrid search engine (BM25 + graph traversal) over historical earnings call transcripts with citation attribution.
 * **FastAPI Live Application**: REST API backend for live predictions, document ingestion, and transcript archives.
 * **Quarter View & News Feeds**: Multi-quarter metric comparison charts (NIM, GNPA, PAT, CET1, and more, grouped by topic) alongside bank-specific external news and analyst-mention coverage, as top-level workspace tabs.
+* **Usage & Audit**: A durable, append-only audit trail for every LLM call the platform makes (provider, model, purpose, tokens, latency, estimated cost, success/failure), with a dashboard for daily volume, per-provider breakdown, and a filterable recent-calls log.
 
 ---
 
@@ -108,6 +109,7 @@ This repository includes a `vercel.json` configuration and a GitHub Action workf
 │   ├── api/              # FastAPI & HTTP server handlers
 │   ├── config/           # Platform settings & env configurations
 │   ├── data/             # Transcript parsing & dossier synthesis
+│   ├── audit/            # Durable per-call LLM audit trail (data/logs/llm_calls_*.jsonl)
 │   ├── model_provider/   # Unified LLM provider client (Groq/Gemini/OpenAI)
 │   ├── news/             # External headlines + analyst-mention coverage (News feeds tab)
 │   ├── search/           # Hybrid search & reciprocal rank fusion

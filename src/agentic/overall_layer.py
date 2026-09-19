@@ -239,7 +239,7 @@ def build_overall_topics(evidence_bundles: dict, anomaly_scores: dict, global_ra
     while to_rank and attempt <= MAX_RETRIES:
         prompt = _build_rank_prompt(to_rank, evidence_bundles, global_rate, momentum,
                                     max_momentum, anomaly_scores, bank_name=bank_name)
-        raw = client.call_llm(prompt, temperature=0.1)
+        raw = client.call_llm(prompt, temperature=0.1, purpose="overall_topic_ranking", bank_id=bank_name)
         parsed = None
         if raw:
             clean = re.sub(r"^```(?:json)?\s*|```\s*$", "", raw.strip(), flags=re.MULTILINE)

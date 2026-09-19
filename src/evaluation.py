@@ -127,7 +127,7 @@ def run_semantic_evaluator():
 
         if use_llm:
             prompt = _build_judge_prompt(analyst, pred_qs, [q["text"] for q in actual_qs])
-            raw    = client.call_llm(prompt, temperature=0.0)
+            raw    = client.call_llm(prompt, temperature=0.0, purpose="semantic_eval_judge")
             parsed = _safe_parse(raw) if raw else None
             if parsed and "semantic_precision" in parsed:
                 sem_p  = parsed["semantic_precision"]

@@ -159,7 +159,7 @@ def score_concern(concern: str, predictions: list[str], client=None) -> dict:
         listed = "\n".join(f"[{n}] {predictions[i]}" for n, i in enumerate(top))
         prompt = (f"{_JUDGE_RUBRIC}\n\nACTUAL question the analyst asked:\n\"{concern}\"\n\n"
                   f"PREDICTED questions to choose from:\n{listed}\n")
-        raw = client.call_llm(prompt, temperature=0.0)
+        raw = client.call_llm(prompt, temperature=0.0, purpose="question_eval_judge")
         if raw:
             clean = re.sub(r"^```(?:json)?\s*|```\s*$", "", raw.strip(), flags=re.MULTILINE)
             try:

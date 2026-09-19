@@ -121,7 +121,8 @@ def compute_novelty(quarter: str | None = None) -> dict:
         raise SystemExit("No working LLM API (set GROQ_API_KEY / GEMINI_API_KEY in .env).")
     print(f"LLM: {active} | comparing {quarter} narration vs {prev_qs}")
 
-    raw = client.call_llm(_build_prompt(quarter, cur_text, prev_blocks), temperature=0.0)
+    raw = client.call_llm(_build_prompt(quarter, cur_text, prev_blocks), temperature=0.0,
+                          purpose="narration_novelty")
     if not raw:
         raise SystemExit("LLM call failed.")
 

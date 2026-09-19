@@ -5,6 +5,7 @@ import urllib.error
 import time
 
 from src.config.settings import BASE_DIR
+from src.audit import llm_audit
 
 _MAX_RETRIES = 5
 _BASE_WAIT   = 10   # seconds for first retry (doubles each attempt)
@@ -223,7 +224,9 @@ class LLMClient:
                           provider_label: str, tpm_hint: int | None,
                           extra_headers: dict | None = None,
                           json_mode: bool = True,
-                          no_retry: bool = False) -> str | None:
+                          no_retry: bool = False,
+                          purpose: str | None = None,
+                          bank_id: str | None = None) -> str | None:
         """POSTs an OpenAI-style /chat/completions request with 429 backoff and
         a one-shot fallback that drops response_format if the model rejects
         strict JSON mode (some OpenRouter free models don't support it).
@@ -261,6 +264,7 @@ class LLMClient:
         STATS["calls"] += 1
         if STATS["started_at"] is None:
             STATS["started_at"] = time.time()
+        _t0 = time.time()
 
         use_json_mode = json_mode
         for attempt in range(_MAX_RETRIES):
@@ -268,7 +272,17 @@ class LLMClient:
             try:
                 with urllib.request.urlopen(req, timeout=30) as resp:
                     STATS["ok"] += 1
-                    return json.loads(resp.read())["choices"][0]["message"]["content"]
+                    body = json.loads(resp.read())
+                    usage = body.get("usage") or {}
+                    llm_audit.log_call(
+                        provider=provider_label, model=model, purpose=purpose, bank_id=bank_id,
+                        success=True, latency_ms=(time.time() - _t0) * 1000,
+                        prompt_tokens=usage.get("prompt_tokens"),
+                        completion_tokens=usage.get("completion_tokens"),
+                        total_tokens=usage.get("total_tokens"),
+                        tokens_estimated=not bool(usage),
+                    )
+                    return body["choices"][0]["message"]["content"]
             except urllib.error.HTTPError as e:
                 if e.code == 429:
                     STATS["rate_limited"] += 1
@@ -307,6 +321,10 @@ class LLMClient:
                     STATS["failed"] += 1
                     STATS["last_error"] = f"{provider_label}: 403 (blocked or bad key): {err_body[:120]}"
                     print(f"  [{provider_label} 403 -- blocked or bad key, skipping] {err_body[:120]}")
+                    llm_audit.log_call(provider=provider_label, model=model, purpose=purpose,
+                                        bank_id=bank_id, success=False,
+                                        latency_ms=(time.time() - _t0) * 1000,
+                                        error=f"403 (blocked or bad key): {err_body[:120]}")
                     return None
                 try:
                     err_body = e.read().decode("utf-8", errors="ignore")
@@ -315,41 +333,53 @@ class LLMClient:
                 STATS["failed"] += 1
                 STATS["last_error"] = f"{provider_label}: HTTP {e.code}: {err_body[:160]}"
                 print(f"  [{provider_label} error {e.code}] {err_body[:200]}")
+                llm_audit.log_call(provider=provider_label, model=model, purpose=purpose,
+                                    bank_id=bank_id, success=False,
+                                    latency_ms=(time.time() - _t0) * 1000,
+                                    error=f"HTTP {e.code}: {err_body[:160]}")
                 return None
             except Exception as e:
                 STATS["failed"] += 1
                 STATS["last_error"] = f"{provider_label}: {str(e)[:160]}"
                 print(f"  [{provider_label} error] {e}")
+                llm_audit.log_call(provider=provider_label, model=model, purpose=purpose,
+                                    bank_id=bank_id, success=False,
+                                    latency_ms=(time.time() - _t0) * 1000,
+                                    error=str(e)[:160])
                 return None
 
         STATS["failed"] += 1
         STATS["last_error"] = f"{provider_label}: gave up after {_MAX_RETRIES} retries"
         print(f"  [{provider_label}] Gave up after {_MAX_RETRIES} retries.")
+        llm_audit.log_call(provider=provider_label, model=model, purpose=purpose,
+                            bank_id=bank_id, success=False,
+                            latency_ms=(time.time() - _t0) * 1000,
+                            error=f"gave up after {_MAX_RETRIES} retries")
         return None
 
     # ── Providers ────────────────────────────────────────────────────────────
     def call_groq(self, prompt: str, temperature: float = 0.15, system_prompt: str = None,
-                  no_retry: bool = False) -> str | None:
+                  no_retry: bool = False, purpose: str = None, bank_id: str = None) -> str | None:
         if not self.groq_key:
             return None
         return self._chat_completions(
             "https://api.groq.com/openai/v1/chat/completions", self.groq_key, self.groq_model,
             prompt, temperature, system_prompt, "Groq", PROVIDER_LIMITS["Groq"]["tpm"],
-            no_retry=no_retry,
+            no_retry=no_retry, purpose=purpose, bank_id=bank_id,
         )
 
     def call_cerebras(self, prompt: str, temperature: float = 0.15, system_prompt: str = None,
-                      no_retry: bool = False) -> str | None:
+                      no_retry: bool = False, purpose: str = None, bank_id: str = None) -> str | None:
         if not self.cerebras_key:
             return None
         return self._chat_completions(
             "https://api.cerebras.ai/v1/chat/completions", self.cerebras_key, self.cerebras_model,
             prompt, temperature, system_prompt, "Cerebras", PROVIDER_LIMITS["Cerebras"]["tpm"],
-            no_retry=no_retry,
+            no_retry=no_retry, purpose=purpose, bank_id=bank_id,
         )
 
     def call_openrouter(self, prompt: str, temperature: float = 0.15, system_prompt: str = None,
-                        no_retry: bool = False) -> str | None:
+                        no_retry: bool = False, purpose: str = None, bank_id: str = None) -> str | None:
         if not self.openrouter_key or not self.openrouter_model:
             if self.openrouter_key and not self.openrouter_model:
                 print("  [OpenRouter] OPENROUTER_API_KEY is set but OPENROUTER_MODEL is not -- "
@@ -362,11 +392,11 @@ class LLMClient:
             # OpenRouter asks for these but works without them; harmless to include.
             extra_headers={"HTTP-Referer": "https://axisbank-ir-platform.local",
                            "X-Title": "IR Question Intelligence"},
-            no_retry=no_retry,
+            no_retry=no_retry, purpose=purpose, bank_id=bank_id,
         )
 
     def call_nvidia_nim(self, prompt: str, temperature: float = 0.15, system_prompt: str = None,
-                        no_retry: bool = False) -> str | None:
+                        no_retry: bool = False, purpose: str = None, bank_id: str = None) -> str | None:
         if not self.nim_key or not self.nim_model:
             if self.nim_key and not self.nim_model:
                 print("  [NVIDIA NIM] NVIDIA_NIM_API_KEY is set but NVIDIA_NIM_MODEL is not -- "
@@ -375,11 +405,11 @@ class LLMClient:
         return self._chat_completions(
             "https://integrate.api.nvidia.com/v1/chat/completions", self.nim_key, self.nim_model,
             prompt, temperature, system_prompt, "NVIDIA NIM", PROVIDER_LIMITS["NVIDIA NIM"]["tpm"],
-            no_retry=no_retry,
+            no_retry=no_retry, purpose=purpose, bank_id=bank_id,
         )
 
     def call_gemini(self, prompt: str, temperature: float = 0.15, system_prompt: str = None,
-                    no_retry: bool = False) -> str | None:
+                    no_retry: bool = False, purpose: str = None, bank_id: str = None) -> str | None:
         # no_retry accepted for signature parity with the other providers'
         # call_* methods (see probe_llm) -- this method never retries anyway.
         #
@@ -425,6 +455,7 @@ class LLMClient:
         STATS["calls"] += 1
         if STATS["started_at"] is None:
             STATS["started_at"] = time.time()
+        _t0 = time.time()
 
         # 2026-09 fix #2: the 6-analyst wider run exposed that this method
         # never retried a 429 at all (unlike _chat_completions, which the
@@ -449,7 +480,7 @@ class LLMClient:
                     if no_retry:
                         STATS["last_error"] = "Gemini: rate limited (429) -- skipped (no_retry probe)"
                         print("  [Gemini rate limit] 429 -- skipped (no_retry probe).")
-                        return None
+                        return None  # not logged -- probe call, never a real attempt (see _chat_completions)
                     wait = None
                     try:
                         retry_after = e.headers.get("retry-after") or e.headers.get("Retry-After")
@@ -473,17 +504,30 @@ class LLMClient:
                     STATS["failed"] += 1
                     STATS["last_error"] = f"Gemini: HTTP {e.code}: {err_body[:160]}"
                     print(f"  [Gemini error {e.code}] {err_body[:200]}")
+                    llm_audit.log_call(provider="Gemini", model=self.gemini_model, purpose=purpose,
+                                        bank_id=bank_id, success=False,
+                                        latency_ms=(time.time() - _t0) * 1000,
+                                        error=f"HTTP {e.code}: {err_body[:160]}")
                     return None
             except Exception as e:
                 STATS["failed"] += 1
                 STATS["last_error"] = f"Gemini: {str(e)[:160]}"
                 print(f"  [Gemini error] {e}")
+                llm_audit.log_call(provider="Gemini", model=self.gemini_model, purpose=purpose,
+                                    bank_id=bank_id, success=False,
+                                    latency_ms=(time.time() - _t0) * 1000, error=str(e)[:160])
                 return None
         if body is None:
             STATS["failed"] += 1
             STATS["last_error"] = f"Gemini: gave up after {_MAX_RETRIES} retries"
             print(f"  [Gemini] Gave up after {_MAX_RETRIES} retries.")
+            llm_audit.log_call(provider="Gemini", model=self.gemini_model, purpose=purpose,
+                                bank_id=bank_id, success=False,
+                                latency_ms=(time.time() - _t0) * 1000,
+                                error=f"gave up after {_MAX_RETRIES} retries")
             return None
+
+        usage_meta = body.get("usageMetadata") or {}
 
         candidates = body.get("candidates") or []
         if not candidates:
@@ -491,6 +535,9 @@ class LLMClient:
             STATS["failed"] += 1
             STATS["last_error"] = f"Gemini: {block_reason}"
             print(f"  [Gemini error] {block_reason} -- full response: {json.dumps(body)[:300]}")
+            llm_audit.log_call(provider="Gemini", model=self.gemini_model, purpose=purpose,
+                                bank_id=bank_id, success=False,
+                                latency_ms=(time.time() - _t0) * 1000, error=str(block_reason))
             return None
         cand = candidates[0]
         parts = (cand.get("content") or {}).get("parts") or []
@@ -500,13 +547,26 @@ class LLMClient:
             STATS["last_error"] = f"Gemini: empty response (finishReason={finish_reason})"
             print(f"  [Gemini error] empty content, finishReason={finish_reason} "
                  f"-- likely truncated (raise maxOutputTokens) or safety-blocked.")
+            llm_audit.log_call(provider="Gemini", model=self.gemini_model, purpose=purpose,
+                                bank_id=bank_id, success=False,
+                                latency_ms=(time.time() - _t0) * 1000,
+                                error=f"empty response (finishReason={finish_reason})")
             return None
         if cand.get("finishReason") == "MAX_TOKENS":
             print("  [Gemini warning] response hit maxOutputTokens and may be truncated/unparseable.")
         STATS["ok"] += 1
+        llm_audit.log_call(
+            provider="Gemini", model=self.gemini_model, purpose=purpose, bank_id=bank_id,
+            success=True, latency_ms=(time.time() - _t0) * 1000,
+            prompt_tokens=usage_meta.get("promptTokenCount"),
+            completion_tokens=usage_meta.get("candidatesTokenCount"),
+            total_tokens=usage_meta.get("totalTokenCount"),
+            tokens_estimated=not bool(usage_meta),
+        )
         return parts[0].get("text")
 
-    def call_openai(self, prompt: str, temperature: float = 0.15, no_retry: bool = False) -> str | None:
+    def call_openai(self, prompt: str, temperature: float = 0.15, no_retry: bool = False,
+                    purpose: str = None, bank_id: str = None) -> str | None:
         # no_retry accepted for signature parity with the other providers'
         # call_* methods (see probe_llm) -- this method never retries anyway.
         if not self.openai_key:
@@ -527,21 +587,52 @@ class LLMClient:
                      "Content-Type": "application/json"},
             method="POST"
         )
+        STATS["calls"] += 1
+        if STATS["started_at"] is None:
+            STATS["started_at"] = time.time()
+        _t0 = time.time()
         try:
             with urllib.request.urlopen(req, timeout=30) as resp:
-                return json.loads(resp.read())["choices"][0]["message"]["content"]
+                STATS["ok"] += 1
+                body = json.loads(resp.read())
+                usage = body.get("usage") or {}
+                llm_audit.log_call(
+                    provider="OpenAI", model=self.openai_model, purpose=purpose, bank_id=bank_id,
+                    success=True, latency_ms=(time.time() - _t0) * 1000,
+                    prompt_tokens=usage.get("prompt_tokens"),
+                    completion_tokens=usage.get("completion_tokens"),
+                    total_tokens=usage.get("total_tokens"),
+                    tokens_estimated=not bool(usage),
+                )
+                return body["choices"][0]["message"]["content"]
         except Exception as e:
+            STATS["failed"] += 1
+            STATS["last_error"] = f"OpenAI: {str(e)[:160]}"
             print(f"  [OpenAI error] {e}")
+            llm_audit.log_call(provider="OpenAI", model=self.openai_model, purpose=purpose,
+                                bank_id=bank_id, success=False,
+                                latency_ms=(time.time() - _t0) * 1000, error=str(e)[:160])
             return None
 
-    def call_llm(self, prompt: str, temperature: float = 0.15, system_prompt: str = None) -> str | None:
+    def call_llm(self, prompt: str, temperature: float = 0.15, system_prompt: str = None,
+                purpose: str = None, bank_id: str = None) -> str | None:
+        """`purpose` names which part of the app made this call (e.g.
+        "question_framer", "chat", "verifier") -- every call site that goes
+        through call_llm() should pass one; it's what makes the Usage & Audit
+        view (src/audit/llm_audit.py) legible instead of just a pile of
+        anonymous rows. `bank_id` is optional and only threaded through where
+        it's cheaply available at the call site."""
         dispatch = {
-            "Groq": lambda: self.call_groq(prompt, temperature=temperature, system_prompt=system_prompt),
-            "Cerebras": lambda: self.call_cerebras(prompt, temperature=temperature, system_prompt=system_prompt),
-            "OpenRouter": lambda: self.call_openrouter(prompt, temperature=temperature, system_prompt=system_prompt),
-            "NVIDIA NIM": lambda: self.call_nvidia_nim(prompt, temperature=temperature, system_prompt=system_prompt),
-            "Gemini": lambda: self.call_gemini(prompt, temperature=temperature),
-            "OpenAI": lambda: self.call_openai(prompt, temperature=temperature),
+            "Groq": lambda: self.call_groq(prompt, temperature=temperature, system_prompt=system_prompt,
+                                            purpose=purpose, bank_id=bank_id),
+            "Cerebras": lambda: self.call_cerebras(prompt, temperature=temperature, system_prompt=system_prompt,
+                                                    purpose=purpose, bank_id=bank_id),
+            "OpenRouter": lambda: self.call_openrouter(prompt, temperature=temperature, system_prompt=system_prompt,
+                                                        purpose=purpose, bank_id=bank_id),
+            "NVIDIA NIM": lambda: self.call_nvidia_nim(prompt, temperature=temperature, system_prompt=system_prompt,
+                                                        purpose=purpose, bank_id=bank_id),
+            "Gemini": lambda: self.call_gemini(prompt, temperature=temperature, purpose=purpose, bank_id=bank_id),
+            "OpenAI": lambda: self.call_openai(prompt, temperature=temperature, purpose=purpose, bank_id=bank_id),
         }
         if self.active_llm in dispatch:
             return dispatch[self.active_llm]()

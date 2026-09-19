@@ -150,7 +150,8 @@ def compute_question_intent(quarter: str, path: str = QUESTION_INTENT_PATH,
     if not active:
         raise SystemExit("No working LLM API (set GROQ_API_KEY / GEMINI_API_KEY in .env).")
 
-    raw = client.call_llm(_build_prompt(quarter, narration_text, blocks), temperature=0.0)
+    raw = client.call_llm(_build_prompt(quarter, narration_text, blocks), temperature=0.0,
+                          purpose="question_intent")
     if not raw:
         raise SystemExit(f"[intent] {quarter}: LLM call failed.")
 

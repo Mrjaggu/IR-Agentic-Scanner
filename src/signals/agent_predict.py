@@ -129,6 +129,6 @@ def _parse_swap_response(raw: str, target_topics: list[str], candidate_topics: s
 def propose_swap(client, analyst: str, target_topics: list[str], context: dict) -> dict | None:
     """Returns {remove_topic, add_topic, evidence} or None (no swap / failure)."""
     prompt = _build_swap_prompt(analyst, target_topics, context)
-    raw = client.call_llm(prompt, temperature=0.0)
+    raw = client.call_llm(prompt, temperature=0.0, purpose="agent_predict_swap")
     candidate_topics = {t for t, _ in context["anomalous_topics"]}
     return _parse_swap_response(raw, target_topics, candidate_topics)
