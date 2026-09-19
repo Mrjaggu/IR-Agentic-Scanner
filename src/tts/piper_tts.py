@@ -8,27 +8,45 @@ regulated, potentially air-gapped deployment. Piper (github.com/rhasspy/piper)
 is a neural TTS engine whose English voices run 20-65MB as ONNX models,
 synthesize on CPU near real-time, and need no network once installed.
 
-The voice model is NOT bundled in this repo -- binary model weights don't
-belong in git, and huggingface.co (where Piper voices are hosted) isn't on
-this environment's network allowlist during development. Install it once,
-from a real terminal with normal internet access:
+The voice model is NOT checked into this repo -- binary model weights don't
+belong in git. Two ways it can end up on disk before is_available() is ever
+asked:
 
-    pip install piper-tts
-    python -m piper.download_voices en_US-lessac-medium
-    # or a smaller one: en_US-amy-low (~25MB) / en_US-ryan-low (~25MB)
+  1. Manual, for local/on-prem/air-gapped use (unchanged from before):
 
-That downloads <voice>.onnx + <voice>.onnx.json. Point PIPER_VOICE_DIR at
-wherever they land (defaults to data/tts_voices/ in this repo) and
-PIPER_VOICE at the voice name (defaults to en_US-lessac-medium). Until those
-files exist, is_available() is False and every caller degrades honestly --
-same discipline as pattern_retrieval.is_available() / embeddings.is_available():
-the "Listen" button simply doesn't render rather than erroring.
+         pip install piper-tts
+         python -m piper.download_voices en_US-lessac-medium
+         # or a smaller one: en_US-amy-low (~25MB) / en_US-ryan-low (~25MB)
+
+     That downloads <voice>.onnx + <voice>.onnx.json into PIPER_VOICE_DIR
+     (defaults to data/tts_voices/ in this repo).
+
+  2. Auto-download, for a deployment like Vercel where nobody can run step 1
+     against the deployed filesystem and the repo's own git history is the
+     only thing that ships. Compute is not the constraint there (Piper is a
+     CPU, sub-100ms-per-call model) -- the model FILES just never arrive. So
+     if the manual path's files aren't found, is_available() makes one
+     best-effort attempt to fetch the same public files from the same
+     Hugging Face-hosted source `piper.download_voices` itself uses, into a
+     writable temp directory (Vercel's function filesystem is read-only
+     outside /tmp), and caches the outcome for this process's lifetime --
+     one real download on a cold start, instant on every request after
+     that. Opt out with PIPER_AUTO_DOWNLOAD=0 for a strict "never touch the
+     network for this" deployment.
+
+Either way, until real model files exist somewhere reachable, is_available()
+is False and every caller degrades honestly -- same discipline as
+pattern_retrieval.is_available() / embeddings.is_available(): the "Listen"
+button simply doesn't render rather than erroring.
 """
 
 import io
 import os
 import re
+import shutil
+import tempfile
 import threading
+import urllib.request
 import wave
 
 from src.config.settings import BASE_DIR
@@ -36,20 +54,115 @@ from src.config.settings import BASE_DIR
 VOICE_DIR = os.environ.get("PIPER_VOICE_DIR", os.path.join(BASE_DIR, "data", "tts_voices"))
 VOICE_NAME = os.environ.get("PIPER_VOICE", "en_US-lessac-medium")
 
+# Auto-download destination -- deliberately NOT VOICE_DIR. A deployment
+# filesystem (Vercel's included) is commonly read-only outside a temp dir,
+# and even where VOICE_DIR itself is writable, keeping the auto-fetched copy
+# separate means a manual install a user does later is never silently
+# shadowed by (or clobbered by) something this module fetched on its own.
+_AUTO_VOICE_DIR = os.path.join(tempfile.gettempdir(), "piper_voices_auto")
+
+# The same source + path scheme piper.download_voices (this app's own
+# piper-tts dependency) uses -- see its source for the reference
+# implementation this mirrors.
+_HF_VOICE_URL = (
+    "https://huggingface.co/rhasspy/piper-voices/resolve/main/"
+    "{lang_family}/{lang_code}/{voice_name}/{voice_quality}/"
+    "{lang_code}-{voice_name}-{voice_quality}{extension}?download=true"
+)
+_VOICE_NAME_RE = re.compile(
+    r"^(?P<lang_family>[^-]+)_(?P<lang_region>[^-]+)-(?P<voice_name>[^-]+)-(?P<voice_quality>.+)$"
+)
+
 _voice = None
 _load_failed = False
-_lock = threading.Lock()
+_lock = threading.Lock()          # guards the PiperVoice singleton load only
+_download_lock = threading.Lock()  # guards the auto-download attempt only --
+                                    # kept separate from _lock because
+                                    # _get_voice() holds _lock while calling
+                                    # is_available(), which can reach the
+                                    # download path; re-entering the same
+                                    # non-reentrant Lock would deadlock.
+_download_attempted = False
+_download_ok = False
 
 
-def _model_paths(voice_name: str = VOICE_NAME) -> tuple[str, str]:
-    onnx = os.path.join(VOICE_DIR, f"{voice_name}.onnx")
-    cfg = os.path.join(VOICE_DIR, f"{voice_name}.onnx.json")
+def _model_paths(base_dir: str, voice_name: str = VOICE_NAME) -> tuple[str, str]:
+    onnx = os.path.join(base_dir, f"{voice_name}.onnx")
+    cfg = os.path.join(base_dir, f"{voice_name}.onnx.json")
     return onnx, cfg
 
 
-def is_available() -> bool:
-    onnx, cfg = _model_paths()
+def _dir_has_voice(base_dir: str) -> bool:
+    onnx, cfg = _model_paths(base_dir)
     return os.path.exists(onnx) and os.path.exists(cfg)
+
+
+def _existing_voice_dir() -> str | None:
+    """The manually-installed dir first (real local/on-prem installs should
+    never be shadowed by an auto-fetched copy), then wherever a previous
+    auto-download in this process already landed."""
+    for d in (VOICE_DIR, _AUTO_VOICE_DIR):
+        if _dir_has_voice(d):
+            return d
+    return None
+
+
+def _download_voice_to(base_dir: str) -> bool:
+    """One real attempt to fetch VOICE_NAME's two files from the public
+    Hugging Face source into `base_dir`. Best-effort: any failure (network,
+    timeout, disk) is swallowed and reported False, same as everywhere else
+    in this module -- an auto-download that can crash the app would be
+    worse than no Listen button."""
+    match = _VOICE_NAME_RE.match(VOICE_NAME)
+    if not match:
+        print(f"  [piper_tts] PIPER_VOICE={VOICE_NAME!r} doesn't match "
+              f"<lang>_<REGION>-<name>-<quality> -- can't auto-download it")
+        return False
+    fmt = {
+        "lang_family": match.group("lang_family"),
+        "lang_code": f"{match.group('lang_family')}_{match.group('lang_region')}",
+        "voice_name": match.group("voice_name"),
+        "voice_quality": match.group("voice_quality"),
+    }
+    try:
+        os.makedirs(base_dir, exist_ok=True)
+        onnx, cfg = _model_paths(base_dir)
+        for extension, dest in ((".onnx", onnx), (".onnx.json", cfg)):
+            url = _HF_VOICE_URL.format(extension=extension, **fmt)
+            tmp_dest = dest + ".part"
+            with urllib.request.urlopen(url, timeout=20) as resp, open(tmp_dest, "wb") as out:
+                shutil.copyfileobj(resp, out)
+            os.replace(tmp_dest, dest)
+        return True
+    except Exception as e:
+        print(f"  [piper_tts] voice auto-download failed (non-fatal, Listen "
+              f"button just won't show): {e}")
+        return False
+
+
+def _ensure_auto_downloaded() -> bool:
+    """Attempts the auto-download at most once per process -- is_available()
+    is on the hot path of every chat response (it decides whether the
+    button renders), so a real network call there is only acceptable
+    because it happens exactly once per cold start, cached after."""
+    global _download_attempted, _download_ok
+    if _download_attempted:
+        return _download_ok
+    with _download_lock:
+        if _download_attempted:
+            return _download_ok
+        _download_attempted = True
+        if os.environ.get("PIPER_AUTO_DOWNLOAD", "1") == "0":
+            _download_ok = False
+        else:
+            _download_ok = _download_voice_to(_AUTO_VOICE_DIR)
+        return _download_ok
+
+
+def is_available() -> bool:
+    if _existing_voice_dir() is not None:
+        return True
+    return _ensure_auto_downloaded()
 
 
 def _get_voice():
@@ -66,7 +179,8 @@ def _get_voice():
             return None
         try:
             from piper import PiperVoice
-            onnx, cfg = _model_paths()
+            base_dir = _existing_voice_dir()
+            onnx, cfg = _model_paths(base_dir)
             _voice = PiperVoice.load(onnx, cfg)
         except Exception:
             _load_failed = True

@@ -54,7 +54,7 @@ via a GitHub issue; see [CONTRIBUTING.md](CONTRIBUTING.md) for how.
   `/api/audit/summary` and `/api/audit/log`
 
 **Other**
-- Offline, CPU-only text-to-speech for chat answers (Piper)
+- Offline, CPU-only text-to-speech for chat answers (Piper), with a best-effort auto-download of the voice model on deployments (Vercel included) where it was never manually installed -- see `src/tts/piper_tts.py`
 - `.env`-driven configuration, loaded reliably at startup
 
 ---
