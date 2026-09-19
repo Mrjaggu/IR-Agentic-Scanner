@@ -120,6 +120,15 @@ This repository includes a `vercel.json` configuration and a GitHub Action workf
 
 ---
 
+## 🗺️ Roadmap & Contributing
+
+See [ROADMAP.md](ROADMAP.md) for what's shipped, what's next, and what's
+explicitly out of scope. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to
+get a change into the app -- branching model, commit conventions, and what
+to verify before opening a PR.
+
+---
+
 ## 📜 License
 
 [MIT License](LICENSE)
