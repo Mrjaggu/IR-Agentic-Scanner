@@ -1648,6 +1648,52 @@ const PROMPT_GROUPS = [
 ];
 let chatHistory = [], chatAbort = null;
 
+/* Chat "Listen" button. The backend starts synthesizing the FULL answer's
+   audio the instant the text itself is known (see chat_stream()'s "audio"
+   SSE event, emitted before the word-by-word drip even starts) -- so by the
+   time a turn finishes rendering and this button appears, playback is often
+   ready on the first fetch. If not, /api/tts/audio/<id> answers 202 while
+   the background synthesis is still running and this polls a few times
+   rather than treating that as an error. One shared <audio> element: starting
+   a new turn's playback always stops whatever was already playing, so two
+   answers never talk over each other. */
+let ttsAudioEl = null, ttsActiveBtn = null;
+
+function stopTTS() {
+  if (ttsAudioEl) { ttsAudioEl.pause(); ttsAudioEl.currentTime = 0; }
+  if (ttsActiveBtn) { ttsActiveBtn.textContent = "Listen"; ttsActiveBtn.disabled = false; }
+  ttsActiveBtn = null;
+}
+
+async function playTTS(audioId, btn) {
+  if (ttsActiveBtn === btn) { stopTTS(); return; }
+  stopTTS();
+  ttsActiveBtn = btn;
+  btn.disabled = true;
+  btn.textContent = "Preparing…";
+  for (let attempt = 0; attempt < 20; attempt++) {
+    if (ttsActiveBtn !== btn) return;  // superseded by another click while this was in flight
+    let resp;
+    try {
+      resp = await fetch(`/api/tts/audio/${audioId}`);
+    } catch (e) {
+      btn.textContent = "Listen (unavailable)"; btn.disabled = false; ttsActiveBtn = null;
+      return;
+    }
+    if (resp.status === 202) { await new Promise(r => setTimeout(r, 500)); continue; }
+    if (!resp.ok) { btn.textContent = "Listen (unavailable)"; btn.disabled = false; ttsActiveBtn = null; return; }
+    const blob = await resp.blob();
+    if (ttsActiveBtn !== btn) return;
+    ttsAudioEl = new Audio(URL.createObjectURL(blob));
+    ttsAudioEl.addEventListener("ended", () => { if (ttsActiveBtn === btn) stopTTS(); });
+    btn.disabled = false;
+    btn.textContent = "Stop";
+    ttsAudioEl.play();
+    return;
+  }
+  btn.textContent = "Listen (timed out)"; btn.disabled = false; ttsActiveBtn = null;
+}
+
 function renderEmptyChat() {
   // Opens as a real first message from the assistant -- same avatar/bubble
   // markup a real answer uses -- with quick-reply chips underneath, instead
@@ -1804,7 +1850,7 @@ async function sendChat() {
   $("#chatSend").style.display = "none"; $("#chatStop").style.display = "";
   scrollChat();
 
-  let acc = "", passages = [];
+  let acc = "", passages = [], audioId = null;
   const paint = () => { body.innerHTML = md(acc) + `<span class="caret"></span>`; };
 
   try {
@@ -1839,6 +1885,7 @@ async function sendChat() {
           else if (ev === "mode") status.textContent = d.mode === "llm" ? "model answer · grounded" : "retrieval only";
           else if (ev === "delta") { acc += d.text; paint(); scrollChat(); }
           else if (ev === "citations") passages = d;
+          else if (ev === "audio") audioId = d.audio_id;
         }
       }
     }
@@ -1855,6 +1902,17 @@ async function sendChat() {
   copy.className = "btn btn-sm"; copy.textContent = "Copy"; copy.style.marginTop = "10px";
   copy.addEventListener("click", () => navigator.clipboard?.writeText(acc));
   bt.querySelector(".sources").prepend(copy);
+
+  // Only if the backend actually scheduled synthesis (piper_tts.is_available()
+  // and there was text to speak -- see chat_stream()'s "audio" SSE event).
+  // No id means no voice is installed on this machine; the button just
+  // doesn't render rather than offering something that will always fail.
+  if (audioId) {
+    const listen = document.createElement("button");
+    listen.className = "btn btn-sm"; listen.textContent = "Listen"; listen.style.marginTop = "10px";
+    listen.addEventListener("click", () => playTTS(audioId, listen));
+    bt.querySelector(".sources").prepend(listen);
+  }
 
   if (acc.trim()) {
     const pin = document.createElement("button");
