@@ -89,6 +89,11 @@ _TABLE_PIPE_RE = re.compile(r"\|")
 _LEFTOVER_MD_RE = re.compile(r"[#*_`~]")
 _WS_RE = re.compile(r"[ \t]+")
 _BLANKLINES_RE = re.compile(r"\n{2,}")
+# A colon is spoken as the literal word "colon" by this TTS voice rather than
+# read as a natural pause -- common in bullet-point labels like "NIM: management
+# noted...". Swapped for a comma (a real pause, never spoken aloud) everywhere
+# except digit:digit, so times/ratios ("3:30", "12:1") are left alone.
+_COLON_RE = re.compile(r"(?<!\d):(?!\d)")
 
 
 def _clean_for_speech(text: str) -> str:
@@ -115,6 +120,7 @@ def _clean_for_speech(text: str) -> str:
     cleaned = _MD_HR_OR_SEP_RE.sub("", cleaned)
     cleaned = _TABLE_PIPE_RE.sub(" ", cleaned)
     cleaned = _LEFTOVER_MD_RE.sub("", cleaned)
+    cleaned = _COLON_RE.sub(",", cleaned)
     cleaned = _WS_RE.sub(" ", cleaned)
     cleaned = _BLANKLINES_RE.sub("\n", cleaned)
     return cleaned.strip()
