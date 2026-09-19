@@ -128,9 +128,25 @@ def _extract_numbers(text: str) -> list[str]:
 
 
 def _evidence_numbers_for_topic(topic: str, evidence_bundles: dict, global_rate: dict,
-                                momentum: dict, anomaly_scores: dict) -> set[str]:
+                                momentum: dict, anomaly_scores: dict,
+                                max_momentum: float = 1.0) -> set[str]:
     """All numbers that legitimately appear in this topic's evidence, so the
-    Verifier can check the Analyst didn't cite a number from nowhere."""
+    Verifier can check the Analyst didn't cite a number from nowhere.
+
+    max_momentum: _format_evidence() (the prompt builder, above) shows the
+    LLM a NORMALIZED momentum score -- momentum[topic] / max(max_momentum, 1),
+    to 2dp -- not the raw value. Before this fix, this legit-number set only
+    ever contained the raw value's own str(), so any topic whose raw momentum
+    wasn't coincidentally equal to its normalized score (nearly all of them)
+    could not pass this check by citing momentum at all: the LLM was citing
+    the exact number it was shown, and the check was comparing it to a
+    different number it was never shown. This is what silently dropped
+    Deposits & CASA -- a topic with genuinely the highest peer momentum that
+    quarter -- out of a real brief after 3 retries, logged as
+    'bare_topic_after_retries' with no fabrication involved at all. Both the
+    raw and normalized forms are kept here (never remove the raw one -- some
+    callers still don't pass max_momentum, and the raw value is itself a
+    legitimate thing to cite)."""
     nums = set()
     gr = global_rate.get(topic, 0.0)
     nums.add(f"{gr * 100:.0f}")
@@ -145,16 +161,20 @@ def _evidence_numbers_for_topic(topic: str, evidence_bundles: dict, global_rate:
         nums.add(f"{a:.2f}"); nums.add(f"{a:.1f}"); nums.add(f"{a * 100:.0f}")
     if topic in momentum:
         nums.update(_extract_numbers(str(momentum[topic])))
+        normalized = momentum[topic] / max(max_momentum, 1)
+        nums.add(f"{normalized:.2f}"); nums.add(f"{normalized:.1f}")
+        nums.add(f"{normalized * 100:.0f}")
     return nums
 
 
 def _verify_rationale(topic: str, rationale: str, evidence_bundles: dict, global_rate: dict,
-                      momentum: dict, anomaly_scores: dict) -> bool:
+                      momentum: dict, anomaly_scores: dict, max_momentum: float = 1.0) -> bool:
     cited = set(_extract_numbers(rationale))
     if not cited:
         # No number cited at all -- doesn't meet "cite specific evidence".
         return False
-    legit = _evidence_numbers_for_topic(topic, evidence_bundles, global_rate, momentum, anomaly_scores)
+    legit = _evidence_numbers_for_topic(topic, evidence_bundles, global_rate, momentum,
+                                        anomaly_scores, max_momentum=max_momentum)
     return bool(cited & legit)
 
 
@@ -246,7 +266,8 @@ def build_overall_topics(evidence_bundles: dict, anomaly_scores: dict, global_ra
             rationale = item.get("rationale", "")
             if t not in to_rank:
                 continue
-            if _verify_rationale(t, rationale, evidence_bundles, global_rate, momentum, anomaly_scores):
+            if _verify_rationale(t, rationale, evidence_bundles, global_rate, momentum, anomaly_scores,
+                                max_momentum=max_momentum):
                 final_rationale[t] = rationale
                 if t not in ranked_order:
                     ranked_order.append(t)
