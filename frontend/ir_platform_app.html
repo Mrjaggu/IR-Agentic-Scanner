@@ -803,12 +803,17 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
 
   <!-- ══ NEWS FEEDS ═══════════════════════════════════════════════════════ -->
   <section class="view" id="view-news">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+      <div class="seg" role="group" aria-label="Date range">
+        <button id="newsRange7" aria-pressed="false">Last 7 days</button>
+        <button id="newsRange30" aria-pressed="true">Last 30 days</button>
+        <button id="newsRangeAll" aria-pressed="false">All time</button>
+      </div>
+      <button class="btn btn-sm" id="newsRefreshBtn">Refresh</button>
+    </div>
     <div class="grid-2">
       <div class="card">
-        <div class="card-head">
-          <h2>In the news</h2>
-          <button class="btn btn-sm" id="newsRefreshBtn">Refresh</button>
-        </div>
+        <div class="card-head"><h2>In the news</h2></div>
         <div class="pad" id="newsExternalResult"></div>
       </div>
       <div class="card">
@@ -2006,6 +2011,9 @@ $("#modeSearch").addEventListener("click", () => {
   $("#searchPane").style.display = ""; $("#chatPane").style.display = "none";
 });
 $("#newsRefreshBtn")?.addEventListener("click", () => loadNews(true));
+$("#newsRange7")?.addEventListener("click", () => newsSetRange(7));
+$("#newsRange30")?.addEventListener("click", () => newsSetRange(30));
+$("#newsRangeAll")?.addEventListener("click", () => newsSetRange(null));
 
 /* ── Structured search: rotating starter queries ─────────────────────────────
    Built from the data that is actually loaded — real analyst names, real
@@ -2955,7 +2963,7 @@ function drawQuarterTable(host) {
    ingestion -- the closest honest proxy available from a general news feed.
    Article text is untrusted external content and always goes through esc(),
    same discipline as everywhere else third-party text reaches this file. */
-let NEWS = { loaded: false };
+let NEWS = { loaded: false, days: 30 };
 
 function newsAnalystNames() {
   return (STATE.analysts || []).map(a => a.analyst).filter(Boolean);
@@ -2966,21 +2974,43 @@ function newsMentionsAnalyst(article, names) {
   return names.find(n => hay.includes(n.toLowerCase()));
 }
 
+function newsSetRange(days) {
+  if (NEWS.days === days) return;
+  NEWS.days = days;
+  $("#newsRange7").setAttribute("aria-pressed", String(days === 7));
+  $("#newsRange30").setAttribute("aria-pressed", String(days === 30));
+  $("#newsRangeAll").setAttribute("aria-pressed", String(days === null));
+  loadNews();
+}
+
 async function loadNews(refresh) {
   const gen = STATE.bankGen;
   const generalHost = $("#newsExternalResult");
   const analystHost = $("#newsAnalystResult");
-  generalHost.innerHTML = `<div class="empty"><span class="spinner"></span> Loading headlines…</div>`;
-  analystHost.innerHTML = `<div class="empty"><span class="spinner"></span> Loading…</div>`;
+  // Refetch keeps the frame: dim the previous render instead of blanking it,
+  // so switching ranges doesn't flash an empty panel every click.
+  const hadContent = generalHost.innerHTML.trim().length > 0;
+  if (hadContent) {
+    generalHost.style.opacity = "0.45";
+    analystHost.style.opacity = "0.45";
+  } else {
+    generalHost.innerHTML = `<div class="empty"><span class="spinner"></span> Loading headlines…</div>`;
+    analystHost.innerHTML = `<div class="empty"><span class="spinner"></span> Loading…</div>`;
+  }
 
   let d;
-  try { d = await api("/api/news/external" + (refresh ? "?refresh=true" : "")); }
+  const params = new URLSearchParams();
+  if (refresh) params.set("refresh", "true");
+  if (NEWS.days) params.set("days", String(NEWS.days));
+  try { d = await api("/api/news/external" + (params.toString() ? `?${params}` : "")); }
   catch (err) {
     if (gen !== STATE.bankGen) return;
+    generalHost.style.opacity = analystHost.style.opacity = "";
     generalHost.innerHTML = analystHost.innerHTML = `<div class="empty small muted">Could not load: ${esc(err.message)}</div>`;
     return;
   }
   if (gen !== STATE.bankGen) return;
+  generalHost.style.opacity = analystHost.style.opacity = "";
 
   if (!d.available) {
     generalHost.innerHTML = analystHost.innerHTML = `<div class="empty small muted">External news isn't configured on this server.</div>`;

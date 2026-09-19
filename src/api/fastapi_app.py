@@ -325,8 +325,10 @@ def api_get_activity(bank: str = DEFAULT_BANK):
 
 
 @app.get("/api/news/external")
-def get_news_external(bank: str = DEFAULT_BANK, refresh: bool = False):
+def get_news_external(bank: str = DEFAULT_BANK, refresh: bool = False, days: int | None = None):
     """External headlines for the News tab (Search & chat), via TheNewsAPI.
+    `days` (7, 30, or omitted for the full archive) scopes the search to a
+    recent window -- see the News feeds date-range buttons in the frontend.
     Degrades honestly per src.news.news_api's own discipline -- no token
     configured, a network failure, or the daily request budget being spent
     all come back as a normal 200 with `available`/`error`/`note` fields for
@@ -334,7 +336,7 @@ def get_news_external(bank: str = DEFAULT_BANK, refresh: bool = False):
     cache TTL and the hard daily call cap that keep this well under
     TheNewsAPI's free-tier 100 requests/day."""
     bank_id = _bank(bank)
-    return news_api.get_news(bank_id, BANKS[bank_id].display_name, force_refresh=refresh)
+    return news_api.get_news(bank_id, BANKS[bank_id].display_name, force_refresh=refresh, days=days)
 
 
 @app.get("/api/metrics/timeseries")
