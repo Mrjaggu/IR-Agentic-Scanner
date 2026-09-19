@@ -88,6 +88,7 @@ def _fetch(bank_name: str) -> list[dict]:
     for a in data.get("news", []) or []:
         articles.append({
             "title": a.get("title"),
+            "description": a.get("description"),
             "url": a.get("url"),
             "author": a.get("author"),
             "published": a.get("published"),
