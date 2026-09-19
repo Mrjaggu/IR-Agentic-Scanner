@@ -734,6 +734,8 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
       <div class="seg" role="group" aria-label="Mode">
         <button id="modeChat" aria-pressed="true">Chat</button>
         <button id="modeSearch" aria-pressed="false">Structured search</button>
+        <button id="modeQuarter" aria-pressed="false">Quarter view</button>
+        <button id="modeNews" aria-pressed="false">News</button>
       </div>
       <span class="muted small" id="chatModeNote"></span>
     </div>
@@ -786,6 +788,27 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
         </div>
       </div></div>
       <div id="searchResults"></div>
+    </div>
+
+    <div id="quarterViewPane" style="display:none;">
+      <div class="xs muted" style="margin-bottom:10px;">Compare regex-extracted call metrics across every quarter in the archive. Metrics with different units are never plotted on the same axis.</div>
+      <div id="quarterViewResult"></div>
+    </div>
+
+    <div id="newsPane" style="display:none;">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head">
+            <h2>In the news</h2>
+            <button class="btn btn-sm" id="newsRefreshBtn">Refresh</button>
+          </div>
+          <div class="pad" id="newsExternalResult"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Recent activity</h2></div>
+          <div class="pad" id="newsActivityResult"></div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -1964,14 +1987,23 @@ $("#chatInput").addEventListener("input", e => {
   e.target.style.height = "auto";
   e.target.style.height = Math.min(e.target.scrollHeight, 150) + "px";
 });
-$("#modeChat").addEventListener("click", () => {
-  $("#modeChat").setAttribute("aria-pressed", "true"); $("#modeSearch").setAttribute("aria-pressed", "false");
-  $("#chatPane").style.display = ""; $("#searchPane").style.display = "none";
-});
-$("#modeSearch").addEventListener("click", () => {
-  $("#modeSearch").setAttribute("aria-pressed", "true"); $("#modeChat").setAttribute("aria-pressed", "false");
-  $("#searchPane").style.display = ""; $("#chatPane").style.display = "none";
-});
+const CHAT_MODE_BTNS = ["modeChat", "modeSearch", "modeQuarter", "modeNews"];
+const CHAT_MODE_PANES = {
+  modeChat: "chatPane", modeSearch: "searchPane",
+  modeQuarter: "quarterViewPane", modeNews: "newsPane",
+};
+function setChatMode(active) {
+  CHAT_MODE_BTNS.forEach(id => $("#" + id).setAttribute("aria-pressed", String(id === active)));
+  Object.entries(CHAT_MODE_PANES).forEach(([btnId, paneId]) =>
+    $("#" + paneId).style.display = (btnId === active) ? "" : "none");
+  if (active === "modeQuarter" && !QV.loaded) { QV.loaded = true; loadQuarterView(); }
+  if (active === "modeNews" && !NEWS.loaded) { NEWS.loaded = true; loadNews(); }
+}
+$("#modeChat").addEventListener("click", () => setChatMode("modeChat"));
+$("#modeSearch").addEventListener("click", () => setChatMode("modeSearch"));
+$("#modeQuarter").addEventListener("click", () => setChatMode("modeQuarter"));
+$("#modeNews").addEventListener("click", () => setChatMode("modeNews"));
+$("#newsRefreshBtn").addEventListener("click", () => loadNewsExternal(true));
 
 /* ── Structured search: rotating starter queries ─────────────────────────────
    Built from the data that is actually loaded — real analyst names, real
@@ -2717,6 +2749,262 @@ async function loadSkills() {
     </div></div>`).join("");
 }
 
+/* ── Quarter view: cross-quarter metric comparison (Search & chat) ───────────
+   Data source is src.signals.metrics_extractor's regex-extracted timeseries
+   -- deterministic, no LLM, same as the rest of this platform's numbers.
+   dataviz rules followed here: one shared y-axis only for metrics with the
+   SAME unit (never conflate % with crore -- see qvUnit()/compatible below),
+   the existing app's own validated categorical ramp (--accent/--s2/--s3/--s4,
+   already checked with the palette validator) rather than a new one, gaps
+   left as gaps (never interpolated across a quarter with nothing extracted),
+   a legend only once there are 2+ series, direct end-labels, and a data
+   table underneath so every value the chart shows is reachable without
+   hovering it. */
+const QV_COLORS = ["var(--accent)", "var(--s2)", "var(--s3)", "var(--s4)"];
+let QV = { loaded: false, metricsByQuarter: {}, metricTopics: {}, selected: [], quarters: [] };
+
+async function loadQuarterView() {
+  const gen = STATE.bankGen;
+  const host = $("#quarterViewResult");
+  host.innerHTML = `<div class="card"><div class="empty"><span class="spinner"></span> Loading metrics…</div></div>`;
+  let d;
+  try { d = await api("/api/metrics/timeseries"); }
+  catch (err) { if (gen !== STATE.bankGen) return; host.innerHTML = `<div class="card"><div class="empty">Could not load: ${esc(err.message)}</div></div>`; return; }
+  if (gen !== STATE.bankGen) return;   // a bank switch happened while this was loading
+
+  QV.metricsByQuarter = d.metrics_by_quarter || {};
+  QV.metricTopics = d.metric_topics || {};
+  QV.quarters = (STATE.meta?.quarters || Object.keys(QV.metricsByQuarter)).slice();
+  if (!QV.selected.length) {
+    const withData = Object.keys(QV.metricTopics).find(m => QV.quarters.some(q => QV.metricsByQuarter[q]?.[m]));
+    QV.selected = withData ? [withData] : [];
+  } else {
+    // A metric this bank never extracted (e.g. switched from a bank that has
+    // it to one that doesn't) can't stay selected -- drop it rather than
+    // show an empty line with no explanation.
+    QV.selected = QV.selected.filter(m => QV.quarters.some(q => QV.metricsByQuarter[q]?.[m]));
+  }
+  renderQuarterView();
+}
+
+function qvUnit(metric) {
+  for (const q of QV.quarters) {
+    const rec = QV.metricsByQuarter[q]?.[metric];
+    if (rec?.value_unit) return rec.value_unit;
+  }
+  return "";
+}
+
+function qvFmt(v, unit) {
+  if (v == null || v === "") return "—";
+  const n = Number(v);
+  const s = Math.abs(n) >= 100 ? n.toFixed(0) : n.toFixed(2);
+  return unit ? `${s}${unit === "crore" ? " cr" : unit}` : s;
+}
+
+function renderQuarterView() {
+  const host = $("#quarterViewResult");
+  const metrics = Object.keys(QV.metricTopics);
+  if (!metrics.length) {
+    host.innerHTML = `<div class="card"><div class="empty">No metrics extracted for this bank yet.</div></div>`;
+    return;
+  }
+  const byTopic = {};
+  metrics.forEach(m => { (byTopic[QV.metricTopics[m]] ||= []).push(m); });
+  const unit = QV.selected.length ? qvUnit(QV.selected[0]) : "";
+
+  const chips = QV.selected.map((m, i) => `
+    <span class="chip" style="border-color:${QV_COLORS[i]};">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${QV_COLORS[i]};margin-right:5px;"></span>
+      ${esc(m.replace(/_/g, " "))}
+      <button class="qv-remove" data-metric="${esc(m)}" aria-label="Remove ${esc(m)}"
+        style="margin-left:6px;background:none;border:0;color:var(--ink-muted);cursor:pointer;font-size:13px;">×</button>
+    </span>`).join("");
+
+  const addOptions = Object.entries(byTopic).map(([topic, ms]) => {
+    const opts = ms.filter(m => !QV.selected.includes(m) && (!QV.selected.length || qvUnit(m) === unit))
+      .map(m => `<option value="${esc(m)}">${esc(m.replace(/_/g, " "))}${qvUnit(m) ? " (" + esc(qvUnit(m)) + ")" : ""}</option>`).join("");
+    return opts ? `<optgroup label="${esc(topic)}">${opts}</optgroup>` : "";
+  }).join("");
+  const addPicker = QV.selected.length < 4
+    ? `<select id="qvAddMetric" class="btn btn-sm"><option value="">+ compare a metric…</option>${addOptions}</select>`
+    : `<span class="xs muted">Up to 4 metrics at once.</span>`;
+
+  host.innerHTML = `<div class="card"><div class="pad">
+    <div class="row" style="gap:8px; flex-wrap:wrap; margin-bottom:14px;">${chips}${addPicker}</div>
+    <div id="qvChartHost"></div>
+    <div id="qvTableHost" style="margin-top:16px;"></div>
+  </div></div>`;
+
+  $("#qvAddMetric")?.addEventListener("change", e => {
+    if (e.target.value) { QV.selected.push(e.target.value); renderQuarterView(); }
+  });
+  host.querySelectorAll(".qv-remove").forEach(b =>
+    b.addEventListener("click", () => { QV.selected = QV.selected.filter(m => m !== b.dataset.metric); renderQuarterView(); }));
+
+  if (!QV.selected.length) {
+    $("#qvChartHost").innerHTML = `<div class="empty small muted">Pick a metric above to plot it across every quarter.</div>`;
+    $("#qvTableHost").innerHTML = "";
+    return;
+  }
+  drawQuarterChart($("#qvChartHost"), unit);
+  drawQuarterTable($("#qvTableHost"));
+}
+
+function drawQuarterChart(host, unit) {
+  const W = 720, H = 260, padL = 46, padR = 16, padT = 16, padB = 26;
+  const innerW = W - padL - padR, innerH = H - padT - padB;
+  const quarters = QV.quarters;
+  const series = QV.selected.map((m, i) => ({
+    metric: m, color: QV_COLORS[i],
+    points: quarters.map(q => {
+      const rec = QV.metricsByQuarter[q]?.[m];
+      return (rec && rec.value != null) ? Number(rec.value) : null;
+    }),
+  }));
+  const allVals = series.flatMap(s => s.points.filter(v => v != null));
+  if (!allVals.length) {
+    host.innerHTML = `<div class="empty small muted">No data for the selected metric(s).</div>`;
+    return;
+  }
+  let vMin = Math.min(...allVals), vMax = Math.max(...allVals);
+  if (vMin === vMax) { vMin -= 1; vMax += 1; }
+  const pad = (vMax - vMin) * 0.15;
+  vMin -= pad; vMax += pad;
+  const xPos = i => padL + (quarters.length > 1 ? (innerW * i) / (quarters.length - 1) : innerW / 2);
+  const yPos = v => padT + innerH - ((v - vMin) / (vMax - vMin)) * innerH;
+
+  const gridLines = [0, 0.5, 1].map(t => {
+    const yy = padT + innerH * t;
+    const val = vMax - (vMax - vMin) * t;
+    return `<line x1="${padL}" y1="${yy.toFixed(1)}" x2="${W - padR}" y2="${yy.toFixed(1)}" stroke="var(--hairline)" stroke-width="1"/>
+            <text x="${padL - 6}" y="${(yy + 3.5).toFixed(1)}" text-anchor="end" font-size="10.5" fill="var(--ink-muted)">${esc(qvFmt(val, unit))}</text>`;
+  }).join("");
+
+  const paths = series.map(s => {
+    let d = "", drawing = false;
+    s.points.forEach((v, i) => {
+      if (v == null) { drawing = false; return; }
+      d += (drawing ? " L " : "M ") + xPos(i).toFixed(1) + " " + yPos(v).toFixed(1);
+      drawing = true;
+    });
+    const idxs = s.points.map((v, i) => v != null ? i : -1).filter(i => i >= 0);
+    const lastIdx = idxs.length ? idxs[idxs.length - 1] : null;
+    const endMark = lastIdx != null ? `
+      <circle cx="${xPos(lastIdx).toFixed(1)}" cy="${yPos(s.points[lastIdx]).toFixed(1)}" r="4" fill="${s.color}" stroke="var(--surface)" stroke-width="2"/>
+      <text x="${(xPos(lastIdx) + 8).toFixed(1)}" y="${(yPos(s.points[lastIdx]) - 2).toFixed(1)}" font-size="11" font-weight="600" fill="var(--ink-2)">${esc(qvFmt(s.points[lastIdx], unit))}</text>` : "";
+    return `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>${endMark}`;
+  }).join("");
+
+  const legend = series.length > 1 ? `
+    <div class="row" style="gap:14px; margin-top:10px; flex-wrap:wrap;">
+      ${series.map(s => `<span class="small" style="display:inline-flex;align-items:center;gap:5px;color:var(--ink-2);">
+        <span style="display:inline-block;width:12px;height:2px;background:${s.color};"></span>${esc(s.metric.replace(/_/g, " "))}</span>`).join("")}
+    </div>` : "";
+
+  host.innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible;touch-action:none;" id="qvSvg">
+      ${gridLines}${paths}
+      <line id="qvCrosshair" x1="0" y1="${padT}" x2="0" y2="${padT + innerH}" stroke="var(--baseline)" stroke-width="1" style="display:none;"/>
+    </svg>${legend}
+    <div class="xs muted" style="margin-top:6px;">Hover the chart for exact values by quarter.</div>`;
+
+  const svg = $("#qvSvg");
+  const onMove = e => {
+    const rect = svg.getBoundingClientRect();
+    const px = ((e.clientX - rect.left) / rect.width) * W;
+    let nearest = 0, best = Infinity;
+    quarters.forEach((_, i) => { const d = Math.abs(xPos(i) - px); if (d < best) { best = d; nearest = i; } });
+    $("#qvCrosshair").setAttribute("x1", xPos(nearest)); $("#qvCrosshair").setAttribute("x2", xPos(nearest));
+    $("#qvCrosshair").style.display = "";
+    const rows = series.map(s => `<div class="row" style="gap:6px;align-items:center;">
+        <span style="display:inline-block;width:10px;height:2px;background:${s.color};"></span>
+        <b>${esc(qvFmt(s.points[nearest], unit))}</b><span class="muted small">${esc(s.metric.replace(/_/g, " "))}</span>
+      </div>`).join("");
+    tip.innerHTML = `<div style="font-weight:600;margin-bottom:4px;">${esc(QU(quarters[nearest]))}</div>${rows}`;
+    tip.style.opacity = 1;
+    tip.style.left = Math.min(e.clientX + 12, innerWidth - tip.offsetWidth - 8) + "px";
+    tip.style.top = (e.clientY - tip.offsetHeight - 8) + "px";
+  };
+  svg.addEventListener("pointermove", onMove);
+  svg.addEventListener("pointerleave", () => { tip.style.opacity = 0; $("#qvCrosshair").style.display = "none"; });
+}
+
+function drawQuarterTable(host) {
+  const quarters = QV.quarters;
+  host.innerHTML = `<div style="overflow-x:auto;"><table>
+    <thead><tr><th>Quarter</th>${QV.selected.map(m => `<th class="num">${esc(m.replace(/_/g, " "))}</th>`).join("")}</tr></thead>
+    <tbody>${quarters.map(q => `<tr><td>${esc(QU(q))}</td>${QV.selected.map(m => {
+      const rec = QV.metricsByQuarter[q]?.[m];
+      return `<td class="num" style="font-variant-numeric:tabular-nums;">${rec ? esc(qvFmt(rec.value, rec.value_unit)) : "—"}</td>`;
+    }).join("")}</tr>`).join("")}</tbody>
+  </table></div>`;
+}
+
+/* ── News: external headlines (CurrentsAPI) + internal activity feed ─────────
+   Two independent panels, two independent failure modes -- external can be
+   "not configured" or "budget used up, showing stale cache" (see
+   src.news.currents_api's own docstring for why), internal just reuses the
+   activity log every action in this app already writes to. Article text
+   from CurrentsAPI is untrusted external content and always goes through
+   esc(), same discipline as everywhere else user- or third-party-sourced
+   text reaches this file. */
+let NEWS = { loaded: false };
+
+async function loadNews() {
+  loadNewsExternal(false);
+  loadNewsActivity();
+}
+
+async function loadNewsExternal(refresh) {
+  const gen = STATE.bankGen;
+  const host = $("#newsExternalResult");
+  host.innerHTML = `<div class="empty"><span class="spinner"></span> Loading headlines…</div>`;
+  let d;
+  try { d = await api("/api/news/external" + (refresh ? "?refresh=true" : "")); }
+  catch (err) { if (gen !== STATE.bankGen) return; host.innerHTML = `<div class="empty small muted">Could not load: ${esc(err.message)}</div>`; return; }
+  if (gen !== STATE.bankGen) return;
+
+  if (!d.available) {
+    host.innerHTML = `<div class="empty small muted">External news isn't configured on this server.</div>`;
+    return;
+  }
+  const noteHTML = d.note ? `<div class="xs muted" style="margin-bottom:8px;">${esc(d.note)}</div>` : "";
+  if (!d.articles || !d.articles.length) {
+    const why = d.error ? `Couldn't reach the news service: ${esc(d.error)}` : "No recent coverage found.";
+    host.innerHTML = `${noteHTML}<div class="empty small muted">${why}</div>`;
+    return;
+  }
+  const ageMin = d.fetched_at ? Math.round((Date.now() / 1000 - d.fetched_at) / 60) : null;
+  const ageHTML = ageMin != null
+    ? `<div class="xs muted" style="margin-bottom:8px;">Updated ${ageMin < 1 ? "just now" : ageMin + " min ago"}</div>` : "";
+  host.innerHTML = noteHTML + ageHTML + d.articles.map(a => `
+    <div style="padding:10px 0;border-bottom:1px solid var(--hairline);">
+      <a href="${esc(a.url || "#")}" target="_blank" rel="noopener noreferrer" style="font-weight:600;">${esc(a.title || "(untitled)")}</a>
+      <div class="xs muted" style="margin-top:3px;">${esc(a.author || "")}${a.published ? " · " + esc(a.published) : ""}</div>
+    </div>`).join("");
+}
+
+async function loadNewsActivity() {
+  const gen = STATE.bankGen;
+  const host = $("#newsActivityResult");
+  host.innerHTML = `<div class="empty"><span class="spinner"></span> Loading activity…</div>`;
+  let d;
+  try { d = await api("/api/activity"); }
+  catch (err) { if (gen !== STATE.bankGen) return; host.innerHTML = `<div class="empty small muted">Could not load: ${esc(err.message)}</div>`; return; }
+  if (gen !== STATE.bankGen) return;
+
+  if (!d || !d.length) {
+    host.innerHTML = `<div class="empty small muted">No recent activity in this workspace yet.</div>`;
+    return;
+  }
+  host.innerHTML = d.slice(0, 30).map(a => `
+    <div style="padding:10px 0;border-bottom:1px solid var(--hairline);">
+      <div>${esc(a.label || a.kind || "")}</div>
+      <div class="xs muted" style="margin-top:3px;">${esc(a.at ? new Date(a.at).toLocaleString() : "")}</div>
+    </div>`).join("");
+}
+
 /* ── Framework Loop: weight backtest ──────────────────────────────────────── */
 const WT_FIELDS = [
   { key: "anomaly", label: "Anomaly", default: 0.35 },
@@ -2867,6 +3155,7 @@ async function switchBank(bankId) {
     STATE.disclosure = null; STATE.evalData = null; STATE.errResearchLoaded = false;
     STATE.skillsLoaded = false; STATE.dossier = null; STATE.selected = null;
     STATE.briefCount = null;
+    QV.loaded = false; NEWS.loaded = false;   // re-fetch on next visit to this bank's tab
     chatHistory = [];
     const sel = $("#bankSelect");
     if (sel) sel.value = bankId;

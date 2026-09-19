@@ -50,6 +50,8 @@ from src.agentic.analyst_layer import reweight_for_analyst, build_arithmetic_fol
 from src.agentic.verifier import grounding_gate
 from src.agentic import pattern_retrieval
 from src.tts import piper_tts
+from src.news import currents_api
+from src.signals.metrics_extractor import METRIC_TOPIC_MAP
 from src.agentic.question_framer import build_evidence_pool
 from src.agentic.eval_harness import (
     run_holdout_eval, evaluate_quarter, research_errors, backtest_and_promote_weights,
@@ -320,6 +322,37 @@ def api_log_activity(req: ActivityRequest):
 @app.get("/api/activity")
 def api_get_activity(bank: str = DEFAULT_BANK):
     return get_state(bank_id=_bank(bank))["activity"][::-1]   # newest first
+
+
+@app.get("/api/news/external")
+def get_news_external(bank: str = DEFAULT_BANK, refresh: bool = False):
+    """External headlines for the News tab (Search & chat), via CurrentsAPI.
+    Degrades honestly per src.news.currents_api's own discipline -- no key
+    configured, a network failure, or the daily request budget being spent
+    all come back as a normal 200 with `available`/`error`/`note` fields for
+    the frontend to render, never a 5xx. See that module for the per-bank
+    cache TTL and the hard daily call cap that keep this well under
+    CurrentsAPI's free-tier 200 requests/day."""
+    bank_id = _bank(bank)
+    return currents_api.get_news(bank_id, BANKS[bank_id].display_name, force_refresh=refresh)
+
+
+@app.get("/api/metrics/timeseries")
+def get_metrics_timeseries(bank: str = DEFAULT_BANK):
+    """Quarter view's data source (Search & chat): the regex-extracted
+    per-quarter metrics (NIM, GNPA, PAT, ROE, CET1, ...) already computed by
+    src.signals.metrics_extractor -- this route just reads and returns the
+    bank-scoped file, no new computation. A quarter with nothing extracted
+    (some early quarters have none) comes back as an empty object for that
+    quarter's key, not an error -- the frontend chart treats a missing value
+    as a gap, not a zero."""
+    bank_id = _bank(bank)
+    paths = paths_for(bank_id)
+    if not os.path.exists(paths.metrics_timeseries_path):
+        return {"bank": bank_id, "metrics_by_quarter": {}, "metric_topics": METRIC_TOPIC_MAP}
+    with open(paths.metrics_timeseries_path) as f:
+        data = json.load(f)
+    return {"bank": bank_id, "metrics_by_quarter": data, "metric_topics": METRIC_TOPIC_MAP}
 
 
 @app.get("/api/analysts")
