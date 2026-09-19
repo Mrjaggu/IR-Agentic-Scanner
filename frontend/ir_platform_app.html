@@ -576,6 +576,12 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
     <button class="nav-item" data-view="chat">
       <svg viewBox="0 0 24 24"><path d="M20 14.5c0 1.4-1.1 2.5-2.5 2.5H9l-4 3v-3H6.5A2.5 2.5 0 0 1 4 14.5v-7A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5z"/></svg>
       Search &amp; chat</button>
+    <button class="nav-item" data-view="quarter">
+      <svg viewBox="0 0 24 24"><path d="M5 20V10M12 20V5M19 20v-7"/><path d="M3 20h18"/></svg>
+      Quarter view</button>
+    <button class="nav-item" data-view="news">
+      <svg viewBox="0 0 24 24"><path d="M4 4h13a2 2 0 0 1 2 2v13a1 1 0 0 1-1.6.8L4 10.5z" transform="rotate(180 12 12)"/><path d="M8 8h8M8 12h5"/></svg>
+      News feeds</button>
     <div class="nav-sep">Admin</div>
     <button class="nav-item" data-view="eval">
       <svg viewBox="0 0 24 24"><path d="M5 20V10M12 20V5M19 20v-7"/></svg>
@@ -734,8 +740,6 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
       <div class="seg" role="group" aria-label="Mode">
         <button id="modeChat" aria-pressed="true">Chat</button>
         <button id="modeSearch" aria-pressed="false">Structured search</button>
-        <button id="modeQuarter" aria-pressed="false">Quarter view</button>
-        <button id="modeNews" aria-pressed="false">News</button>
       </div>
       <span class="muted small" id="chatModeNote"></span>
     </div>
@@ -789,25 +793,27 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
       </div></div>
       <div id="searchResults"></div>
     </div>
+  </section>
 
-    <div id="quarterViewPane" style="display:none;">
-      <div class="xs muted" style="margin-bottom:10px;">Compare regex-extracted call metrics across every quarter in the archive. Metrics with different units are never plotted on the same axis.</div>
-      <div id="quarterViewResult"></div>
-    </div>
+  <!-- ══ QUARTER VIEW ═════════════════════════════════════════════════════ -->
+  <section class="view" id="view-quarter">
+    <div class="xs muted" style="margin-bottom:10px;">Compare regex-extracted call metrics across every quarter in the archive. Metrics with different units are never plotted on the same axis.</div>
+    <div id="quarterViewResult"></div>
+  </section>
 
-    <div id="newsPane" style="display:none;">
-      <div class="grid-2">
-        <div class="card">
-          <div class="card-head">
-            <h2>In the news</h2>
-            <button class="btn btn-sm" id="newsRefreshBtn">Refresh</button>
-          </div>
-          <div class="pad" id="newsExternalResult"></div>
+  <!-- ══ NEWS FEEDS ═══════════════════════════════════════════════════════ -->
+  <section class="view" id="view-news">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head">
+          <h2>In the news</h2>
+          <button class="btn btn-sm" id="newsRefreshBtn">Refresh</button>
         </div>
-        <div class="card">
-          <div class="card-head"><h2>Recent activity</h2></div>
-          <div class="pad" id="newsActivityResult"></div>
-        </div>
+        <div class="pad" id="newsExternalResult"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Analyst coverage</h2></div>
+        <div class="pad" id="newsAnalystResult"></div>
       </div>
     </div>
   </section>
@@ -1148,6 +1154,8 @@ const TITLES = {
   workspace: ["Axis Bank workspace", "Call readiness, research, and source-grounded preparation"],
   profiles: ["Analyst profiles", "Full question threads, management responses, and why each question was asked"],
   chat: ["Research archive", "Grounded retrieval across every transcript in the archive"],
+  quarter: ["Quarter view", "Compare regex-extracted call metrics across every quarter in the archive"],
+  news: ["News feeds", "Bank-specific coverage, and news mentioning analysts who cover this bank"],
   predict: ["Prepare next call", "Review the disclosure, then forecast the questions your team should prepare for"],
   brief: ["Prep brief", "Pinned questions, passages and answers — export it before the call"],
   eval: ["Evaluation", "Held-out results, promotion gate, and failure attribution"],
@@ -1295,6 +1303,8 @@ function show(view, syncRoute = true) {
   if (view === "eval" && !STATE.errResearchLoaded) { STATE.errResearchLoaded = true; loadErrorResearch(); }
   if (view === "eval" && !STATE.skillsLoaded) { STATE.skillsLoaded = true; loadSkills(); }
   if (view === "brief") loadBrief();
+  if (view === "quarter" && !QV.loaded) { QV.loaded = true; loadQuarterView(); }
+  if (view === "news" && !NEWS.loaded) { NEWS.loaded = true; loadNews(); }
   if (view === "workspace" && STATE.meta) $("#pageTitle").textContent = `${STATE.meta.display_name || "Bank"} workspace`;
   if (syncRoute) history.pushState({ view }, "", `#/${view}`);
   window.scrollTo(0, 0);
@@ -1987,23 +1997,15 @@ $("#chatInput").addEventListener("input", e => {
   e.target.style.height = "auto";
   e.target.style.height = Math.min(e.target.scrollHeight, 150) + "px";
 });
-const CHAT_MODE_BTNS = ["modeChat", "modeSearch", "modeQuarter", "modeNews"];
-const CHAT_MODE_PANES = {
-  modeChat: "chatPane", modeSearch: "searchPane",
-  modeQuarter: "quarterViewPane", modeNews: "newsPane",
-};
-function setChatMode(active) {
-  CHAT_MODE_BTNS.forEach(id => $("#" + id).setAttribute("aria-pressed", String(id === active)));
-  Object.entries(CHAT_MODE_PANES).forEach(([btnId, paneId]) =>
-    $("#" + paneId).style.display = (btnId === active) ? "" : "none");
-  if (active === "modeQuarter" && !QV.loaded) { QV.loaded = true; loadQuarterView(); }
-  if (active === "modeNews" && !NEWS.loaded) { NEWS.loaded = true; loadNews(); }
-}
-$("#modeChat").addEventListener("click", () => setChatMode("modeChat"));
-$("#modeSearch").addEventListener("click", () => setChatMode("modeSearch"));
-$("#modeQuarter").addEventListener("click", () => setChatMode("modeQuarter"));
-$("#modeNews").addEventListener("click", () => setChatMode("modeNews"));
-$("#newsRefreshBtn").addEventListener("click", () => loadNewsExternal(true));
+$("#modeChat").addEventListener("click", () => {
+  $("#modeChat").setAttribute("aria-pressed", "true"); $("#modeSearch").setAttribute("aria-pressed", "false");
+  $("#chatPane").style.display = ""; $("#searchPane").style.display = "none";
+});
+$("#modeSearch").addEventListener("click", () => {
+  $("#modeSearch").setAttribute("aria-pressed", "true"); $("#modeChat").setAttribute("aria-pressed", "false");
+  $("#searchPane").style.display = ""; $("#chatPane").style.display = "none";
+});
+$("#newsRefreshBtn")?.addEventListener("click", () => loadNews(true));
 
 /* ── Structured search: rotating starter queries ─────────────────────────────
    Built from the data that is actually loaded — real analyst names, real
@@ -2941,68 +2943,76 @@ function drawQuarterTable(host) {
   </table></div>`;
 }
 
-/* ── News: external headlines (CurrentsAPI) + internal activity feed ─────────
-   Two independent panels, two independent failure modes -- external can be
-   "not configured" or "budget used up, showing stale cache" (see
-   src.news.currents_api's own docstring for why), internal just reuses the
-   activity log every action in this app already writes to. Article text
-   from CurrentsAPI is untrusted external content and always goes through
-   esc(), same discipline as everywhere else user- or third-party-sourced
-   text reaches this file. */
+/* ── News feeds: bank coverage + analyst-mention coverage (CurrentsAPI) ───────
+   ONE fetch per bank (see src.news.currents_api's cache/budget discipline --
+   a second query per analyst would blow the 200/day free tier fast), split
+   client-side into two panels: every article, and the subset whose title or
+   description names one of THIS bank's own covering analysts (STATE.analysts,
+   the same roster Analyst profiles uses). That's a real limitation worth
+   being upfront about: CurrentsAPI indexes general news, not paywalled
+   sell-side research notes, so "analyst coverage" here means "a news article
+   that quotes or names one of this bank's analysts," not literal report
+   ingestion -- the closest honest proxy available from a general news feed.
+   Article text is untrusted external content and always goes through esc(),
+   same discipline as everywhere else third-party text reaches this file. */
 let NEWS = { loaded: false };
 
-async function loadNews() {
-  loadNewsExternal(false);
-  loadNewsActivity();
+function newsAnalystNames() {
+  return (STATE.analysts || []).map(a => a.analyst).filter(Boolean);
 }
 
-async function loadNewsExternal(refresh) {
+function newsMentionsAnalyst(article, names) {
+  const hay = `${article.title || ""} ${article.description || ""}`.toLowerCase();
+  return names.find(n => hay.includes(n.toLowerCase()));
+}
+
+async function loadNews(refresh) {
   const gen = STATE.bankGen;
-  const host = $("#newsExternalResult");
-  host.innerHTML = `<div class="empty"><span class="spinner"></span> Loading headlines…</div>`;
+  const generalHost = $("#newsExternalResult");
+  const analystHost = $("#newsAnalystResult");
+  generalHost.innerHTML = `<div class="empty"><span class="spinner"></span> Loading headlines…</div>`;
+  analystHost.innerHTML = `<div class="empty"><span class="spinner"></span> Loading…</div>`;
+
   let d;
   try { d = await api("/api/news/external" + (refresh ? "?refresh=true" : "")); }
-  catch (err) { if (gen !== STATE.bankGen) return; host.innerHTML = `<div class="empty small muted">Could not load: ${esc(err.message)}</div>`; return; }
+  catch (err) {
+    if (gen !== STATE.bankGen) return;
+    generalHost.innerHTML = analystHost.innerHTML = `<div class="empty small muted">Could not load: ${esc(err.message)}</div>`;
+    return;
+  }
   if (gen !== STATE.bankGen) return;
 
   if (!d.available) {
-    host.innerHTML = `<div class="empty small muted">External news isn't configured on this server.</div>`;
+    generalHost.innerHTML = analystHost.innerHTML = `<div class="empty small muted">External news isn't configured on this server.</div>`;
     return;
   }
   const noteHTML = d.note ? `<div class="xs muted" style="margin-bottom:8px;">${esc(d.note)}</div>` : "";
   if (!d.articles || !d.articles.length) {
     const why = d.error ? `Couldn't reach the news service: ${esc(d.error)}` : "No recent coverage found.";
-    host.innerHTML = `${noteHTML}<div class="empty small muted">${why}</div>`;
+    generalHost.innerHTML = analystHost.innerHTML = `${noteHTML}<div class="empty small muted">${why}</div>`;
     return;
   }
   const ageMin = d.fetched_at ? Math.round((Date.now() / 1000 - d.fetched_at) / 60) : null;
   const ageHTML = ageMin != null
     ? `<div class="xs muted" style="margin-bottom:8px;">Updated ${ageMin < 1 ? "just now" : ageMin + " min ago"}</div>` : "";
-  host.innerHTML = noteHTML + ageHTML + d.articles.map(a => `
+
+  const articleHTML = a => `
     <div style="padding:10px 0;border-bottom:1px solid var(--hairline);">
       <a href="${esc(a.url || "#")}" target="_blank" rel="noopener noreferrer" style="font-weight:600;">${esc(a.title || "(untitled)")}</a>
+      ${a._matchedAnalyst ? `<div class="xs" style="margin-top:3px;"><span class="chip chip-accent">mentions ${esc(a._matchedAnalyst)}</span></div>` : ""}
       <div class="xs muted" style="margin-top:3px;">${esc(a.author || "")}${a.published ? " · " + esc(a.published) : ""}</div>
-    </div>`).join("");
-}
+    </div>`;
 
-async function loadNewsActivity() {
-  const gen = STATE.bankGen;
-  const host = $("#newsActivityResult");
-  host.innerHTML = `<div class="empty"><span class="spinner"></span> Loading activity…</div>`;
-  let d;
-  try { d = await api("/api/activity"); }
-  catch (err) { if (gen !== STATE.bankGen) return; host.innerHTML = `<div class="empty small muted">Could not load: ${esc(err.message)}</div>`; return; }
-  if (gen !== STATE.bankGen) return;
+  const names = newsAnalystNames();
+  const withMatch = d.articles.map(a => ({ ...a, _matchedAnalyst: names.length ? newsMentionsAnalyst(a, names) : null }));
+  const analystHits = withMatch.filter(a => a._matchedAnalyst);
 
-  if (!d || !d.length) {
-    host.innerHTML = `<div class="empty small muted">No recent activity in this workspace yet.</div>`;
-    return;
-  }
-  host.innerHTML = d.slice(0, 30).map(a => `
-    <div style="padding:10px 0;border-bottom:1px solid var(--hairline);">
-      <div>${esc(a.label || a.kind || "")}</div>
-      <div class="xs muted" style="margin-top:3px;">${esc(a.at ? new Date(a.at).toLocaleString() : "")}</div>
-    </div>`).join("");
+  generalHost.innerHTML = noteHTML + ageHTML + withMatch.map(articleHTML).join("");
+  analystHost.innerHTML = !names.length
+    ? `<div class="empty small muted">No analyst roster loaded for this bank yet.</div>`
+    : !analystHits.length
+      ? `<div class="empty small muted">None of today's headlines mention a covering analyst by name. This checks article text against CurrentsAPI's general news, not paywalled research notes -- a real report an analyst published may not show up here at all.</div>`
+      : analystHits.map(articleHTML).join("");
 }
 
 /* ── Framework Loop: weight backtest ──────────────────────────────────────── */
