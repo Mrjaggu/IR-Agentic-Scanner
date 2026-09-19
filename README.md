@@ -11,6 +11,7 @@ An intelligent, multi-tenant capable investor relations platform and predictive 
 * **Multi-Bank & Multi-Quarter Archival Intelligence**: Scalable document parser and graph indexer designed for cross-institutional earnings call indexing and peer comparison.
 * **Interactive Dashboard & Search**: Hybrid search engine (BM25 + graph traversal) over historical earnings call transcripts with citation attribution.
 * **FastAPI Live Application**: REST API backend for live predictions, document ingestion, and transcript archives.
+* **Quarter View & News Feeds**: Multi-quarter metric comparison charts (NIM, GNPA, PAT, CET1, and more, grouped by topic) alongside bank-specific external news and analyst-mention coverage, as top-level workspace tabs.
 
 ---
 
@@ -45,6 +46,11 @@ Edit `.env`:
 MODEL_PROVIDER=GROQ # GROQ | GEMINI | OPENAI
 GROQ_MODEL=openai/gpt-oss-120b
 GROQ_API_KEY=your_groq_api_key_here
+
+# Optional -- powers the News feeds tab's external headlines (thenewsapi.com,
+# free tier: 100 requests/day). Without it, News feeds still loads but shows
+# "External news isn't configured on this server" instead of erroring.
+THE_NEWS_API_TOKEN=your_thenewsapi_token_here
 ```
 
 ### 3. Running the Application
@@ -103,6 +109,7 @@ This repository includes a `vercel.json` configuration and a GitHub Action workf
 │   ├── config/           # Platform settings & env configurations
 │   ├── data/             # Transcript parsing & dossier synthesis
 │   ├── model_provider/   # Unified LLM provider client (Groq/Gemini/OpenAI)
+│   ├── news/             # External headlines + analyst-mention coverage (News feeds tab)
 │   ├── search/           # Hybrid search & reciprocal rank fusion
 │   └── signals/          # Topic salience & metric extraction
 ├── .env.example          # Sample environment template
