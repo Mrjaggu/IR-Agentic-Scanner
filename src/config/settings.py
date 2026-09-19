@@ -110,6 +110,59 @@ EARNINGS_TRANSCRIPT_DIR = _DEFAULT_PATHS.earnings_transcript_dir
 # originals here so peer_signal.py keeps working unmodified).
 PEER_TRANSCRIPT_DIR = os.path.join(_BASE_DIR, "earnings_transcript", "peers")
 
+# ── Writable runtime-state directory (Vercel and similar read-only deploys) ──
+# BASE_DIR is the repo root, which is fine for reading committed data but not
+# for writing it: on Vercel the whole deployed tree (/var/task) is read-only
+# except /tmp, so anything that persists RUNTIME state under BASE_DIR (the
+# per-bank workspace_state.json in src/data/workspace_state.py, the LLM audit
+# trail in src/audit/llm_audit.py) needs somewhere that's actually writable
+# in production, not just in local/on-prem dev where BASE_DIR itself is fine.
+#
+# writable_data_dir(*parts) tries BASE_DIR/data/<parts> first (so a real,
+# persistent-across-restarts location is still preferred wherever the
+# filesystem allows it -- local dev, a real VM, an on-prem box) and falls
+# back to a tempdir-rooted mirror of the same relative path only if that
+# fails. The probe result is cached per relative path so this is a real
+# filesystem write attempt exactly once, not once per call.
+#
+# Important honesty note: the /tmp fallback is NOT durable on Vercel the way
+# the rest of this codebase's "plain JSON files on disk" persistence assumes
+# elsewhere -- Vercel's /tmp is scoped to one function instance and can be
+# wiped on the next cold start, so state written there survives repeated
+# requests to the SAME warm instance but not a redeploy or a scale-to-zero.
+# That's a real limitation of running local-disk persistence on serverless,
+# not something this helper can paper over -- it only prevents a crash and
+# keeps things working within a warm instance, which is strictly better than
+# the unhandled OSError this replaces.
+import tempfile
+
+_writable_dir_cache: dict[str, str] = {}
+
+
+def writable_data_dir(*parts: str) -> str:
+    rel = os.path.join(*parts) if parts else ""
+    if rel in _writable_dir_cache:
+        return _writable_dir_cache[rel]
+
+    primary = os.path.join(_BASE_DIR, "data", rel) if rel else os.path.join(_BASE_DIR, "data")
+    try:
+        os.makedirs(primary, exist_ok=True)
+        probe = os.path.join(primary, ".write_probe")
+        with open(probe, "w") as f:
+            f.write("")
+        os.remove(probe)
+        _writable_dir_cache[rel] = primary
+        return primary
+    except OSError:
+        pass
+
+    fallback = os.path.join(tempfile.gettempdir(), "ir_platform_data", rel) if rel else \
+        os.path.join(tempfile.gettempdir(), "ir_platform_data")
+    os.makedirs(fallback, exist_ok=True)
+    _writable_dir_cache[rel] = fallback
+    return fallback
+
+
 # Validation parameters
 VAL_QUARTER = "q1fy27"
 

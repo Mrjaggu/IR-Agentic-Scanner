@@ -33,9 +33,18 @@ import threading
 import time
 from datetime import datetime, timedelta, timezone
 
-from src.config.settings import BASE_DIR
+from src.config.settings import writable_data_dir
 
-LOG_DIR = os.path.join(BASE_DIR, "data", "logs")
+# writable_data_dir("logs") prefers BASE_DIR/data/logs (a real, persistent
+# location wherever the filesystem allows it -- local dev, on-prem, a real
+# VM) and falls back to a tempdir-rooted path only where that's not writable
+# (Vercel's deployed tree is read-only outside /tmp). See its docstring in
+# src/config/settings.py for the honest limit of that fallback: it stops the
+# every-single-call OSError this used to hit on Vercel, but a /tmp-backed
+# trail is only durable within one warm instance, not across a redeploy or a
+# cold start -- "what did we spend this week" is a much weaker question to
+# answer there than the module docstring above promises for a normal deploy.
+LOG_DIR = writable_data_dir("logs")
 _lock = threading.Lock()
 
 # Rough $/1K-token pricing for cost estimation. Only providers/models with a

@@ -21,7 +21,7 @@ import threading
 import uuid
 from datetime import datetime, timezone
 
-from src.config.settings import BASE_DIR
+from src.config.settings import BASE_DIR, writable_data_dir
 from src.config.banks import DEFAULT_BANK
 
 _lock = threading.Lock()
@@ -31,7 +31,11 @@ MAX_BRIEF_ITEMS = 200   # a sanity cap, not a real-world limit
 
 
 def _state_path(bank_id: str = DEFAULT_BANK) -> str:
-    return os.path.join(BASE_DIR, "data", "outputs", bank_id, "workspace_state.json")
+    # writable_data_dir falls back off BASE_DIR only if BASE_DIR/data/outputs
+    # itself isn't writable (e.g. Vercel's read-only /var/task) -- see its
+    # docstring in src/config/settings.py for what that fallback does and
+    # does not guarantee.
+    return os.path.join(writable_data_dir("outputs", bank_id), "workspace_state.json")
 
 
 # Kept for any external code that still imports the flat constant directly
@@ -63,12 +67,22 @@ def _read(bank_id: str = DEFAULT_BANK) -> dict:
 
 
 def _write(d: dict, bank_id: str = DEFAULT_BANK) -> None:
+    """Best-effort, same discipline as log_activity's own docstring already
+    promises: a failure to persist must never break the pin/unpin/log action
+    that triggered it. _state_path already prefers a writable directory over
+    BASE_DIR (see writable_data_dir), but this still can't raise even if
+    THAT somehow fails too (disk full, permissions) -- the in-memory dict the
+    caller already mutated is what the response is built from either way."""
     path = _state_path(bank_id)
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    tmp = path + ".tmp"
-    with open(tmp, "w") as f:
-        json.dump(d, f, indent=2)
-    os.replace(tmp, path)   # atomic on the same filesystem
+    try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        tmp = path + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(d, f, indent=2)
+        os.replace(tmp, path)   # atomic on the same filesystem
+    except OSError as e:
+        print(f"  [workspace_state] failed to persist state for bank={bank_id!r} "
+              f"(non-fatal, in-memory result still returned): {e}")
 
 
 def get_state(bank_id: str = DEFAULT_BANK) -> dict:
