@@ -21,6 +21,7 @@ Design notes that matter for a regulated deployment:
 import asyncio
 import json
 import os
+import threading
 import uuid
 from collections import OrderedDict
 from datetime import datetime
@@ -126,13 +127,42 @@ def _live(bank_id: str = DEFAULT_BANK) -> dict:
     return _cache[bank_id]
 
 
+def _warm_bank(bank_id: str) -> None:
+    """Background warmup for a non-default bank -- see _startup(). Swallows
+    everything: a thin/new bank with no compiled dataset yet (or one whose
+    holdout eval genuinely can't run on too little data, per the eval_harness
+    docstring) should fail quietly here and just fall back to lazy-loading on
+    its first real request, exactly as it did before this warmup existed."""
+    try:
+        _load_live(bank_id)
+        _cached_holdout(bank_id=bank_id)
+    except Exception:
+        pass
+
+
 @app.on_event("startup")
 def _startup():
-    # Only the default bank loads eagerly -- a thin/new bank (e.g. one added
-    # to the registry with no transcripts compiled yet) shouldn't be able to
-    # crash startup for everyone; it loads lazily on its first request.
+    # The default bank loads eagerly and blocks startup -- it's the one
+    # everyone hits first. Every OTHER registered bank is warmed in a
+    # background thread instead of being left to load lazily on whichever
+    # request first switches to it: that lazy path is what made switching
+    # workspaces feel laggy (reported: Axis -> Kotak -> IndusInd, ~6-8s) --
+    # _load_live() alone (dataset+graph load, profile compile, corpus
+    # embedding) measured ~5s for Kotak and ~2.4s for IndusInd cold, all of
+    # it spent inside the /api/meta call the frontend's switchBank() awaits
+    # before it will even show the workspace. A thin/new bank (e.g. one
+    # added to the registry with no transcripts compiled yet) still can't
+    # crash startup for everyone -- _warm_bank() swallows its own failures
+    # and that bank just falls back to lazy-loading on first request, same
+    # as before this warmup existed.
     _load_live(DEFAULT_BANK)
     client.probe_llm()
+    other_banks = [b for b in BANKS if b != DEFAULT_BANK]
+    if other_banks:
+        threading.Thread(
+            target=lambda: [_warm_bank(b) for b in other_banks],
+            daemon=True, name="bank-warmup",
+        ).start()
 
 
 @app.get("/api/banks")
