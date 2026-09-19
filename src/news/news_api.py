@@ -48,6 +48,7 @@ import time
 import urllib.parse
 import urllib.request
 import urllib.error
+from datetime import datetime, timedelta, timezone
 
 API_TOKEN = os.environ.get("THE_NEWS_API_TOKEN")
 ALL_NEWS_URL = "https://api.thenewsapi.com/v1/news/all"
@@ -62,7 +63,7 @@ REQUEST_TIMEOUT_SECONDS = 10
 ARTICLES_PER_CALL = 3  # the free plan's own per-request cap; asking for more just 400s.
 
 _lock = threading.Lock()
-_cache: dict[str, dict] = {}          # bank_id -> {"articles": [...], "fetched_at": float, "error": str|None}
+_cache: dict[tuple, dict] = {}        # (bank_id, days) -> {"articles": [...], "fetched_at": float, "error": str|None}
 _daily_calls = {"date": None, "count": 0}
 
 
@@ -82,21 +83,30 @@ def _budget_ok() -> bool:
     return _daily_calls["count"] < MAX_CALLS_PER_DAY
 
 
-def _fetch(bank_name: str) -> list[dict]:
+def _fetch(bank_name: str, days: int | None) -> list[dict]:
     """Phrase-matches the bank's own display name via TheNewsAPI's `search`
     param, which supports quoted-phrase syntax -- "Kotak Mahindra Bank" as a
     phrase is materially more precise than the three words matched
     independently, which would surface a lot of unrelated "bank" or "Kotak"
     noise for a multi-word name like this. Restricted to title+description
     via `search_fields` so a bank name buried in an article's full body text
-    (an unrelated listicle that happens to mention it once) doesn't count."""
-    params = urllib.parse.urlencode({
+    (an unrelated listicle that happens to mention it once) doesn't count.
+
+    `days` (7, 30, or None for TheNewsAPI's full archive) becomes
+    `published_after` -- a Y-m-d cutoff computed in UTC, since TheNewsAPI's
+    docs specify UTC timestamps throughout and a bare ISO date is the one
+    format they document accepting for this parameter."""
+    query = {
         "api_token": API_TOKEN,
         "search": f'"{bank_name}"',
         "search_fields": "title,description",
         "language": "en",
         "limit": ARTICLES_PER_CALL,
-    })
+    }
+    if days:
+        cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%d")
+        query["published_after"] = cutoff
+    params = urllib.parse.urlencode(query)
     url = f"{ALL_NEWS_URL}?{params}"
     req = urllib.request.Request(url, headers={
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -129,18 +139,23 @@ def _fetch(bank_name: str) -> list[dict]:
     return articles
 
 
-def get_news(bank_id: str, bank_name: str, force_refresh: bool = False) -> dict:
-    """Cached per bank, refreshed at most every CACHE_TTL_SECONDS and hard
-    capped at MAX_CALLS_PER_DAY across ALL banks combined. On a cache miss
-    that fails (budget exhausted, network error, bad response), the last
-    good cache is returned with a `note` explaining why it's stale, rather
-    than an error -- headlines that are a few hours old beat a broken tab."""
+def get_news(bank_id: str, bank_name: str, force_refresh: bool = False, days: int | None = None) -> dict:
+    """Cached per (bank, days) -- "last 7 days" and "last 30 days" are
+    genuinely different result sets, not a client-side slice of one fetch,
+    so each range gets its own cache entry and its own call against the
+    daily budget below. Refreshed at most every CACHE_TTL_SECONDS per
+    entry, hard capped at MAX_CALLS_PER_DAY across ALL banks and ranges
+    combined. On a cache miss that fails (budget exhausted, network error,
+    bad response), the last good cache for that same range is returned
+    with a `note` explaining why it's stale, rather than an error --
+    headlines that are a few hours old beat a broken tab."""
     if not is_available():
         return {"available": False, "articles": [], "fetched_at": None,
                 "error": "no TheNewsAPI token configured (THE_NEWS_API_TOKEN)"}
 
+    cache_key = (bank_id, days)
     with _lock:
-        cached = _cache.get(bank_id)
+        cached = _cache.get(cache_key)
         fresh_enough = bool(cached) and (time.time() - cached["fetched_at"] < CACHE_TTL_SECONDS)
         if cached and fresh_enough and not force_refresh:
             return {"available": True, **cached}
@@ -154,11 +169,11 @@ def get_news(bank_id: str, bank_name: str, force_refresh: bool = False) -> dict:
 
         _daily_calls["count"] += 1
         try:
-            articles = _fetch(bank_name)
-            _cache[bank_id] = {"articles": articles, "fetched_at": time.time(), "error": None}
+            articles = _fetch(bank_name, days)
+            _cache[cache_key] = {"articles": articles, "fetched_at": time.time(), "error": None}
         except Exception as e:
             if cached:
                 return {"available": True, **cached, "note": f"refresh failed ({e}) -- showing the last cached result"}
-            _cache[bank_id] = {"articles": [], "fetched_at": time.time(), "error": str(e)}
+            _cache[cache_key] = {"articles": [], "fetched_at": time.time(), "error": str(e)}
 
-        return {"available": True, **_cache[bank_id]}
+        return {"available": True, **_cache[cache_key]}
