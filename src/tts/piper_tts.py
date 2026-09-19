@@ -27,6 +27,7 @@ the "Listen" button simply doesn't render rather than erroring.
 
 import io
 import os
+import re
 import threading
 import wave
 
@@ -73,6 +74,52 @@ def _get_voice():
         return _voice
 
 
+_CITATION_RE = re.compile(r"\[\s*\d+(?:\s*[,;]\s*\d+)*\s*\]")
+_MD_LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
+_MD_HEADER_RE = re.compile(r"(?m)^\s{0,3}#{1,6}\s*")
+_MD_BOLD_RE = re.compile(r"\*\*([^*]+?)\*\*|__([^_]+?)__")
+_MD_ITALIC_RE = re.compile(r"(?<!\*)\*([^*\n]+?)\*(?!\*)|(?<!_)_([^_\n]+?)_(?!_)")
+_MD_CODE_RE = re.compile(r"`([^`]+)`")
+_MD_STRIKE_RE = re.compile(r"~~([^~]+?)~~")
+_MD_BULLET_RE = re.compile(r"(?m)^\s*[-*+]\s+")
+_MD_NUMLIST_RE = re.compile(r"(?m)^\s*\d+[.)]\s+")
+_MD_BLOCKQUOTE_RE = re.compile(r"(?m)^\s*>+\s*")
+_MD_HR_OR_SEP_RE = re.compile(r"(?m)^[\s\-|:*_=]+$")
+_TABLE_PIPE_RE = re.compile(r"\|")
+_LEFTOVER_MD_RE = re.compile(r"[#*_`~]")
+_WS_RE = re.compile(r"[ \t]+")
+_BLANKLINES_RE = re.compile(r"\n{2,}")
+
+
+def _clean_for_speech(text: str) -> str:
+    """Strip markdown formatting and inline [n]/[n,m] source-citation markers
+    before handing text to the TTS engine -- Piper has no notion of markdown
+    or citations, so left alone it reads the literal characters aloud
+    ("hash hash", "bracket one comma two bracket", etc). Order matters: links
+    are unwrapped before the bare-citation pattern runs (a link's own
+    brackets would otherwise look like a citation), and structural markers
+    (headers/bullets/quotes/table pipes) are stripped line-by-line before the
+    final whitespace collapse."""
+    if not text:
+        return text
+    cleaned = _MD_LINK_RE.sub(r"\1", text)
+    cleaned = _CITATION_RE.sub("", cleaned)
+    cleaned = _MD_HEADER_RE.sub("", cleaned)
+    cleaned = _MD_BOLD_RE.sub(lambda m: m.group(1) or m.group(2), cleaned)
+    cleaned = _MD_ITALIC_RE.sub(lambda m: m.group(1) or m.group(2), cleaned)
+    cleaned = _MD_CODE_RE.sub(r"\1", cleaned)
+    cleaned = _MD_STRIKE_RE.sub(r"\1", cleaned)
+    cleaned = _MD_BLOCKQUOTE_RE.sub("", cleaned)
+    cleaned = _MD_BULLET_RE.sub("", cleaned)
+    cleaned = _MD_NUMLIST_RE.sub("", cleaned)
+    cleaned = _MD_HR_OR_SEP_RE.sub("", cleaned)
+    cleaned = _TABLE_PIPE_RE.sub(" ", cleaned)
+    cleaned = _LEFTOVER_MD_RE.sub("", cleaned)
+    cleaned = _WS_RE.sub(" ", cleaned)
+    cleaned = _BLANKLINES_RE.sub("\n", cleaned)
+    return cleaned.strip()
+
+
 def synthesize_wav(text: str) -> bytes | None:
     """Blocking -- call via asyncio.to_thread from request handlers, never
     directly in an async def. Piper's own voice.synthesize() already yields
@@ -82,9 +129,12 @@ def synthesize_wav(text: str) -> bytes | None:
     last one. Every chunk gets concatenated as raw PCM under ONE wave header;
     naively concatenating several complete .wav files back-to-back produces a
     file most players reject (each has its own header/size fields), so this
-    always goes through the `wave` module instead. Returns None if no voice
-    is installed, or the text is empty."""
+    always goes through the `wave` module instead. Text is run through
+    _clean_for_speech() first so markdown syntax (#, **, bullets, tables) and
+    inline [n] source citations aren't read aloud literally. Returns None if
+    no voice is installed, or the text is empty."""
     voice = _get_voice()
+    text = _clean_for_speech(text) if text else text
     if voice is None or not text or not text.strip():
         return None
     buf = io.BytesIO()
