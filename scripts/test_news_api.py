@@ -33,6 +33,13 @@ import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# Match run.py's own startup order (see run.py's comment): load .env into
+# the real process environment before importing anything that reads a key
+# at import time. Without this, step 5 below fails with "no key configured"
+# even though steps 1-4 (which parse .env by hand) found it just fine.
+from dotenv import load_dotenv
+load_dotenv(override=False)
+
 BROWSER_UA = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
