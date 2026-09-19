@@ -22,10 +22,11 @@ import asyncio
 import json
 import os
 import uuid
+from collections import OrderedDict
 from datetime import datetime
 
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse, Response
 from pydantic import BaseModel
 
 from src.config.settings import (
@@ -47,6 +48,7 @@ from src.agentic.overall_layer import build_overall_topics
 from src.agentic.analyst_layer import reweight_for_analyst, build_arithmetic_followups
 from src.agentic.verifier import grounding_gate
 from src.agentic import pattern_retrieval
+from src.tts import piper_tts
 from src.agentic.question_framer import build_evidence_pool
 from src.agentic.eval_harness import (
     run_holdout_eval, evaluate_quarter, research_errors, backtest_and_promote_weights,
@@ -72,6 +74,15 @@ _dossier_cache: dict[str, dict[str, dict]] = {}
 _overall_cache: dict[str, dict] = {}
 _eval_cache: dict[str, dict] = {}
 _disclosures: dict[str, dict] = {}
+# TTS "Listen" audio, keyed by a uuid handed to the client in the chat
+# SSE stream's "audio" event. None means synthesis is still running
+# (populated the instant the background task is scheduled, so the /audio
+# endpoint can tell "still working" apart from "no such id" -- see
+# chat_stream()/get_tts_audio() below). Bounded LRU, not a TTL cache: a long
+# chat session can generate plenty of these, and nothing here is sensitive
+# enough to need eviction on any faster schedule than "least recently made."
+_tts_cache: "OrderedDict[str, bytes | None]" = OrderedDict()
+_TTS_CACHE_MAX = 40
 
 
 def _bank(bank_id: str) -> str:
@@ -198,6 +209,11 @@ def get_meta(bank: str = DEFAULT_BANK):
         "retrieval": {"semantic": live["index"].has_semantic,
                       "semantic_model": "en_core_web_md (spaCy, 300d GloVe)" if live["index"].has_semantic else None,
                       "cognitive_patterns": pattern_retrieval.is_available(bank_id)},
+        # Whether the chat "Listen" button has a voice to speak with -- see
+        # src/tts/piper_tts.py's docstring for why this can be False (voice
+        # model not installed yet) and how honestly that degrades: no error,
+        # the frontend just doesn't render the button.
+        "tts": {"available": piper_tts.is_available(), "engine": "piper" if piper_tts.is_available() else None},
         "counts": {
             "analysts": len(live["profiles"]),
             "quarters": len(live["quarters"]),
@@ -498,6 +514,25 @@ async def chat_stream(req: ChatRequest):
 
         yield sse("mode", {"mode": mode})
 
+        # Kick TTS off the INSTANT the answer text exists -- not after the
+        # word-by-word drip below, and not on the client's first click of
+        # the Listen button. That drip is already the whole reason the text
+        # feels live; synthesis is real CPU work (real seconds for a long
+        # answer, unlike the drip's fake 12ms/chunk pacing) and must never
+        # block it. So this is a genuinely DETACHED asyncio task: the
+        # audio_id is handed to the client in the very next SSE event, the
+        # generator moves straight on to the drip below without awaiting
+        # the task, and playback fetches /api/tts/audio/<id> later --
+        # ready by then for most answers, "still working" if not (see
+        # get_tts_audio()). A slow Listen button would be a worse UX
+        # regression than no Listen button.
+        audio_id = None
+        if answer and piper_tts.is_available():
+            audio_id = uuid.uuid4().hex
+            _tts_cache[audio_id] = None  # placeholder: "pending", not "unknown id"
+            asyncio.create_task(_synthesize_tts(audio_id, answer))
+            yield sse("audio", {"audio_id": audio_id})
+
         # Stream in word groups so the surface feels live rather than blocking
         # on one big payload.
         words = answer.split(" ")
@@ -511,6 +546,40 @@ async def chat_stream(req: ChatRequest):
 
     return StreamingResponse(gen(), media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
+async def _synthesize_tts(audio_id: str, text: str) -> None:
+    """Runs detached from any request (scheduled via asyncio.create_task in
+    chat_stream, never awaited there) -- piper_tts.synthesize_wav is blocking
+    CPU work, so it goes through asyncio.to_thread rather than tying up the
+    event loop that the rest of the app's requests share."""
+    try:
+        wav_bytes = await asyncio.to_thread(piper_tts.synthesize_wav, text)
+    except Exception:
+        wav_bytes = None
+    if wav_bytes:
+        _tts_cache[audio_id] = wav_bytes
+        _tts_cache.move_to_end(audio_id, last=True)
+        while len(_tts_cache) > _TTS_CACHE_MAX:
+            _tts_cache.popitem(last=False)
+    else:
+        _tts_cache.pop(audio_id, None)  # synthesis failed -- back to "unknown id", not "stuck pending"
+
+
+@app.get("/api/tts/audio/{audio_id}")
+def get_tts_audio(audio_id: str):
+    """Polled by the Listen button after the chat SSE stream's "audio" event
+    hands it an id. Three states, all honest: id never issued (or already
+    evicted from the bounded cache) -> 404; issued but the background
+    synthesis in _synthesize_tts hasn't finished (or failed) -> 202 so the
+    client knows to retry rather than treat it as an error; done -> the
+    actual audio/wav bytes."""
+    if audio_id not in _tts_cache:
+        raise HTTPException(status_code=404, detail="unknown or expired audio_id")
+    wav_bytes = _tts_cache[audio_id]
+    if wav_bytes is None:
+        return JSONResponse(status_code=202, content={"status": "pending"})
+    return Response(content=wav_bytes, media_type="audio/wav")
 
 
 # ── Disclosure upload (upcoming quarter) ───────────────────────────────────

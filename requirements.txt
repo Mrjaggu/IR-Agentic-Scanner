@@ -22,3 +22,16 @@ langgraph-sdk==0.4.4
 # Optional: retrieval falls back to BM25 + TF-IDF only (no crash) if this
 # model isn't installed on a given machine -- see meta.retrieval.semantic.
 spacy==3.8.16
+
+# Chat "Listen" button: offline, CPU-only English TTS (src/tts/piper_tts.py).
+# pip install alone is not enough -- the actual voice (~20-65MB ONNX model)
+# is hosted on huggingface.co, which is unreachable from this project's
+# sandboxed dev environment (same restriction noted above for spaCy), so it
+# has to be fetched once from a machine with normal internet access, run
+# from the repo root so it lands straight in the right place:
+#   pip install -r requirements.txt
+#   python -m piper.download_voices --download-dir data/tts_voices en_US-lessac-medium
+# (a smaller, slightly more robotic option: en_US-amy-low, ~25MB instead of
+# ~60MB -- swap PIPER_VOICE to match if you use it). Optional: the Listen
+# button simply doesn't render if no voice is installed -- see meta.tts.available.
+piper-tts==1.8.0

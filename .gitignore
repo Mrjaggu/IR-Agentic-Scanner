@@ -55,3 +55,7 @@ data/outputs/*/workspace_state.json
 # Cowork/Claude desktop session screenshots (before/after UI captures) --
 # generated locally, not project source.
 Claude outputs/
+
+# Piper TTS voice models (ONNX weights, tens of MB) -- downloaded locally
+# per requirements.txt's instructions, never committed.
+data/tts_voices/
