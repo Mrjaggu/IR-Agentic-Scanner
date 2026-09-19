@@ -1,28 +1,29 @@
 """
-test_news_api.py -- Section: News tab, CurrentsAPI diagnostic script.
+test_news_api.py -- Section: News tab, TheNewsAPI diagnostic script.
 
 Run this directly on a machine with real internet access (NOT through any
-sandboxed dev shell -- see src/news/currents_api.py's module docstring for
-why that matters here):
+sandboxed dev shell -- see src/news/news_api.py's module docstring for why
+that matters here):
 
     python3 scripts/test_news_api.py
 
 It isolates each moving part one at a time so a failure tells you WHICH
 piece is wrong, instead of one opaque "it doesn't work":
 
-  1. Is the key even loaded from .env?
-  2. Bare urllib, no custom User-Agent (this is what broke -- CurrentsAPI
-     sits behind Cloudflare, which blocks urllib's default
-     "Python-urllib/x.y" UA as bot traffic and returns a 403 before your
-     key is ever checked).
-  3. urllib + a browser User-Agent (the fix now in src/news/currents_api.py).
-  4. requests + keywords param (CurrentsAPI's own docs quick-start shape --
-     a second, independent way to reach the same conclusion).
-  5. The app's actual currents_api.get_news(), exactly as the News feeds
-     tab calls it.
+  1. Is the token even loaded from .env?
+  2. Bare urllib call to /v1/news/all with the phrase-search shape this
+     app actually uses.
+  3. requests, same shape -- a second, independent way to reach the same
+     conclusion (rules out anything urllib-specific).
+  4. The app's actual news_api.get_news(), exactly as the News feeds tab
+     calls it.
 
 Each step prints PASS/FAIL and the raw error so the failure mode is visible
-rather than swallowed.
+rather than swallowed. This replaces the old CurrentsAPI version of this
+script -- CurrentsAPI's own auth backend started returning a persistent
+503 ("Authentication service temporarily unavailable") that never cleared
+across repeated tries, confirmed with this same isolate-each-layer approach,
+so the provider was switched to TheNewsAPI instead of chasing that further.
 """
 import json
 import os
@@ -34,9 +35,9 @@ import urllib.request
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Match run.py's own startup order (see run.py's comment): load .env into
-# the real process environment before importing anything that reads a key
-# at import time. Without this, step 5 below fails with "no key configured"
-# even though steps 1-4 (which parse .env by hand) found it just fine.
+# the real process environment before importing anything that reads a
+# token at import time. Without this, step 4 below fails with "no token
+# configured" even though steps 1-3 (which parse .env by hand) find it fine.
 from dotenv import load_dotenv
 load_dotenv(override=False)
 
@@ -46,17 +47,18 @@ BROWSER_UA = (
 )
 
 
-def load_dotenv_key():
-    """Minimal .env parse -- avoids requiring python-dotenv just for this script."""
+def load_dotenv_token():
+    """Minimal .env parse -- avoids depending on load_dotenv() above having
+    actually found the file, so step 1 still tells the truth if it didn't."""
     env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
     if not os.path.exists(env_path):
-        return os.environ.get("CURRENT_NEWS_API_KEY")
+        return os.environ.get("THE_NEWS_API_TOKEN")
     with open(env_path) as f:
         for line in f:
             line = line.strip()
-            if line.startswith("CURRENT_NEWS_API_KEY="):
+            if line.startswith("THE_NEWS_API_TOKEN="):
                 return line.split("=", 1)[1].strip().strip('"').strip("'")
-    return os.environ.get("CURRENT_NEWS_API_KEY")
+    return os.environ.get("THE_NEWS_API_TOKEN")
 
 
 def step(n, title):
@@ -64,46 +66,40 @@ def step(n, title):
 
 
 def main():
-    key = load_dotenv_key()
+    token = load_dotenv_token()
 
-    step(1, "key loaded from .env")
-    if not key:
-        print("FAIL -- no CURRENT_NEWS_API_KEY found in .env or the environment. Stopping here.")
+    step(1, "token loaded from .env")
+    if not token:
+        print("FAIL -- no THE_NEWS_API_TOKEN found in .env or the environment. Stopping here.")
+        print("Add a line to .env: THE_NEWS_API_TOKEN=<your token from thenewsapi.com>")
         return
-    print(f"PASS -- key found, length {len(key)}, starts with {key[:4]}...")
+    print(f"PASS -- token found, length {len(token)}, starts with {token[:4]}...")
 
-    step(2, "bare urllib, no custom User-Agent (reproduces the original bug)")
-    params = urllib.parse.urlencode({"query": '"Axis Bank"', "language": "en", "page_size": 3})
-    url = f"https://api.currentsapi.services/v1/search?{params}"
-    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {key}"})
-    try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-        print(f"PASS (unexpected) -- got {len(data.get('news', []))} articles even without a custom UA")
-    except urllib.error.HTTPError as e:
-        print(f"FAIL -- HTTP Error {e.code}: {e.reason}  (this is the bug we're chasing if it's 403)")
-    except Exception as e:
-        print(f"FAIL -- {type(e).__name__}: {e}")
-
-    step(3, "urllib + browser User-Agent (the fix now in currents_api.py)")
-    req = urllib.request.Request(url, headers={
-        "Authorization": f"Bearer {key}",
-        "User-Agent": BROWSER_UA,
-        "Accept": "application/json",
+    params = urllib.parse.urlencode({
+        "api_token": token,
+        "search": '"Axis Bank"',
+        "search_fields": "title,description",
+        "language": "en",
+        "limit": 3,
     })
+    url = f"https://api.thenewsapi.com/v1/news/all?{params}"
+
+    step(2, "bare urllib call to /v1/news/all")
+    req = urllib.request.Request(url, headers={"User-Agent": BROWSER_UA, "Accept": "application/json"})
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read().decode("utf-8"))
-        print(f"PASS -- got {len(data.get('news', []))} articles")
-        if data.get("news"):
-            print(f"  sample title: {data['news'][0].get('title')!r}")
+        found = data.get("meta", {}).get("found")
+        print(f"PASS -- {len(data.get('data', []))} articles returned, {found} total matches")
+        if data.get("data"):
+            print(f"  sample title: {data['data'][0].get('title')!r}")
     except urllib.error.HTTPError as e:
         body = e.read().decode("utf-8", errors="replace")[:300]
         print(f"FAIL -- HTTP Error {e.code}: {e.reason}\n  body: {body}")
     except Exception as e:
         print(f"FAIL -- {type(e).__name__}: {e}")
 
-    step(4, "requests + keywords param (CurrentsAPI's own docs quick-start shape)")
+    step(3, "requests, same shape (rules out anything urllib-specific)")
     try:
         import requests
     except ImportError:
@@ -111,26 +107,31 @@ def main():
     else:
         try:
             res = requests.get(
-                "https://api.currentsapi.services/v1/search",
-                params={"keywords": "Axis Bank", "language": "en", "page_number": 1, "page_size": 3},
-                headers={"Authorization": f"Bearer {key}"},
+                "https://api.thenewsapi.com/v1/news/all",
+                params={
+                    "api_token": token,
+                    "search": '"Axis Bank"',
+                    "search_fields": "title,description",
+                    "language": "en",
+                    "limit": 3,
+                },
                 timeout=15,
             )
             print(f"HTTP status: {res.status_code}")
             if res.ok:
                 data = res.json()
-                print(f"PASS -- got {len(data.get('news', []))} articles")
-                if data.get("news"):
-                    print(f"  sample title: {data['news'][0].get('title')!r}")
+                print(f"PASS -- {len(data.get('data', []))} articles returned")
+                if data.get("data"):
+                    print(f"  sample title: {data['data'][0].get('title')!r}")
             else:
                 print(f"FAIL -- body: {res.text[:300]}")
         except Exception as e:
             print(f"FAIL -- {type(e).__name__}: {e}")
 
-    step(5, "the app's own currents_api.get_news(), exactly as News feeds calls it")
+    step(4, "the app's own news_api.get_news(), exactly as News feeds calls it")
     try:
-        from src.news import currents_api
-        result = currents_api.get_news("axis", "Axis Bank", force_refresh=True)
+        from src.news import news_api
+        result = news_api.get_news("axis", "Axis Bank", force_refresh=True)
         print(json.dumps(result, indent=2, default=str)[:1000])
         if result.get("error"):
             print(f"\nFAIL -- {result['error']}")
@@ -140,10 +141,9 @@ def main():
         print(f"FAIL -- {type(e).__name__}: {e}")
 
     print("\n" + "=" * 60)
-    print("Done. If step 2 failed with a 403 and step 3 passed, the")
-    print("User-Agent fix is confirmed and nothing further is needed.")
-    print("If step 3 ALSO failed, paste this whole output back -- the")
-    print("error body usually says exactly what CurrentsAPI didn't like.")
+    print("Done. If steps 2-4 all PASS, News feeds is working end to end.")
+    print("If any FAIL, paste this whole output back -- the error body")
+    print("usually says exactly what TheNewsAPI didn't like.")
 
 
 if __name__ == "__main__":

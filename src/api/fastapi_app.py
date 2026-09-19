@@ -50,7 +50,7 @@ from src.agentic.analyst_layer import reweight_for_analyst, build_arithmetic_fol
 from src.agentic.verifier import grounding_gate
 from src.agentic import pattern_retrieval
 from src.tts import piper_tts
-from src.news import currents_api
+from src.news import news_api
 from src.signals.metrics_extractor import METRIC_TOPIC_MAP
 from src.agentic.question_framer import build_evidence_pool
 from src.agentic.eval_harness import (
@@ -326,15 +326,15 @@ def api_get_activity(bank: str = DEFAULT_BANK):
 
 @app.get("/api/news/external")
 def get_news_external(bank: str = DEFAULT_BANK, refresh: bool = False):
-    """External headlines for the News tab (Search & chat), via CurrentsAPI.
-    Degrades honestly per src.news.currents_api's own discipline -- no key
+    """External headlines for the News tab (Search & chat), via TheNewsAPI.
+    Degrades honestly per src.news.news_api's own discipline -- no token
     configured, a network failure, or the daily request budget being spent
     all come back as a normal 200 with `available`/`error`/`note` fields for
     the frontend to render, never a 5xx. See that module for the per-bank
     cache TTL and the hard daily call cap that keep this well under
-    CurrentsAPI's free-tier 200 requests/day."""
+    TheNewsAPI's free-tier 100 requests/day."""
     bank_id = _bank(bank)
-    return currents_api.get_news(bank_id, BANKS[bank_id].display_name, force_refresh=refresh)
+    return news_api.get_news(bank_id, BANKS[bank_id].display_name, force_refresh=refresh)
 
 
 @app.get("/api/metrics/timeseries")
