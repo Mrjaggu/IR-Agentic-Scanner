@@ -40,13 +40,17 @@ def get_global_rate(graph, train_quarters, topics_list=TOPICS_LIST):
     gtot = sum(global_count.values()) or 1
     return {t: global_count.get(t, 0) / gtot for t in topics_list if t != "General"}
 
-def get_analyst_profile(analyst, graph, train_quarters, val_ord, q_ord_map, global_rate, config=EngineConfig, personas=PERSONAS, topics_list=TOPICS_LIST):
+def get_analyst_profile(analyst, graph, train_quarters, val_ord, q_ord_map, global_rate, config=EngineConfig, personas=PERSONAS, topics_list=TOPICS_LIST, decay_override=None):
     """
     Returns (recency_weighted_topic_pref, predicted_N).
-    
+
     N is computed as round((max_topics_in_recent_call + avg_topics_per_call) / 2)
     clamped to [1, 5].
-    """
+
+    decay_override, if given (see adaptive_decay_for_analyst above), replaces
+    config.DECAY for JUST this analyst's recency weighting -- everything
+    else (smoothing, persona blend, N) is unaffected. None (the default)
+    means "use the shared global decay", same as always."""
     qs = [n for n in graph["nodes"]
           if n["type"] == "Question"
           and n["properties"]["analyst"] == analyst
@@ -60,6 +64,8 @@ def get_analyst_profile(analyst, graph, train_quarters, val_ord, q_ord_map, glob
             return {t: pp.get(t, 0.0) / s for t in topics_list if t != "General"}, 2
         return dict(global_rate), 2
 
+    decay = config.DECAY if decay_override is None else decay_override
+
     tw = {}
     total_w = 0.0
     all_topic_counts = []
@@ -67,7 +73,7 @@ def get_analyst_profile(analyst, graph, train_quarters, val_ord, q_ord_map, glob
 
     for q in qs:
         qa = val_ord - 1 - q_ord_map[q["properties"]["quarter"]]   # ordinal quarters ago
-        w  = math.exp(-config.DECAY * qa)
+        w  = math.exp(-decay * qa)
         total_w += w
         tc = [t for t in q["properties"]["topics"] if t != "General"]
         all_topic_counts.append(len(tc))
@@ -98,8 +104,10 @@ def get_analyst_profile(analyst, graph, train_quarters, val_ord, q_ord_map, glob
     N = max(1, min(5, round((max_recent + avg_all) / 2.0)))
     return pref, N
 
-def get_repeat_propensity(analyst, graph, train_quarters, q_ord_map):
-    """P(topic asked in quarter Q | analyst asked it in Q-1), from history."""
+def _repeat_propensity_raw(analyst, graph, train_quarters, q_ord_map):
+    """(num, den) for get_repeat_propensity's ratio -- split out so a caller
+    that needs to know whether den cleared the reliability floor (adaptive
+    decay, below) doesn't have to reimplement this scan."""
     qs = [n for n in graph["nodes"]
           if n["type"] == "Question"
           and n["properties"]["analyst"] == analyst
@@ -114,4 +122,43 @@ def get_repeat_propensity(analyst, graph, train_quarters, q_ord_map):
         if q_ord_map[k2] - q_ord_map[k1] == 1:
             den += len(by_q[k1])
             num += len(by_q[k1] & by_q[k2])
+    return num, den
+
+
+def get_repeat_propensity(analyst, graph, train_quarters, q_ord_map):
+    """P(topic asked in quarter Q | analyst asked it in Q-1), from history."""
+    num, den = _repeat_propensity_raw(analyst, graph, train_quarters, q_ord_map)
     return num / den if den >= 3 else 0.5
+
+
+def adaptive_decay_for_analyst(analyst, graph, train_quarters, q_ord_map, config=EngineConfig) -> float | None:
+    """Per-analyst decay rate, opt-in replacement for the single global
+    EngineConfig.DECAY every analyst currently shares regardless of how
+    fast their own topic focus actually moves. Reuses
+    get_repeat_propensity's own quarter-over-quarter topic-overlap ratio
+    (already leak-free -- train_quarters only) as the churn signal: an
+    analyst who keeps re-asking about the same topics quarter to quarter
+    (propensity near 1.0) has old history that's still informative, so
+    they get a LOWER decay; an analyst whose focus shifts every quarter
+    (propensity near 0.0) should have recent quarters dominate, so they get
+    a HIGHER decay. Linear interpolation between
+    ADAPTIVE_DECAY_MIN/MAX, centred so a propensity of 0.5 lands exactly on
+    the current global default (0.40), not some other arbitrary midpoint.
+
+    Returns None -- not a guessed default -- when this analyst doesn't clear
+    get_repeat_propensity's own den>=3 reliability floor (too few
+    consecutive-quarter appearances in train_quarters to say anything about
+    their churn rate at all). Callers must treat None as "keep using
+    config.DECAY for this analyst", the same "no signal" convention used
+    throughout this codebase, rather than silently defaulting to some
+    guessed propensity that would make thin-history analysts look like they
+    have a measured churn rate when they don't."""
+    num, den = _repeat_propensity_raw(analyst, graph, train_quarters, q_ord_map)
+    if den < 3:
+        return None
+    propensity = num / den
+    lo, hi = config.ADAPTIVE_DECAY_MIN, config.ADAPTIVE_DECAY_MAX
+    # propensity=1.0 -> lo, propensity=0.0 -> hi, propensity=0.5 -> the
+    # midpoint (which ADAPTIVE_DECAY_MIN/MAX are chosen so that midpoint
+    # equals config.DECAY, keeping a "typical" analyst's decay unchanged).
+    return round(hi - propensity * (hi - lo), 4)

@@ -19,7 +19,7 @@ from src.config.settings import (
 )
 from src.config.banks import DEFAULT_BANK, get_bank
 from src.data.loader import load_dataset, load_graph, get_active_analysts
-from src.memory.history import get_global_rate, get_analyst_profile
+from src.memory.history import get_global_rate, get_analyst_profile, adaptive_decay_for_analyst
 from src.signals.metrics_extractor import compute_topic_anomaly_scores
 from src.signals.persona_synthesis import synthesize_personas, apply_ask_patterns
 from src.signals.analyst_sentiment import sentiment_as_of
@@ -59,7 +59,8 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
                         cutoff_mode: str | None = None, bank_id: str = DEFAULT_BANK,
                         use_cross_bank_signal: bool = False,
                         use_sentiment_signal: bool = False,
-                        use_news_signal: bool = False) -> dict:
+                        use_news_signal: bool = False,
+                        use_adaptive_decay: bool = True) -> dict:
     """Everything the pipeline needs, built once. Exposed separately from
     main() so the API layer can run just the Overall layer, or just one
     analyst's Analyst-Specific layer, without re-deriving all of this.
@@ -104,7 +105,30 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
     today's headlines into a prediction about the past. A holdout call
     therefore always gets news_signal={}, silently, rather than an error,
     the same "no signal" convention every leak-free signal here uses when
-    it has nothing to contribute."""
+    it has nothing to contribute.
+
+    use_adaptive_decay=True (DEFAULT since 2026-09, promoted -- was opt-in
+    while being backtested, same discipline as use_sentiment_signal, and
+    the riskiest of the three signals built this session since it changes
+    the WEIGHTING of every existing prediction rather than adding a
+    candidate) replaces the single global EngineConfig.DECAY with a
+    per-analyst rate derived from that analyst's own leak-free
+    quarter-over-quarter topic-repeat propensity (see
+    src.memory.history.adaptive_decay_for_analyst). An analyst with fewer
+    than 3 qualifying consecutive-quarter appearances keeps the global
+    default (no override) rather than getting a guessed rate.
+
+    MEASURED RESULT that promoted it (2026-09, axis): official 2-quarter
+    TEST_QUARTERS -- mean_recall 0.9264->0.9375, mean_precision
+    0.3599->0.3678, promotion gate still PASS (recall_spread 0.0694, well
+    under the 0.18 threshold). 17-quarter walk-forward sweep (144
+    analyst-quarter observations, same window rank_position_calibration
+    uses) -- mean_recall 0.8081->0.8095, mean_precision 0.3022->0.3032:
+    smaller but the SAME direction, so not a fluke of the 2-quarter sample.
+    Kotak/IndusInd: byte-identical with the signal on or off -- neither bank
+    has enough per-analyst history yet to clear the den>=3 floor for anyone,
+    so this is a safe no-op there, not a risk. Pass use_adaptive_decay=False
+    explicitly to get the old global-decay behavior back for comparison."""
     cutoff_mode = cutoff_mode or CUTOFF_MODE
     bank = get_bank(bank_id)
     paths = paths_for(bank_id)
@@ -160,9 +184,14 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
             anomaly_scores = upcoming["anomaly_scores"]
 
     active_analysts = get_active_analysts(dataset, val_quarter)
+    analyst_decay = {}
+    if use_adaptive_decay:
+        analyst_decay = {a: adaptive_decay_for_analyst(a, graph, prior_quarters, q_ord)
+                         for a in active_analysts}
     analyst_prefs = {}
     for a in active_analysts:
-        pref, N = get_analyst_profile(a, graph, prior_quarters, val_ord, q_ord, global_rate)
+        pref, N = get_analyst_profile(a, graph, prior_quarters, val_ord, q_ord, global_rate,
+                                      decay_override=analyst_decay.get(a))
         analyst_prefs[a] = (pref, N)
 
     if use_cross_bank_signal:
@@ -202,6 +231,8 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
         "sentiment_scores": sentiment_scores,
         "news_signal_enabled": use_news_signal and not holdout,
         "news_signal": news_signal,
+        "adaptive_decay_enabled": use_adaptive_decay,
+        "analyst_decay": analyst_decay,
         "graph": graph,
         "dataset": dataset,
         "quarter_order": quarter_order,

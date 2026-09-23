@@ -231,7 +231,8 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
                      analysts: list[str] | None = None,
                      bank_id: str = DEFAULT_BANK,
                      use_cross_bank_signal: bool = False,
-                     use_sentiment_signal: bool = False) -> dict:
+                     use_sentiment_signal: bool = False,
+                     use_adaptive_decay: bool = True) -> dict:
     """Run the agentic pipeline for one quarter under held-out conditions and
     score it. with_questions=True also runs the Question Framer + Verifier to
     measure grounding rate (costs LLM calls); default False keeps topic
@@ -265,10 +266,21 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
     candidate slot (the most anomalous topic they have real history on) --
     see analyst_layer.sentiment_extra_slot's docstring for the mechanism and
     this module's rank_position_calibration-adjacent backtest for whether it
-    actually helps. Passed straight through to build_initial_state."""
+    actually helps.
+
+    use_adaptive_decay=True (DEFAULT, promoted 2026-09 -- see
+    run_agentic.build_initial_state's docstring for the measured backtest
+    numbers that promoted it) replaces the single global EngineConfig.DECAY
+    with a per-analyst rate derived from that analyst's own topic-repeat
+    propensity -- see src.memory.history.adaptive_decay_for_analyst's
+    docstring for the mechanism. Pass False explicitly to reproduce the old
+    global-decay behavior for comparison.
+
+    Passed straight through to build_initial_state."""
     state = build_initial_state(quarter, probe=with_questions, holdout=holdout, upcoming=upcoming,
                                 bank_id=bank_id, use_cross_bank_signal=use_cross_bank_signal,
-                                use_sentiment_signal=use_sentiment_signal)
+                                use_sentiment_signal=use_sentiment_signal,
+                                use_adaptive_decay=use_adaptive_decay)
     bundles, tool_log = run_planning_agent(
         state["anomaly_scores"], state["graph"], state["prior_quarters"], state["global_rate"]
     )
@@ -417,7 +429,8 @@ def run_holdout_eval(with_questions: bool = False, score_question_recall: bool =
                      quarters: list[str] | None = None,
                      bank_id: str = DEFAULT_BANK,
                      use_cross_bank_signal: bool = False,
-                     use_sentiment_signal: bool = False) -> dict:
+                     use_sentiment_signal: bool = False,
+                     use_adaptive_decay: bool = True) -> dict:
     """The headline result: q4fy26 and q1fy27 scored independently against a
     training cutoff of q3fy26, with the spread between them made explicit.
 
@@ -436,7 +449,8 @@ def run_holdout_eval(with_questions: bool = False, score_question_recall: bool =
                                 score_question_recall=score_question_recall,
                                 analysts=analysts, bank_id=bank_id,
                                 use_cross_bank_signal=use_cross_bank_signal,
-                                use_sentiment_signal=use_sentiment_signal)
+                                use_sentiment_signal=use_sentiment_signal,
+                                use_adaptive_decay=use_adaptive_decay)
                for q in (quarters or TEST_QUARTERS)]
 
     # None entries happen when a quarter has zero scored analysts (e.g. a
@@ -483,6 +497,7 @@ def run_holdout_eval(with_questions: bool = False, score_question_recall: bool =
         "bank_id": bank_id,
         "cross_bank_signal": use_cross_bank_signal,
         "sentiment_signal": use_sentiment_signal,
+        "adaptive_decay": use_adaptive_decay,
         "train_cutoff": {r["quarter"]: r["train_cutoff"] for r in results},
         "cutoff_mode": results[0].get("cutoff_mode") if results else None,
         "test_quarters": quarters or TEST_QUARTERS,

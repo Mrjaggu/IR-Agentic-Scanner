@@ -301,3 +301,14 @@ class EngineConfig:
     # sentiment predicts WHICH topic on its own (it has no topic dimension).
     SENTIMENT_SKEPTICAL_THRESHOLD = -0.2  # running-avg sentiment at/below this counts as "trending skeptical"
     SENTIMENT_AFFINITY_FLOOR = 0.04       # analyst's own pref on the candidate topic must clear this to get the slot
+    # Per-analyst adaptive decay (opt-in, use_adaptive_decay=False by default
+    # everywhere -- see src/memory/history.py's adaptive_decay_for_analyst()
+    # docstring for the mechanism and backtest). MIN/MAX bracket DECAY above
+    # (0.40) exactly at their midpoint, so an analyst whose measured
+    # quarter-over-quarter topic-repeat propensity is right at 0.5 (neither
+    # notably sticky nor notably volatile) gets the same decay they'd get
+    # under the shared global default -- this changes only analysts who are
+    # measurably MORE or LESS consistent than that, in the direction their
+    # own history actually shows.
+    ADAPTIVE_DECAY_MIN = 0.20   # highly topic-repeating analyst (propensity -> 1.0): old history stays informative
+    ADAPTIVE_DECAY_MAX = 0.60   # highly topic-shifting analyst (propensity -> 0.0): weight recent quarters much more
