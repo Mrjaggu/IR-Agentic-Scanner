@@ -341,6 +341,17 @@ def get_news_external(bank: str = DEFAULT_BANK, refresh: bool = False, days: int
     return news_api.get_news(bank_id, BANKS[bank_id].display_name, force_refresh=refresh, days=days)
 
 
+@app.get("/api/news/analyst-mentions")
+def get_news_analyst_mentions(bank: str = DEFAULT_BANK):
+    """Real, individually-attributed sell-side rating actions for this
+    bank's covering analysts -- a small, hand-verified seed (see
+    src.news.news_api.get_analyst_mentions's docstring for why this is a
+    separate, non-live data source rather than something TheNewsAPI can
+    supply: public news almost never names the analyst, only the broker)."""
+    bank_id = _bank(bank)
+    return {"mentions": news_api.get_analyst_mentions(bank_id)}
+
+
 @app.get("/api/metrics/timeseries")
 def get_metrics_timeseries(bank: str = DEFAULT_BANK):
     """Quarter view's data source (Search & chat): the regex-extracted

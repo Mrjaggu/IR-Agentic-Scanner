@@ -100,6 +100,38 @@ def _load_seed(bank_id: str) -> dict | None:
             "error": entry.get("error")}
 
 
+ANALYST_MENTIONS_SEED_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__)))), "data", "analyst_mentions_seed.json")
+_analyst_mentions_data: dict | None = None
+
+
+def get_analyst_mentions(bank_id: str) -> list[dict]:
+    """Real, individually-attributed sell-side rating actions (analyst name,
+    firm, rating, price target, date, source URL) for this bank's covering
+    analysts -- hand-gathered via search, not from TheNewsAPI.
+
+    Why this exists as its OWN seed rather than a live feed: TheNewsAPI's
+    general-news search (see get_news() above) almost never names an
+    individual sell-side analyst -- confirmed by directly searching for
+    each of this bank's covering analysts by name. Public news attributes
+    price-target moves to the BROKER ("Jefferies raises target"), not the
+    analyst who wrote the note; the note itself is typically paywalled or
+    distributed only to the broker's own clients. A small number of
+    individual-analyst-attributed items DO exist via third-party analyst-
+    rating trackers (e.g. TipRanks' per-analyst pages) -- this file is a
+    point-in-time, manually verified capture of those, not a live feed.
+    It will be thin and will go stale; that's the honest state of what's
+    publicly attributable, not a bug in the matching logic below."""
+    global _analyst_mentions_data
+    if _analyst_mentions_data is None:
+        try:
+            with open(ANALYST_MENTIONS_SEED_PATH) as f:
+                _analyst_mentions_data = json.load(f)
+        except (OSError, json.JSONDecodeError):
+            _analyst_mentions_data = {}
+    return _analyst_mentions_data.get(bank_id, [])
+
+
 def is_available() -> bool:
     return bool(API_TOKEN)
 

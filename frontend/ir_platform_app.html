@@ -3236,11 +3236,16 @@ async function loadNews(refresh) {
     analystHost.innerHTML = `<div class="empty"><span class="spinner"></span> Loading…</div>`;
   }
 
-  let d;
+  let d, mentionsResp;
   const params = new URLSearchParams();
   if (refresh) params.set("refresh", "true");
   if (NEWS.days) params.set("days", String(NEWS.days));
-  try { d = await api("/api/news/external" + (params.toString() ? `?${params}` : "")); }
+  try {
+    [d, mentionsResp] = await Promise.all([
+      api("/api/news/external" + (params.toString() ? `?${params}` : "")),
+      api("/api/news/analyst-mentions"),
+    ]);
+  }
   catch (err) {
     if (gen !== STATE.bankGen) return;
     generalHost.style.opacity = analystHost.style.opacity = "";
@@ -3250,14 +3255,37 @@ async function loadNews(refresh) {
   if (gen !== STATE.bankGen) return;
   generalHost.style.opacity = analystHost.style.opacity = "";
 
+  // Verified rating actions: a small, hand-curated seed of REAL,
+  // individually-attributed sell-side calls (analyst, firm, rating, price
+  // target, source) -- see /api/news/analyst-mentions's docstring for why
+  // this can't just come from TheNewsAPI's general feed (public news
+  // attributes price-target moves to the broker, not the analyst who wrote
+  // the note). Rendered above the substring-matched general-news fallback
+  // below, not instead of it -- the fallback still catches anything new.
+  const mentions = mentionsResp?.mentions || [];
+  const mentionHTML = m => `
+    <div style="padding:10px 0;border-bottom:1px solid var(--hairline);">
+      <div style="font-weight:600;">${esc(m.analyst)} <span class="muted" style="font-weight:400;">· ${esc(m.firm || "")}</span></div>
+      <div class="xs" style="margin-top:3px;"><span class="chip chip-accent">${esc(m.rating || "")}</span>${m.price_target ? ` <span class="chip">target ${esc(m.price_target)}</span>` : ""}</div>
+      <div class="xs muted" style="margin-top:3px;">${m.published ? esc(m.published) + " · " : ""}${esc(m.source || "")}
+        ${m.url ? ` · <a href="${esc(m.url)}" target="_blank" rel="noopener noreferrer">source</a>` : ""}</div>
+    </div>`;
+  const mentionsHTML = mentions.length
+    ? `<div style="margin-bottom:10px;">
+         <div class="xs muted" style="margin-bottom:6px;">Verified sell-side rating actions -- hand-gathered, not a live feed (see below for why)</div>
+         ${mentions.map(mentionHTML).join("")}
+       </div>`
+    : "";
+
   if (!d.available) {
-    generalHost.innerHTML = analystHost.innerHTML = `<div class="empty small muted">External news isn't configured on this server.</div>`;
+    generalHost.innerHTML = analystHost.innerHTML = mentionsHTML || `<div class="empty small muted">External news isn't configured on this server.</div>`;
     return;
   }
   const noteHTML = d.note ? `<div class="xs muted" style="margin-bottom:8px;">${esc(d.note)}</div>` : "";
   if (!d.articles || !d.articles.length) {
     const why = d.error ? `Couldn't reach the news service: ${esc(d.error)}` : "No recent coverage found.";
-    generalHost.innerHTML = analystHost.innerHTML = `${noteHTML}<div class="empty small muted">${why}</div>`;
+    generalHost.innerHTML = `${noteHTML}<div class="empty small muted">${why}</div>`;
+    analystHost.innerHTML = mentionsHTML || `${noteHTML}<div class="empty small muted">${why}</div>`;
     return;
   }
   const ageMin = d.fetched_at ? Math.round((Date.now() / 1000 - d.fetched_at) / 60) : null;
@@ -3276,11 +3304,13 @@ async function loadNews(refresh) {
   const analystHits = withMatch.filter(a => a._matchedAnalyst);
 
   generalHost.innerHTML = noteHTML + ageHTML + withMatch.map(articleHTML).join("");
-  analystHost.innerHTML = !names.length
+
+  const fallbackHTML = !names.length
     ? `<div class="empty small muted">No analyst roster loaded for this bank yet.</div>`
     : !analystHits.length
-      ? `<div class="empty small muted">None of today's headlines mention a covering analyst by name. This checks article text against TheNewsAPI's general news, not paywalled research notes -- a real report an analyst published may not show up here at all.</div>`
+      ? `<div class="empty small muted">${mentions.length ? "No additional" : "None of today's"} headlines mention a covering analyst by name. This checks article text against TheNewsAPI's general news, not paywalled research notes -- a real report an analyst published may not show up here at all.</div>`
       : analystHits.map(articleHTML).join("");
+  analystHost.innerHTML = mentionsHTML + fallbackHTML;
 }
 
 /* ── Usage & audit: durable per-call LLM logging ──────────────────────────────────────

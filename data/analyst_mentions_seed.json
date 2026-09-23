@@ -1,0 +1,34 @@
+{
+  "axis": [
+    {
+      "analyst": "Piran Engineer",
+      "firm": "CLSA",
+      "rating": "Buy (Reiterated)",
+      "price_target": "\u20b91,350",
+      "published": "2025-07-18",
+      "source": "TipRanks (analyst rating tracker)",
+      "url": "https://www.tipranks.com/experts/analysts/piran-engineer"
+    },
+    {
+      "analyst": "Ankit Bihani",
+      "firm": "Nomura",
+      "rating": "Buy (Reiterated)",
+      "price_target": "\u20b91,400",
+      "published": "2025-07-21",
+      "source": "TipRanks (analyst rating tracker)",
+      "url": "https://www.tipranks.com/experts/analysts/ankit-bihani"
+    }
+  ],
+  "kotak": [],
+  "indusind": [
+    {
+      "analyst": "Ankit Bihani",
+      "firm": "Nomura",
+      "rating": "Buy (Reiterated)",
+      "price_target": "\u20b9960",
+      "published": "2025-07-31",
+      "source": "TipRanks (analyst rating tracker)",
+      "url": "https://www.tipranks.com/experts/analysts/ankit-bihani"
+    }
+  ]
+}
