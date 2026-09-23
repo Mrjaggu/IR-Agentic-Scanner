@@ -376,7 +376,8 @@ def get_news_analyst_mentions(bank: str = DEFAULT_BANK):
     separate, non-live data source rather than something TheNewsAPI can
     supply: public news almost never names the analyst, only the broker)."""
     bank_id = _bank(bank)
-    return {"mentions": news_api.get_analyst_mentions(bank_id)}
+    return {"mentions": news_api.get_analyst_mentions(bank_id),
+            "seed_meta": news_api.get_analyst_mentions_meta()}
 
 
 @app.get("/api/metrics/timeseries")

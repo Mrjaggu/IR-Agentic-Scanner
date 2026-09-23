@@ -132,6 +132,14 @@ def get_analyst_mentions(bank_id: str) -> list[dict]:
     return _analyst_mentions_data.get(bank_id, [])
 
 
+def get_analyst_mentions_meta() -> dict:
+    """When this hand-verified seed was last captured -- so the frontend can
+    show it honestly (a date, not a vague "recently") rather than silently
+    letting it drift with no visible signal that it's due for a refresh."""
+    get_analyst_mentions("axis")  # ensures _analyst_mentions_data is loaded
+    return (_analyst_mentions_data or {}).get("_meta", {})
+
+
 def is_available() -> bool:
     return bool(API_TOKEN)
 

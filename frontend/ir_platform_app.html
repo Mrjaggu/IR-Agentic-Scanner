@@ -3280,9 +3280,13 @@ async function loadNews(refresh) {
       <div class="xs muted" style="margin-top:3px;">${m.published ? esc(m.published) + " · " : ""}${esc(m.source || "")}
         ${m.url ? ` · <a href="${esc(m.url)}" target="_blank" rel="noopener noreferrer">source</a>` : ""}</div>
     </div>`;
+  const seedMeta = mentionsResp?.seed_meta || {};
+  const seedNote = seedMeta.captured_at
+    ? `Verified sell-side rating actions -- hand-gathered, seed captured ${esc(seedMeta.captured_at)} (not a live feed; see below for why)`
+    : "Verified sell-side rating actions -- hand-gathered, not a live feed (see below for why)";
   const mentionsHTML = mentions.length
     ? `<div style="margin-bottom:10px;">
-         <div class="xs muted" style="margin-bottom:6px;">Verified sell-side rating actions -- hand-gathered, not a live feed (see below for why)</div>
+         <div class="xs muted" style="margin-bottom:6px;">${seedNote}</div>
          ${mentions.map(mentionHTML).join("")}
        </div>`
     : "";
