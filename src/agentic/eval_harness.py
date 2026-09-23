@@ -33,9 +33,10 @@ information at all.
 import statistics
 
 from src.config.settings import (
-    TEST_QUARTERS, TRAIN_CUTOFF, PromotionGate, F_BETA, SLOT_EXTRA, SLOT_CAP,
+    TEST_QUARTERS, TRAIN_CUTOFF, PromotionGate, F_BETA, SLOT_EXTRA, SLOT_CAP, paths_for,
 )
 from src.config.banks import DEFAULT_BANK
+from src.data.loader import load_dataset
 from src.agentic.run_agentic import build_initial_state
 from src.agentic.planning_agent import run_planning_agent
 from src.agentic.overall_layer import build_overall_topics
@@ -764,3 +765,76 @@ def sweep_slot_policy(configs: list[tuple[int, int]] | None = None,
             "chosen_by_f2": {"config": best[0], **best[1]},
             "note": "Chosen on training quarters only; the held-out quarters were not "
                     "consulted in this sweep."}
+
+
+def rank_position_calibration(bank_id: str = DEFAULT_BANK, warmup_quarters: int = 4,
+                              max_rank: int = 8) -> dict:
+    """Historical hit-rate by rank position -- the calibration number the
+    Prepare-next-call view's predicted-question list needs to show a real
+    "how often is the #1 predicted topic actually right" figure instead of
+    a fabricated confidence score (see boot()'s comment in the frontend on
+    why a made-up confidence number was deliberately avoided).
+
+    Deliberately walk-forward across EVERY quarter this bank has enough
+    training history for, not just the two official TEST_QUARTERS -- both
+    use the same leak-free rolling cutoff (build_initial_state's default
+    cutoff_mode="rolling": training on quarters strictly before the target,
+    same as every other holdout number this platform reports), but
+    TEST_QUARTERS alone is only 2 quarters x a handful of analysts, too few
+    analyst-quarter observations for a believable per-rank breakdown.
+    warmup_quarters skips the earliest quarters, where "training history"
+    is too thin to have produced a meaningful analyst preference yet, before
+    starting the walk-forward window.
+
+    Free and deterministic (with_questions=False, no LLM calls) -- same cost
+    profile as the topic-ranking metrics already computed for every
+    Evaluation-tab load, just run across more quarters.
+
+    Returns {"by_rank": [{"rank": 1, "hit_rate": 0.72, "n": 34}, ...],
+             "quarters_used": [...], "warmup_skipped": [...],
+             "note": "..."}. hit_rate is null (not 0.0) for a rank with n=0
+    (e.g. slot_cap trims most analysts' lists before that rank is reached)
+    -- a rank that was never predicted has no observed hit rate, and that is
+    a different fact from "predicted and always wrong"."""
+    paths = paths_for(bank_id)
+    dataset = load_dataset(dataset_path=paths.dataset_path)
+    quarter_order = [q["quarter_id"] for q in dataset]
+
+    warmup = quarter_order[:warmup_quarters]
+    eligible = quarter_order[warmup_quarters:]
+
+    hit_counts: dict[int, int] = {}
+    total_counts: dict[int, int] = {}
+    quarters_used = []
+
+    for q in eligible:
+        result = evaluate_quarter(q, holdout=True, with_questions=False, bank_id=bank_id)
+        per_analyst = result.get("per_analyst") or {}
+        if not per_analyst:
+            continue
+        quarters_used.append(q)
+        for score in per_analyst.values():
+            predicted = score.get("predicted") or []
+            actual = set(score.get("actual") or [])
+            for i, topic in enumerate(predicted[:max_rank]):
+                rank = i + 1
+                total_counts[rank] = total_counts.get(rank, 0) + 1
+                if topic in actual:
+                    hit_counts[rank] = hit_counts.get(rank, 0) + 1
+
+    by_rank = []
+    for rank in range(1, max_rank + 1):
+        n = total_counts.get(rank, 0)
+        hit_rate = round(hit_counts.get(rank, 0) / n, 4) if n else None
+        by_rank.append({"rank": rank, "hit_rate": hit_rate, "n": n})
+
+    return {
+        "by_rank": by_rank,
+        "quarters_used": quarters_used,
+        "warmup_skipped": warmup,
+        "note": "Walk-forward, leak-free (same rolling cutoff as every other holdout "
+                "number here): each quarter's hit/miss only used training data strictly "
+                "before it. hit_rate is the share of analyst-quarter observations where "
+                "the topic predicted AT THIS RANK was actually raised by that analyst "
+                "that quarter -- not a per-topic accuracy, a per-POSITION one.",
+    }

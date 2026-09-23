@@ -1364,6 +1364,7 @@ function show(view, syncRoute = true) {
   if (view === "quarter" && !QV.loaded) { QV.loaded = true; loadQuarterView(); }
   if (view === "news" && !NEWS.loaded) { NEWS.loaded = true; loadNews(); }
   if (view === "compare" && !COMPARE.loaded) { COMPARE.loaded = true; loadCompare(); }
+  if (view === "predict" && !CALIB.loaded) { CALIB.loaded = true; loadCalibration(); }
   if (view === "audit" && !AUDIT.loaded) { AUDIT.loaded = true; loadAudit(); }
   if (view === "workspace" && STATE.meta) $("#pageTitle").textContent = `${STATE.meta.display_name || "Bank"} workspace`;
   if (syncRoute) history.pushState({ view }, "", `#/${view}`);
@@ -2430,6 +2431,24 @@ $("#runFull").addEventListener("click", () => runTask(async () => {
 function condChip(on) {
   return `<span class="chip ${on ? "chip-accent" : ""}">${on ? "conditioned on uploaded disclosure" : "history only"}</span>`;
 }
+
+// Historical hit-rate by rank position (/api/eval/rank-calibration) -- a
+// REAL, computed number (walk-forward, leak-free, see
+// eval_harness.rank_position_calibration's docstring), not a fabricated
+// per-item confidence score. Loaded once per bank when the Prepare-next-call
+// view is opened; best-effort -- a failed or still-loading fetch just means
+// no badge shows yet, never an error blocking the predictions themselves.
+let CALIB = { loaded: false, data: null };
+async function loadCalibration() {
+  try { CALIB.data = await api("/api/eval/rank-calibration"); }
+  catch (err) { console.error(err); CALIB.data = null; }
+}
+function calibBadge(rank) {
+  const row = CALIB.data?.by_rank?.find(r => r.rank === rank);
+  if (!row || row.n === 0 || row.hit_rate == null) return "";
+  return `<span class="xs muted" title="Across ${row.n} held-out analyst-quarter observations where a topic was predicted at rank ${rank}, it was actually raised ${Math.round(row.hit_rate * 100)}% of the time.">
+    · historically right ~${Math.round(row.hit_rate * 100)}% of the time at this rank</span>`;
+}
 function renderOverall(overall, quarter, cond, toolLog) {
   const comp = overall.composite_scores || {};
   const rows = (overall.ranked_topics || []).map(t => ({
@@ -2449,7 +2468,7 @@ function renderOverall(overall, quarter, cond, toolLog) {
       ${(overall.ranked_topics || []).map((t, i) => {
         const r = (overall.rationale || {})[t];
         return `<div class="ev" style="margin-bottom:10px;">
-          <div class="ev-t">${i + 1} · ${esc(t)}</div>
+          <div class="ev-t">${i + 1} · ${esc(t)}${calibBadge(i + 1)}</div>
           <div class="ev-q">${r ? esc(r) : `<span class="status st-warn">${ICON.warn}Ranked, but no grounded rationale survived the verifier — shown as a bare topic rather than with unverified text.</span>`}</div>
         </div>`;
       }).join("")}
@@ -2459,7 +2478,7 @@ function renderOverall(overall, quarter, cond, toolLog) {
 }
 function slotHTML(items, ctxLabel) {
   return items.map((it, i) => `<div class="ev" style="margin-bottom:9px;${it.question_text ? "" : "border-left-color:var(--serious);"}">
-      <div class="row"><div class="ev-t">${esc(it.topic)}</div><div class="topbar-spacer"></div>
+      <div class="row"><div class="ev-t">${esc(it.topic)}${calibBadge(i + 1)}</div><div class="topbar-spacer"></div>
         ${it.question_text ? `<button class="btn btn-sm pin-question-btn" data-i="${i}">Pin</button>` : ""}
       </div>
       <div class="ev-q">${it.question_text ? esc(it.question_text)
@@ -3737,7 +3756,7 @@ async function switchBank(bankId) {
     STATE.disclosure = null; STATE.evalData = null; STATE.errResearchLoaded = false;
     STATE.skillsLoaded = false; STATE.dossier = null; STATE.selected = null;
     STATE.briefCount = null;
-    QV.loaded = false; NEWS.loaded = false;   // re-fetch on next visit to this bank's tab
+    QV.loaded = false; NEWS.loaded = false; CALIB.loaded = false;   // re-fetch on next visit to this bank's tab
     chatHistory = [];
     const sel = $("#bankSelect");
     if (sel) sel.value = bankId;

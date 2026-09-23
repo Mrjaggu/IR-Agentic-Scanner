@@ -58,6 +58,7 @@ from src.signals.metrics_extractor import METRIC_TOPIC_MAP
 from src.agentic.question_framer import build_evidence_pool
 from src.agentic.eval_harness import (
     run_holdout_eval, evaluate_quarter, research_errors, backtest_and_promote_weights,
+    rank_position_calibration,
 )
 from src.agentic.skills import definitions as _skills_definitions  # noqa: F401 -- populates the skill registry
 from src.agentic.skills.registry import list_skills
@@ -972,6 +973,24 @@ def eval_holdout(with_questions: bool = False, refresh: bool = False, bank: str 
     """The headline numbers: q4fy26 and q1fy27 scored separately against a
     q3fy26 training cutoff, plus the promotion gate."""
     return _cached_holdout(with_questions=with_questions, refresh=refresh, bank_id=_bank(bank))
+
+
+def _cached_rank_calibration(refresh: bool = False, bank_id: str = DEFAULT_BANK) -> dict:
+    key = f"{bank_id}:rank_calibration"
+    if refresh or key not in _eval_cache:
+        _eval_cache[key] = rank_position_calibration(bank_id=bank_id)
+    return _eval_cache[key]
+
+
+@app.get("/api/eval/rank-calibration")
+def eval_rank_calibration(refresh: bool = False, bank: str = DEFAULT_BANK):
+    """Historical hit-rate by rank position, walk-forward across every
+    quarter this bank has enough training history for (see
+    eval_harness.rank_position_calibration's docstring) -- the real,
+    computed number the Prepare-next-call view's predicted-topic list
+    shows next to each rank, instead of a fabricated per-item confidence
+    score. Free and deterministic, cached the same way as /api/eval/holdout."""
+    return _cached_rank_calibration(refresh=refresh, bank_id=_bank(bank))
 
 
 def _cached_question_recall(refresh: bool = False, bank_id: str = DEFAULT_BANK) -> dict:
