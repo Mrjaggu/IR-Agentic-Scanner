@@ -32,6 +32,7 @@ from pydantic import BaseModel
 
 from src.config.settings import (
     BASE_DIR, VAL_QUARTER, TOPICS_LIST, TEST_QUARTERS, TRAIN_CUTOFF, CUTOFF_MODE, paths_for,
+    writable_data_dir,
 )
 from src.config.banks import BANKS, DEFAULT_BANK
 from src.data.loader import load_dataset, load_graph
@@ -114,7 +115,15 @@ def _load_live(bank_id: str = DEFAULT_BANK) -> dict:
     # None (not a list of zero vectors) when the embedding model isn't
     # installed on this machine -- SearchIndex then just runs BM25+TF-IDF,
     # same as before this signal existed. See src/search/embeddings.py.
-    embed_vecs = search_embeddings.embed_many([d["text"] for d in data["corpus"]])
+    #
+    # cache_path: embedding a bank's whole corpus from scratch measured
+    # ~5.4s for Kotak / ~2.4s for IndusInd -- nearly all of the "switching
+    # workspaces takes time" delay, since this ran fresh on every process
+    # start with nothing persisted. embed_many() verifies a content
+    # fingerprint before trusting this cache, so an ingest that changes the
+    # corpus still recomputes correctly rather than serving stale vectors.
+    embed_cache_path = os.path.join(writable_data_dir("embeddings_cache", bank_id), "corpus.json")
+    embed_vecs = search_embeddings.embed_many([d["text"] for d in data["corpus"]], cache_path=embed_cache_path)
     data["index"] = SearchIndex(data["corpus"], embed_vecs=embed_vecs)
     _cache[bank_id] = data
     _dossier_cache.pop(bank_id, None)

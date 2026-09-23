@@ -41,8 +41,26 @@ every function here returns None / a no-op rather than raising, and
 hybrid_search.py falls back to BM25 + TF-IDF only (today's behavior) --
 same "don't fabricate, say so" discipline this codebase already applies to
 LLM availability (see meta.llm.available in fastapi_app.py).
+
+Caching (embed_many's cache_path): measured on this platform's real bank
+corpora (2026-09) -- embedding Kotak's 622-document corpus takes ~5.4s,
+IndusInd's 408 takes ~2.4s, EVERY time a process starts, because nothing
+persisted the result. That's almost the entire cost of switching to a
+bank whose in-memory cache had gone cold (fastapi_app.py's _load_live()),
+reported as "switching workspaces takes time." GloVe mean-pooling is a
+pure, deterministic function of the input text -- the same corpus always
+embeds to the same vectors -- so it's exactly the kind of computation
+that should never be redone until the corpus itself changes. cache_path,
+when given, stores the vectors alongside a fingerprint of the exact texts
+embedded; a later call with the same texts and cache_path reads them back
+in milliseconds instead of recomputing, and a changed corpus (new ingest)
+is detected via the fingerprint mismatch and recomputed + rewritten
+automatically -- never silently serves stale vectors for different text.
 """
 
+import hashlib
+import json
+import os
 import re
 
 # Grounded in what's actually in these transcripts (verified 2026-09: every
@@ -117,14 +135,54 @@ def is_available() -> bool:
     return _get_nlp() is not None
 
 
-def embed_many(texts: list[str]) -> list[list[float]] | None:
+def _corpus_fingerprint(texts: list[str]) -> str:
+    """A fast, stable fingerprint of the exact text being embedded -- not
+    just a document count, so an edited transcript (same doc count, new
+    text) still invalidates the cache correctly."""
+    h = hashlib.sha256()
+    for t in texts:
+        h.update((t or "").encode("utf-8", errors="replace"))
+        h.update(b"\x00")
+    return h.hexdigest()[:24]
+
+
+def embed_many(texts: list[str], cache_path: str | None = None) -> list[list[float]] | None:
     """Batch-embeds; returns None (not a list of Nones) if the model isn't
-    available, so callers can cleanly skip the semantic signal entirely."""
+    available, so callers can cleanly skip the semantic signal entirely.
+
+    cache_path is optional and off by default (existing callers are
+    unaffected) -- pass a per-corpus file path to persist the result across
+    process restarts. See the module docstring's "Caching" section for why
+    this is safe: embeddings are a pure function of the text, verified by
+    fingerprint, not merely assumed unchanged."""
     nlp = _get_nlp()
     if nlp is None:
         return None
+
+    fingerprint = _corpus_fingerprint(texts)
+    if cache_path:
+        try:
+            with open(cache_path) as f:
+                cached = json.load(f)
+            if cached.get("fingerprint") == fingerprint and len(cached.get("vectors", [])) == len(texts):
+                return cached["vectors"]
+        except (OSError, json.JSONDecodeError, KeyError, TypeError):
+            pass   # missing, corrupt, or stale cache -- just recompute below
+
     expanded = [_expand_acronyms(t or "") for t in texts]
-    return [doc.vector.tolist() for doc in nlp.pipe(expanded, batch_size=64)]
+    vectors = [doc.vector.tolist() for doc in nlp.pipe(expanded, batch_size=64)]
+
+    if cache_path:
+        try:
+            os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+            tmp = cache_path + ".tmp"
+            with open(tmp, "w") as f:
+                json.dump({"fingerprint": fingerprint, "vectors": vectors}, f)
+            os.replace(tmp, cache_path)
+        except OSError:
+            pass   # caching is an optimization, never a reason to fail this call
+
+    return vectors
 
 
 def embed_one(text: str) -> list[float] | None:

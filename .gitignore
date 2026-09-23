@@ -70,6 +70,13 @@ data/logs/
 # Same "runtime state, not source" reasoning as data/logs/ above.
 data/eval_history/
 
+# Cached corpus embedding vectors (src/search/embeddings.py's embed_many
+# cache_path) -- a pure, deterministic function of each bank's corpus
+# text, regenerated automatically (and correctly, via a content
+# fingerprint) whenever it's missing or stale. Multi-MB per bank; nothing
+# here is source, just a startup-time optimization.
+data/embeddings_cache/
+
 # writable_data_dir()'s own write-probe (src/config/settings.py) -- can land
 # in any data/ subdirectory it checks, including ones that ARE otherwise
 # tracked (e.g. data/outputs/<bank>/), so this is a blanket rule rather than
