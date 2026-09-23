@@ -420,6 +420,18 @@ def get_dossier(analyst: str, bank: str = DEFAULT_BANK):
     return d
 
 
+@app.get("/api/analyst-sentiment/trend")
+def analyst_sentiment_trend_route(analyst: str, bank: str = DEFAULT_BANK):
+    """Display-only: this analyst's tone score per quarter plus the running
+    average up to each quarter (the definition picked over cumulative sum --
+    see analyst_sentiment.py's sentiment_trend() docstring). Not wired into
+    prediction weights -- see that module's docstring for why."""
+    from src.signals.analyst_sentiment import sentiment_trend
+    bank_id = _bank(bank)
+    path = paths_for(bank_id).analyst_sentiment_path
+    return sentiment_trend(analyst, path=path)
+
+
 # ── Search ──────────────────────────────────────────────────────────────────
 class SearchRequest(BaseModel):
     query: str

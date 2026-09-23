@@ -53,6 +53,7 @@ class BankPaths:
     prep_sheet_path: str
     crossval_path: str
     semantic_eval_path: str
+    analyst_sentiment_path: str
     earnings_transcript_dir: str
 
 
@@ -77,6 +78,7 @@ def paths_for(bank_id: str) -> BankPaths:
         prep_sheet_path=os.path.join(outputs, "ir_prep_sheet.json"),
         crossval_path=os.path.join(outputs, "cross_validation.json"),
         semantic_eval_path=os.path.join(outputs, "semantic_eval_full.json"),
+        analyst_sentiment_path=os.path.join(outputs, "analyst_sentiment.json"),
         earnings_transcript_dir=os.path.join(_BASE_DIR, "earnings_transcript", bank_id),
     )
 
@@ -93,6 +95,7 @@ ANALYST_ENRICHMENT_PATH = _DEFAULT_PATHS.analyst_enrichment_path
 NOVELTY_PATH = _DEFAULT_PATHS.novelty_path
 PEER_SIGNAL_PATH = _DEFAULT_PATHS.peer_signal_path
 EXTERNAL_CONTEXT_PATH = _DEFAULT_PATHS.external_context_path
+ANALYST_SENTIMENT_PATH = _DEFAULT_PATHS.analyst_sentiment_path
 QUESTION_INTENT_PATH = _DEFAULT_PATHS.question_intent_path
 PERSONA_DERIVED_PATH = _DEFAULT_PATHS.persona_derived_path
 ASK_PATTERNS_PATH = _DEFAULT_PATHS.ask_patterns_path

@@ -1622,6 +1622,10 @@ function renderProfile() {
       })))}</div></div>`;
   }
 
+  html += `<div class="card"><div class="card-head"><h3>Sentiment trend</h3>
+      <span class="muted xs">tone of their questions toward the bank -- running average up to each quarter · display only, not used in predictions</span></div>
+      <div class="pad" id="analystSentimentTrendResult"><div class="empty small muted"><span class="spinner"></span> Loading…</div></div></div>`;
+
   html += `<div class="card-head" style="border:0;padding:22px 0 2px;">
       <h2>Question history</h2>
       <span class="muted small">newest first · full threads, management responses, follow-up reactions</span>
@@ -1636,6 +1640,7 @@ function renderProfile() {
   host.querySelectorAll(".more-btn").forEach(b => b.addEventListener("click", () => {
     b.previousElementSibling.classList.remove("clamped"); b.remove();
   }));
+  loadAnalystSentimentTrend(name);
 }
 
 function renderExchange(ex, xi) {
@@ -2761,6 +2766,106 @@ function drawEvalTrendChart(host, runs) {
       tip.innerHTML = `<div style="font-weight:600;margin-bottom:4px;">${esc((r.ts || "").slice(0, 10))}</div>
         <div>${label}: <b>${pct(r[key])}</b></div>
         <div class="muted small">${esc((r.test_quarters || []).join(", "))}</div>`;
+      tip.style.opacity = 1;
+      tip.style.left = Math.min(e.clientX + 12, innerWidth - tip.offsetWidth - 8) + "px";
+      tip.style.top = (e.clientY - tip.offsetHeight - 8) + "px";
+    });
+    c.addEventListener("pointerleave", () => { tip.style.opacity = 0; });
+  });
+}
+
+/* -- Analyst sentiment trend: tone of an analyst's questions toward the bank,
+   running average up to each quarter (the definition picked over cumulative
+   sum -- see src/signals/analyst_sentiment.py's sentiment_trend() docstring).
+   Display-only, same as eval trend above but scoped to one analyst and on a
+   -1..+1 axis instead of a 0..100% one. Never wired into predictions. */
+const SENTIMENT_TREND_COLORS = { running: "var(--accent)", raw: "var(--s4)" };
+
+async function loadAnalystSentimentTrend(name) {
+  STATE.sentimentTrendCache = STATE.sentimentTrendCache || {};
+  const key = STATE.bank + "::" + name;
+  const cached = STATE.sentimentTrendCache[key];
+  if (cached) { renderSentimentTrend(cached); return; }
+  let d;
+  try { d = await api("/api/analyst-sentiment/trend?analyst=" + encodeURIComponent(name)); }
+  catch (err) {
+    const host = $("#analystSentimentTrendResult");
+    if (host) host.innerHTML = `<div class="empty small muted">Could not load: ${esc(err.message)}</div>`;
+    return;
+  }
+  if (STATE.selected !== name) return;   // a different analyst was picked while this was loading
+  STATE.sentimentTrendCache[key] = d;
+  renderSentimentTrend(d);
+}
+
+function renderSentimentTrend(d) {
+  const host = $("#analystSentimentTrendResult");
+  if (!host) return;   // profile moved on before this resolved
+  if (!d.points || !d.points.length) {
+    host.innerHTML = `<div class="empty small muted">Not scored yet for this analyst -- run <code>python3 run.py analyst-sentiment</code> to build the trend.</div>`;
+    return;
+  }
+  const last = d.points[d.points.length - 1];
+  const tiles = `<div class="tiles" style="margin-bottom:14px;">
+      <div class="tile">
+        <div class="tile-label">Running average (latest)</div>
+        <div class="tile-value">${last.running_avg > 0 ? "+" : ""}${last.running_avg.toFixed(2)}</div>
+        <div class="tile-delta">${esc(last.label)} as of ${QU(last.quarter)}</div>
+      </div>
+    </div>`;
+  host.innerHTML = tiles + `<div id="sentimentTrendChartHost"></div>
+    <div class="xs muted" style="margin-top:6px;">-1.0 = openly skeptical · 0 = neutral · +1.0 = constructive. The bold line (running average up to each quarter) is the headline -- the muted line is that quarter's raw score.</div>`;
+  drawSentimentTrendChart($("#sentimentTrendChartHost"), d.points);
+}
+
+function drawSentimentTrendChart(host, points) {
+  const W = 720, H = 220, padL = 34, padR = 16, padT = 14, padB = 24;
+  const innerW = W - padL - padR, innerH = H - padT - padB;
+  const xPos = i => padL + (points.length > 1 ? (innerW * i) / (points.length - 1) : innerW / 2);
+  const yPos = v => padT + innerH * (1 - (v + 1) / 2);   // v in [-1, 1]
+
+  const gridLines = [-1, 0, 1].map(t => {
+    const yy = yPos(t);
+    return `<line x1="${padL}" y1="${yy.toFixed(1)}" x2="${W - padR}" y2="${yy.toFixed(1)}" stroke="var(--hairline)" stroke-width="1"/>
+            <text x="${padL - 6}" y="${(yy + 3.5).toFixed(1)}" text-anchor="end" font-size="10.5" fill="var(--ink-muted)">${t > 0 ? "+" : ""}${t.toFixed(1)}</text>`;
+  }).join("");
+
+  function series(key, color) {
+    let d = "", drawing = false;
+    const dots = [];
+    points.forEach((p, i) => {
+      const v = p[key];
+      if (v == null) { drawing = false; return; }
+      d += (drawing ? " L " : "M ") + xPos(i).toFixed(1) + " " + yPos(v).toFixed(1);
+      drawing = true;
+      dots.push(`<circle cx="${xPos(i).toFixed(1)}" cy="${yPos(v).toFixed(1)}" r="3" fill="${color}"
+        data-i="${i}" data-key="${key}"/>`);
+    });
+    return `<path d="${d}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>${dots.join("")}`;
+  }
+
+  host.innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible;" id="sentimentTrendSvg">
+      ${gridLines}
+      ${series("sentiment_score", SENTIMENT_TREND_COLORS.raw)}
+      ${series("running_avg", SENTIMENT_TREND_COLORS.running)}
+    </svg>
+    <div class="row" style="gap:14px;margin-top:10px;flex-wrap:wrap;">
+      <span class="small" style="display:inline-flex;align-items:center;gap:5px;color:var(--ink-2);">
+        <span style="display:inline-block;width:12px;height:2px;background:${SENTIMENT_TREND_COLORS.running};"></span>Running average (headline)</span>
+      <span class="small" style="display:inline-flex;align-items:center;gap:5px;color:var(--ink-2);">
+        <span style="display:inline-block;width:12px;height:2px;background:${SENTIMENT_TREND_COLORS.raw};"></span>Per-quarter score (raw)</span>
+    </div>`;
+
+  const svg = $("#sentimentTrendSvg");
+  svg.querySelectorAll("circle").forEach(c => {
+    c.addEventListener("pointermove", e => {
+      const i = Number(c.dataset.i), key = c.dataset.key;
+      const p = points[i];
+      const label = key === "running_avg" ? "Running average" : "This quarter";
+      tip.innerHTML = `<div style="font-weight:600;margin-bottom:4px;">${esc(QU(p.quarter))}</div>
+        <div>${label}: <b>${p[key] > 0 ? "+" : ""}${p[key].toFixed(2)}</b></div>
+        <div class="muted small">${esc(p.label)}</div>`;
       tip.style.opacity = 1;
       tip.style.left = Math.min(e.clientX + 12, innerWidth - tip.offsetWidth - 8) + "px";
       tip.style.top = (e.clientY - tip.offsetHeight - 8) + "px";

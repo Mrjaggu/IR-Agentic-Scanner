@@ -79,6 +79,19 @@ def main():
                                     "request size / API usage), e.g. 'MB Mahesh,Piran Engineer'")
     intent_parser.add_argument("--bank", type=str, default=None, help="Bank id (default: axis)")
 
+    # 6c2. Analyst sentiment (tone toward the bank, display-only -- not wired into predictions)
+    sentiment_parser = subparsers.add_parser(
+        "analyst-sentiment",
+        help="LLM pass: score each analyst's question TONE per quarter (-1 skeptical .. "
+             "+1 constructive), writes data/outputs/<bank>/analyst_sentiment.json. "
+             "Display-only (UI trend chart) -- not wired into prediction weights.")
+    sentiment_parser.add_argument("--quarter", type=str, default=None,
+                                  help="Single target quarter (default: loop over last 8 quarters)")
+    sentiment_parser.add_argument("--analysts", type=str, default=None,
+                                  help="Comma-separated analyst names to scope down to, e.g. "
+                                       "'MB Mahesh,Piran Engineer'")
+    sentiment_parser.add_argument("--bank", type=str, default=None, help="Bank id (default: axis)")
+
     # 6d2. Metrics extraction (regex-based, no LLM)
     metrics_parser = subparsers.add_parser(
         "metrics",
@@ -173,6 +186,16 @@ def main():
             compute_question_intent(args.quarter, analysts=analysts)
         else:
             compute_question_intent_recent(analysts=analysts)
+
+    elif args.command == "analyst-sentiment":
+        from src.signals.analyst_sentiment import compute_analyst_sentiment, compute_analyst_sentiment_recent
+        analysts = set(a.strip() for a in args.analysts.split(",")) if args.analysts else None
+        # Same bank-threading note as "intent" above: not yet threaded past the
+        # settings.py shim (axis only) -- --bank accepted for CLI consistency.
+        if args.quarter:
+            compute_analyst_sentiment(args.quarter, analysts=analysts)
+        else:
+            compute_analyst_sentiment_recent(analysts=analysts)
 
     elif args.command == "personas-derived":
         from src.signals.persona_synthesis import synthesize_personas
