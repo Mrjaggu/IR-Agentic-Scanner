@@ -197,6 +197,76 @@ def get_banks():
     return {"banks": out, "default_bank": DEFAULT_BANK}
 
 
+@app.get("/api/compare/topics")
+def get_compare_topics(quarters: int = 8):
+    """Cross-bank comparison view's data source: for each registered bank
+    that has a graph, what share of its analyst questions over its last
+    `quarters` quarters falls into each of the 12 taxonomy topics -- the
+    same classification (src.graphs.compiler.TOPICS) applied uniformly to
+    every bank's transcripts, so the shares are genuinely comparable, not
+    three different measurements dressed up as one.
+
+    Deliberately topic-share only, not the extracted numeric metrics
+    (GNPA/NIM/PAT/...): those come from metrics_extractor's regex patterns,
+    tuned against Axis's own verbal-disclosure phrasing, and barely match
+    Kotak/IndusInd's transcripts (0-1 of 11 metrics found for most of their
+    quarters) -- a side-by-side numeric table built on that would look like
+    real comparable data while mostly being blanks. Topic tagging runs off
+    the same keyword taxonomy for every bank, so it doesn't have that gap.
+
+    "Citibank Integration" is Axis-specific (Axis's 2023 acquisition of
+    Citibank India's consumer business) -- included for every bank since
+    it's part of the shared taxonomy, but a near-zero share for Kotak/
+    IndusInd there reflects that the topic doesn't apply to them, not a
+    data gap. The frontend should caveat this rather than imply otherwise.
+
+    Returns {"topics": [...12 in taxonomy order...],
+             "banks": [{"bank_id", "display_name", "quarters_covered",
+                        "question_count", "shares": {topic: 0..1}}]}.
+    A bank with no graph yet (or literally zero tagged questions in the
+    window) is included with shares all 0.0 and question_count 0, not
+    omitted -- so the frontend can show it as "no data" rather than have
+    it silently vanish from the comparison.
+    """
+    out = []
+    for bank_id, cfg in BANKS.items():
+        paths = paths_for(bank_id)
+        counts = {t: 0 for t in TOPICS_LIST}
+        total = 0
+        quarters_seen = set()
+        if os.path.exists(paths.graph_path):
+            try:
+                graph = load_graph(graph_path=paths.graph_path)
+            except Exception:
+                graph = None
+            if graph:
+                q_nodes = sorted(
+                    (n for n in graph["nodes"] if n["type"] == "Quarter"),
+                    key=lambda n: n["properties"]["sort_key"],
+                )
+                window = {n["id"] for n in q_nodes[-quarters:]} if quarters > 0 else {n["id"] for n in q_nodes}
+                for n in graph["nodes"]:
+                    if n["type"] != "Question":
+                        continue
+                    q = n["properties"].get("quarter")
+                    if q not in window:
+                        continue
+                    quarters_seen.add(q)
+                    total += 1
+                    for t in n["properties"].get("topics") or []:
+                        if t in counts:
+                            counts[t] += 1
+        shares = {t: (round(c / total, 4) if total else 0.0) for t, c in counts.items()}
+        out.append({
+            "bank_id": bank_id,
+            "display_name": cfg.display_name,
+            "quarters_covered": len(quarters_seen),
+            "question_count": total,
+            "shares": shares,
+        })
+    return {"topics": TOPICS_LIST, "banks": out}
+
+
 @app.get("/", response_class=HTMLResponse)
 def index():
     with open(APP_HTML_PATH) as f:

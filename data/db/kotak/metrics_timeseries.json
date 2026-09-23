@@ -1,0 +1,68 @@
+{
+  "q1fy22": {},
+  "q2fy22": {},
+  "q3fy22": {},
+  "q4fy22": {},
+  "q1fy23": {},
+  "q2fy23": {},
+  "q3fy23": {},
+  "q4fy23": {},
+  "q1fy24": {},
+  "q2fy24": {},
+  "q3fy24": {},
+  "q4fy24": {},
+  "q1fy25": {},
+  "q2fy25": {
+    "PAT": {
+      "value": 269.0,
+      "value_unit": "crore",
+      "delta": 29.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "YOY"
+    }
+  },
+  "q3fy25": {
+    "PAT": {
+      "value": 218.0,
+      "value_unit": "crore",
+      "delta": 9.0,
+      "delta_unit": "%",
+      "direction": "decrease",
+      "period": "YOY"
+    }
+  },
+  "q4fy25": {
+    "PAT": {
+      "value": 297.0,
+      "value_unit": "crore",
+      "delta": 34.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "YOY"
+    }
+  },
+  "q1fy26": {},
+  "q2fy26": {
+    "NIM": {
+      "value": 4.54,
+      "value_unit": "%",
+      "delta": 11.0,
+      "delta_unit": "bps",
+      "direction": "decrease",
+      "period": "QOQ"
+    }
+  },
+  "q3fy26": {},
+  "q4fy26": {},
+  "q1fy27": {
+    "PAT": {
+      "value": 23.0,
+      "value_unit": null,
+      "delta": 23.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "YOY"
+    }
+  }
+}

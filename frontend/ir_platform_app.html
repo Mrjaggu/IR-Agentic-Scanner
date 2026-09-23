@@ -582,6 +582,9 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
     <button class="nav-item" data-view="news">
       <svg viewBox="0 0 24 24"><path d="M4 4h13a2 2 0 0 1 2 2v13a1 1 0 0 1-1.6.8L4 10.5z" transform="rotate(180 12 12)"/><path d="M8 8h8M8 12h5"/></svg>
       News feeds</button>
+    <button class="nav-item" data-view="compare">
+      <svg viewBox="0 0 24 24"><rect x="3" y="10" width="5" height="10"/><rect x="10" y="5" width="5" height="15"/><rect x="17" y="13" width="5" height="7"/></svg>
+      Compare banks</button>
     <div class="nav-sep">Admin</div>
     <button class="nav-item" data-view="eval">
       <svg viewBox="0 0 24 24"><path d="M5 20V10M12 20V5M19 20v-7"/></svg>
@@ -824,6 +827,12 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
         <div class="pad" id="newsAnalystResult"></div>
       </div>
     </div>
+  </section>
+
+  <!-- ══ COMPARE BANKS ════════════════════════════════════════════════════ -->
+  <section class="view" id="view-compare">
+    <div class="xs muted" style="margin-bottom:10px;">What share of each bank's analyst questions, over its own last several quarters, falls into each topic — the same topic taxonomy applied to every bank, so this is a real comparison, not three different measurements side by side.</div>
+    <div id="compareResult"></div>
   </section>
 
   <!-- ══ PREDICT ══════════════════════════════════════════════════════════ -->
@@ -1202,6 +1211,7 @@ const TITLES = {
   chat: ["Research archive", "Grounded retrieval across every transcript in the archive"],
   quarter: ["Quarter view", "Compare regex-extracted call metrics across every quarter in the archive"],
   news: ["News feeds", "Bank-specific coverage, and news mentioning analysts who cover this bank"],
+  compare: ["Compare banks", "Where sell-side attention concentrates for each bank, by topic, over its own recent quarters"],
   predict: ["Prepare next call", "Review the disclosure, then forecast the questions your team should prepare for"],
   brief: ["Prep brief", "Pinned questions, passages and answers — export it before the call"],
   eval: ["Evaluation", "Held-out results, promotion gate, and failure attribution"],
@@ -1353,6 +1363,7 @@ function show(view, syncRoute = true) {
   if (view === "brief") loadBrief();
   if (view === "quarter" && !QV.loaded) { QV.loaded = true; loadQuarterView(); }
   if (view === "news" && !NEWS.loaded) { NEWS.loaded = true; loadNews(); }
+  if (view === "compare" && !COMPARE.loaded) { COMPARE.loaded = true; loadCompare(); }
   if (view === "audit" && !AUDIT.loaded) { AUDIT.loaded = true; loadAudit(); }
   if (view === "workspace" && STATE.meta) $("#pageTitle").textContent = `${STATE.meta.display_name || "Bank"} workspace`;
   if (syncRoute) history.pushState({ view }, "", `#/${view}`);
@@ -3225,6 +3236,62 @@ function drawQuarterTable(host) {
     }).join("")}</tr>`).join("")}</tbody>
   </table></div>
   <div class="xs muted" style="margin-top:6px;">Δ vs prior Q compares each quarter to the one immediately before it (skips a quarter with nothing extracted rather than comparing across the gap). Separate from the YOY change shown elsewhere in this platform.</div>`;
+}
+
+/* ── Compare banks: topic-attention share across the registry ────────────────
+   Data source is the new /api/compare/topics route -- the SAME topic
+   taxonomy (src.graphs.compiler.TOPICS) applied to every bank's transcripts,
+   so a share is genuinely comparable across banks, unlike the regex-
+   extracted numeric metrics (GNPA/NIM/...), which are tuned to Axis's own
+   disclosure phrasing and barely match Kotak/IndusInd's transcripts -- that
+   gap is why this view compares topic attention, not raw numbers. Rendered
+   as a table with an inline bar per cell rather than a new SVG chart type;
+   every bank's column also shows how many quarters/questions the share is
+   built from, since a bank still short on data should read as thin, not as
+   "no interest in this topic." */
+let COMPARE = { loaded: false, data: null };
+
+async function loadCompare() {
+  const host = $("#compareResult");
+  host.innerHTML = `<div class="card"><div class="empty"><span class="spinner"></span> Loading…</div></div>`;
+  let d;
+  try { d = await api("/api/compare/topics?quarters=8"); }
+  catch (err) { host.innerHTML = `<div class="card"><div class="empty">Could not load: ${esc(err.message)}</div></div>`; return; }
+  COMPARE.data = d;
+  renderCompare();
+}
+
+function renderCompare() {
+  const host = $("#compareResult");
+  const d = COMPARE.data;
+  if (!d || !d.banks?.length) { host.innerHTML = `<div class="card"><div class="empty">No banks registered.</div></div>`; return; }
+
+  const header = d.banks.map(b => `<th class="num">${esc(b.display_name)}</th>`).join("");
+  const subheader = d.banks.map(b => `<th class="num xs muted" style="font-weight:400;">
+      ${b.question_count ? `${b.question_count} questions · ${b.quarters_covered}q` : "no data yet"}</th>`).join("");
+  const rows = d.topics.map(topic => {
+    const cells = d.banks.map(b => {
+      const share = b.shares[topic] || 0;
+      const pct = Math.round(share * 100);
+      return `<td class="num">
+        <div class="row" style="gap:6px; justify-content:flex-end; align-items:center;">
+          <span style="font-variant-numeric:tabular-nums;">${b.question_count ? pct + "%" : "—"}</span>
+          <span style="display:inline-block; width:44px; height:6px; background:var(--surface-2); border-radius:3px; overflow:hidden;">
+            <span style="display:block; height:100%; width:${Math.min(pct, 100)}%; background:var(--accent);"></span>
+          </span>
+        </div></td>`;
+    }).join("");
+    const flag = topic === "Citibank Integration" ? ` <span class="xs muted">(Axis-specific)</span>` : "";
+    return `<tr><td>${esc(topic)}${flag}</td>${cells}</tr>`;
+  }).join("");
+
+  host.innerHTML = `<div class="card"><div class="pad">
+    <div style="overflow-x:auto;"><table>
+      <thead><tr><th>Topic</th>${header}</tr><tr><th></th>${subheader}</tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+    <div class="xs muted" style="margin-top:10px;">Share = % of that bank's own analyst questions, over its last 8 quarters, tagged with this topic (a question can carry more than one topic, so a column needn't sum to 100%). "Citibank Integration" reflects Axis's 2023 acquisition of Citibank India's consumer business — a near-zero share for other banks means the topic doesn't apply to them, not a data gap. A bank marked "no data yet" hasn't had its transcripts compiled into a graph.</div>
+  </div></div>`;
 }
 
 /* ── News feeds: bank coverage + analyst-mention coverage (TheNewsAPI) ────────

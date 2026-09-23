@@ -1,0 +1,44 @@
+{
+  "q4fy22": {},
+  "q3fy23": {},
+  "q4fy23": {
+    "NIM": {
+      "value": 4.28,
+      "value_unit": "%",
+      "delta": 1.0,
+      "delta_unit": "bps",
+      "direction": "improve",
+      "period": "QOQ"
+    },
+    "CET1": {
+      "value": 15.93,
+      "value_unit": "%",
+      "delta": 16.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "YOY"
+    }
+  },
+  "q1fy24": {},
+  "q2fy24": {},
+  "q3fy24": {},
+  "q4fy24": {
+    "CET1": {
+      "value": 15.82,
+      "value_unit": "%",
+      "delta": 15.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "YOY"
+    }
+  },
+  "q1fy25": {},
+  "q2fy25": {},
+  "q3fy25": {},
+  "q4fy25": {},
+  "q1fy26": {},
+  "q2fy26": {},
+  "q3fy26": {},
+  "q4fy26": {},
+  "q1fy27": {}
+}
