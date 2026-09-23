@@ -1,1 +1,1332 @@
-[]
+[
+  {
+    "quarter": "q1fy22",
+    "analyst": "Abhishek Murarka",
+    "sentiment_score": 0.1,
+    "label": "neutral",
+    "evidence": "The analyst uses a polite and inquisitive tone, asking for qualitative color to better understand the composition of retail slippages."
+  },
+  {
+    "quarter": "q1fy22",
+    "analyst": "Adarsh Parasrampuria",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst uses the phrase 'true litmus test' to challenge the current stability of the SME portfolio, implying skepticism about the sustainability of current figures."
+  },
+  {
+    "quarter": "q1fy22",
+    "analyst": "Antariksha Banerjee",
+    "sentiment_score": -0.1,
+    "label": "neutral",
+    "evidence": "The analyst is focused on reconciling specific figures, using a fact-checking tone to verify if the bank's reported numbers align with their own calculations."
+  },
+  {
+    "quarter": "q1fy22",
+    "analyst": "Kunal Shah",
+    "sentiment_score": -0.3,
+    "label": "neutral",
+    "evidence": "The analyst explicitly points out that the employee cost trajectory is 'quite high' despite previous management explanations, indicating dissatisfaction with the current trend."
+  },
+  {
+    "quarter": "q1fy22",
+    "analyst": "Mahrukh Adajania",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst maintains a neutral, professional tone, requesting additional quantitative data to clarify the slippage ratios."
+  },
+  {
+    "quarter": "q1fy22",
+    "analyst": "Nilanjan Karfa",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst is persistent in questioning the math behind the retail slippage numbers, suggesting a lack of clarity or potential discrepancy in the bank's reporting."
+  },
+  {
+    "quarter": "q1fy22",
+    "analyst": "Prakhar Agarwal",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst is seeking clarification on the timeline of slippage benefits, framing the question around expectations for future quarters in a neutral manner."
+  },
+  {
+    "quarter": "q1fy22",
+    "analyst": "Rahul Jain",
+    "sentiment_score": -0.4,
+    "label": "skeptical",
+    "evidence": "The analyst uses a challenging tone, noting that the write-off numbers 'stand out' and questioning the underlying policy driving these significant actions."
+  },
+  {
+    "quarter": "q1fy22",
+    "analyst": "Sumeet Kariwala",
+    "sentiment_score": -0.1,
+    "label": "neutral",
+    "evidence": "The analyst highlights a perceived disconnect between deposit growth and loan growth, asking for an explanation of the liquidity coverage ratio in a probing manner."
+  },
+  {
+    "quarter": "q2fy22",
+    "analyst": "Abhishek Murarka",
+    "sentiment_score": 0.2,
+    "label": "neutral",
+    "evidence": "The analyst acknowledges the bank's strong commentary while seeking clarification on the corporate portfolio decline, maintaining a constructive and inquisitive tone."
+  },
+  {
+    "quarter": "q2fy22",
+    "analyst": "Anand Dama",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst asks direct, matter-of-fact questions regarding the drivers of increased staff and other expenses without expressing skepticism or bias."
+  },
+  {
+    "quarter": "q2fy22",
+    "analyst": "Jai Mundhra",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst uses a neutral, clarifying tone to request specific details on one-off OPEX and qualitative guidance on future credit costs."
+  },
+  {
+    "quarter": "q2fy22",
+    "analyst": "Kunal Shah",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst focuses on technical clarification regarding the movement of the BB and below book, maintaining a neutral and professional inquiry style."
+  },
+  {
+    "quarter": "q2fy22",
+    "analyst": "Rakesh Kumar",
+    "sentiment_score": -0.3,
+    "label": "neutral",
+    "evidence": "The analyst adopts a slightly challenging tone by pointing out the bank's slow progression on external benchmark pricing compared to peers and questioning if it is a deliberate margin protection strategy."
+  },
+  {
+    "quarter": "q3fy22",
+    "analyst": "Abhishek Murarka",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst is asking for technical clarification regarding the loan book mix and interest rate repricing mechanics."
+  },
+  {
+    "quarter": "q3fy22",
+    "analyst": "Adarsh Parasrampuria",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst is probing for a reconciliation of the OPEX figures, implying a need for better clarity on the guidance provided."
+  },
+  {
+    "quarter": "q3fy22",
+    "analyst": "Alpesh Mehta",
+    "sentiment_score": -0.1,
+    "label": "neutral",
+    "evidence": "The analyst is questioning the nature of balance sheet restatements, which reflects a need for transparency on reported figures."
+  },
+  {
+    "quarter": "q3fy22",
+    "analyst": "Anand Dama",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst is seeking granular detail on expense allocation and capitalization policies in a neutral, investigative manner."
+  },
+  {
+    "quarter": "q3fy22",
+    "analyst": "Gaurav Kochar",
+    "sentiment_score": -0.5,
+    "label": "skeptical",
+    "evidence": "The analyst explicitly compares the bank's OPEX to total income ratio against peers, highlighting a discrepancy that suggests the bank is underperforming in cost efficiency."
+  },
+  {
+    "quarter": "q3fy22",
+    "analyst": "Kunal Shah",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst is asking for clarification on the nature of future digital-related OPEX and the drivers behind the sequential uptick."
+  },
+  {
+    "quarter": "q3fy22",
+    "analyst": "MB Mahesh",
+    "sentiment_score": 0.1,
+    "label": "neutral",
+    "evidence": "The analyst is inquiring about the metrics and outcomes of the bank's digital initiatives in a constructive, information-seeking tone."
+  },
+  {
+    "quarter": "q3fy22",
+    "analyst": "Mahrukh Adajania",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst is requesting a breakdown of tech spend as a percentage of total OPEX to better understand the cost structure."
+  },
+  {
+    "quarter": "q3fy22",
+    "analyst": "Nilanjan Karfa",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst is questioning the management's decision to reduce fee income, probing for the strategic rationale behind the move."
+  },
+  {
+    "quarter": "q3fy22",
+    "analyst": "Nitin Aggarwal",
+    "sentiment_score": -0.3,
+    "label": "neutral",
+    "evidence": "The analyst is challenging the management on the utilization timeline of COVID-related provisions, implying a desire for more clarity on capital release."
+  },
+  {
+    "quarter": "q3fy22",
+    "analyst": "Sameer Bhise",
+    "sentiment_score": 0.1,
+    "label": "neutral",
+    "evidence": "The analyst is asking for the bank's perspective on market share dynamics and growth drivers in the SBB and MSME segments."
+  },
+  {
+    "quarter": "q3fy22",
+    "analyst": "Sumeet Kariwala",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst is questioning the decline in LCR, pointing out a potential inconsistency between deposit growth and liquidity ratios."
+  },
+  {
+    "quarter": "q4fy22",
+    "analyst": "Adarsh Parasrampuria",
+    "sentiment_score": -0.4,
+    "label": "skeptical",
+    "evidence": "The analyst uses critical language like 'sluggish' to describe growth and challenges management regarding the 'build up in cost run rates'."
+  },
+  {
+    "quarter": "q4fy22",
+    "analyst": "Jai Mundhra",
+    "sentiment_score": 0.1,
+    "label": "neutral",
+    "evidence": "The analyst frames the question around a new strategic partnership, maintaining a neutral and inquisitive tone."
+  },
+  {
+    "quarter": "q4fy22",
+    "analyst": "Krishnan ASV",
+    "sentiment_score": 0.5,
+    "label": "constructive",
+    "evidence": "The analyst acknowledges the bank has 'worked very hard' to improve asset quality, framing the question with a complimentary tone regarding past performance."
+  },
+  {
+    "quarter": "q4fy22",
+    "analyst": "Kunal Shah",
+    "sentiment_score": -0.1,
+    "label": "neutral",
+    "evidence": "The analyst is focused on clarifying the mechanics of a decline in employee count, maintaining a neutral, data-driven tone."
+  },
+  {
+    "quarter": "q4fy22",
+    "analyst": "Mahrukh Adajania",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst asks direct, technical questions regarding cost-to-asset guidance and asset transfers without expressing bias."
+  },
+  {
+    "quarter": "q4fy22",
+    "analyst": "Nilanjan Karfa",
+    "sentiment_score": -0.3,
+    "label": "neutral",
+    "evidence": "The analyst expresses skepticism by noting the recovery is a 'very large item' and explicitly questions the consistency of management's previous articulations."
+  },
+  {
+    "quarter": "q4fy22",
+    "analyst": "Parag",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst probes the potential for 'elevated' cost-to-income ratios, focusing on the negative implications for return ratios."
+  },
+  {
+    "quarter": "q4fy22",
+    "analyst": "Rohan Mandora",
+    "sentiment_score": 0.1,
+    "label": "neutral",
+    "evidence": "The analyst uses a neutral, analytical approach to verify NIM expansion potential based on the bank's disclosed LCR."
+  },
+  {
+    "quarter": "q1fy23",
+    "analyst": "Abhishek Murarka",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst is neutrally seeking clarification on the bank's medium-term NIM outlook and the impact of corporate growth."
+  },
+  {
+    "quarter": "q1fy23",
+    "analyst": "Kunal Shah",
+    "sentiment_score": -0.1,
+    "label": "neutral",
+    "evidence": "The analyst is probing the bank's competitive positioning regarding deposit rate hikes compared to peers, which carries a slightly inquisitive, comparative tone."
+  },
+  {
+    "quarter": "q1fy23",
+    "analyst": "MB Mahesh",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst is asking a technical, fact-finding question regarding the attribution of spread improvement to loan mix versus balance sheet changes."
+  },
+  {
+    "quarter": "q1fy23",
+    "analyst": "Mahrukh Adajania",
+    "sentiment_score": 0.2,
+    "label": "neutral",
+    "evidence": "The analyst acknowledges the bank's strong performance in focus segments before neutrally inquiring about the feasibility of double-digit growth."
+  },
+  {
+    "quarter": "q1fy23",
+    "analyst": "Saurabh Kumar",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst is asking straightforward, clarifying questions regarding the duration of the corporate bond book and the trajectory of fee-to-assets."
+  },
+  {
+    "quarter": "q2fy23",
+    "analyst": "Abhishek Murarka",
+    "sentiment_score": 0.8,
+    "label": "constructive",
+    "evidence": "The analyst explicitly offers congratulations for the quarter and expresses full satisfaction with the provided information."
+  },
+  {
+    "quarter": "q2fy23",
+    "analyst": "Adarsh Parasrampuria",
+    "sentiment_score": 0.1,
+    "label": "neutral",
+    "evidence": "The analyst maintains a neutral, inquisitive tone while seeking clarification on the drivers of margin improvement."
+  },
+  {
+    "quarter": "q2fy23",
+    "analyst": "Ajit Kumar",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst asks direct, fact-based questions regarding deposit growth drivers and timelines without expressing bias."
+  },
+  {
+    "quarter": "q2fy23",
+    "analyst": "Jiten Doshi",
+    "sentiment_score": 0.4,
+    "label": "constructive",
+    "evidence": "The analyst uses constructive language, framing the question around the bank's 'foundation' and 'confidence' in future performance."
+  },
+  {
+    "quarter": "q2fy23",
+    "analyst": "Kunal Shah",
+    "sentiment_score": 0.1,
+    "label": "neutral",
+    "evidence": "The analyst adopts a neutral, professional tone while inquiring about capital raising plans in the context of growth opportunities."
+  },
+  {
+    "quarter": "q2fy23",
+    "analyst": "MB Mahesh",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst adopts a slightly probing tone by highlighting a potential industry-wide issue and questioning if the bank's retail growth is slowing."
+  },
+  {
+    "quarter": "q2fy23",
+    "analyst": "Mahrukh Adajania",
+    "sentiment_score": 0.6,
+    "label": "constructive",
+    "evidence": "The analyst begins with a complimentary remark regarding the 'excellent margin achievement' before pivoting to forward-looking questions."
+  },
+  {
+    "quarter": "q2fy23",
+    "analyst": "Nitin Aggarwal",
+    "sentiment_score": 0.3,
+    "label": "neutral",
+    "evidence": "The analyst frames the question around a 'positive surprise' and the bank's ability to beat its own previous guidance."
+  },
+  {
+    "quarter": "q2fy23",
+    "analyst": "Sameer Bhise",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst asks technical, clarifying questions regarding specific slide data without any discernible positive or negative sentiment."
+  },
+  {
+    "quarter": "q3fy23",
+    "analyst": "Adarsh Parasrampuria",
+    "sentiment_score": -0.6,
+    "label": "skeptical",
+    "evidence": "The analyst explicitly challenges the bank's performance by stating 'I don't see this kind of trend in most other banks' and highlighting a multi-quarter slowdown."
+  },
+  {
+    "quarter": "q3fy23",
+    "analyst": "Jai Mundhra",
+    "sentiment_score": -0.4,
+    "label": "skeptical",
+    "evidence": "The analyst expresses skepticism regarding the 'one-off' nature of the slippages, noting that they previously believed risky assets were already 'boxed' and provided for."
+  },
+  {
+    "quarter": "q3fy23",
+    "analyst": "Mahrukh Adajania",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst asks a neutral, data-seeking question about loan growth trends in response to rising interest rates."
+  },
+  {
+    "quarter": "q3fy23",
+    "analyst": "Nitin Aggarwal",
+    "sentiment_score": 0.2,
+    "label": "neutral",
+    "evidence": "The analyst frames the treasury performance as 'particularly strong' and seeks clarification on the drivers behind this positive result."
+  },
+  {
+    "quarter": "q3fy23",
+    "analyst": "Pankaj Agarwal",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst probes for potential inconsistencies in the bank's PSL compliance and RIDF bond strategy."
+  },
+  {
+    "quarter": "q3fy23",
+    "analyst": "Prakhar Agarwal",
+    "sentiment_score": -0.3,
+    "label": "neutral",
+    "evidence": "The analyst questions the nature of the 'one-off' prudential provisions, seeking to reconcile the bank's explanation with the specific segment performance."
+  },
+  {
+    "quarter": "q3fy23",
+    "analyst": "Rakesh Kumar",
+    "sentiment_score": -0.4,
+    "label": "skeptical",
+    "evidence": "The analyst highlights a specific trend in the investment portfolio and non-retail deposits, asking 'what is happening there' in a tone that implies concern over the bank's asset-liability management."
+  },
+  {
+    "quarter": "q3fy23",
+    "analyst": "Rohan Mandora",
+    "sentiment_score": -0.5,
+    "label": "skeptical",
+    "evidence": "The analyst points to a discrepancy between the acquired business's historical PAT and the bank's previously stated normalized PAT projections, signaling a need for reconciliation."
+  },
+  {
+    "quarter": "q3fy23",
+    "analyst": "Saurabh Kumar",
+    "sentiment_score": 0.2,
+    "label": "neutral",
+    "evidence": "The analyst acknowledges that the third-party fee momentum is 'pretty good' while seeking guidance on future growth."
+  },
+  {
+    "quarter": "q4fy23",
+    "analyst": "Abhishek Murarka",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst is seeking clarification on the impact of the Citi acquisition on future OPEX and cost-to-asset ratios, which is a standard operational inquiry."
+  },
+  {
+    "quarter": "q4fy23",
+    "analyst": "Adarsh Parasrampuria",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": ""
+  },
+  {
+    "quarter": "q4fy23",
+    "analyst": "Anand Dama",
+    "sentiment_score": 0.1,
+    "label": "neutral",
+    "evidence": "The analyst is inquiring about the drivers of SME growth and yield management, framing the question as a request for strategic insight."
+  },
+  {
+    "quarter": "q4fy23",
+    "analyst": "Hardik Shah",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst is asking for reconciliation between the bank's yield performance and the repricing of the loan book, maintaining a professional and inquisitive tone."
+  },
+  {
+    "quarter": "q4fy23",
+    "analyst": "Jai Mundhra",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst is challenging the bank's growth performance by pointing out that excluding the Citi acquisition, growth was only close to the industry average."
+  },
+  {
+    "quarter": "q4fy23",
+    "analyst": "Kunal Shah",
+    "sentiment_score": -0.3,
+    "label": "neutral",
+    "evidence": "The analyst is expressing skepticism by noting that despite management's explanations, there is 'not much of an increase' in yields on a QOQ basis."
+  },
+  {
+    "quarter": "q4fy23",
+    "analyst": "MB Mahesh",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst is pushing back on the transparency of the yield data post-acquisition, stating 'I guess we just don't know' regarding the book's composition."
+  },
+  {
+    "quarter": "q4fy23",
+    "analyst": "Mahrukh Adajania",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst is asking technical, clarifying questions regarding the inclusion of Citi's P&L and the breakdown of harmonization expenses."
+  },
+  {
+    "quarter": "q4fy23",
+    "analyst": "Saurabh Kumar",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst is asking for forward-looking guidance on credit costs and recovery momentum in a direct and professional manner."
+  },
+  {
+    "quarter": "q1fy24",
+    "analyst": "Abhishek Murarka",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst asks straightforward, data-driven questions regarding growth moderation and card portfolio composition without expressing skepticism or praise."
+  },
+  {
+    "quarter": "q1fy24",
+    "analyst": "Adarsh Parasrampuria",
+    "sentiment_score": 0.1,
+    "label": "neutral",
+    "evidence": "The analyst frames the question as a follow-up to clarify cost trajectory, acknowledging that previous questions were already answered."
+  },
+  {
+    "quarter": "q1fy24",
+    "analyst": "Arvind R",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst asks standard, neutral clarifying questions about branch metrics and credit card yields."
+  },
+  {
+    "quarter": "q1fy24",
+    "analyst": "Kunal Shah",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst focuses on technical details regarding SLR utilization and employee-side metrics in a matter-of-fact tone."
+  },
+  {
+    "quarter": "q1fy24",
+    "analyst": "Nitin Aggarwal",
+    "sentiment_score": 0.1,
+    "label": "neutral",
+    "evidence": "The analyst notes a 'good improvement' in Tier 1 capital, framing the question as an inquiry into the sustainability of this positive trend."
+  },
+  {
+    "quarter": "q1fy24",
+    "analyst": "Param Subramanian",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst uses a neutral, investigative tone to verify the placement of Citi fee income within the retail mix."
+  },
+  {
+    "quarter": "q1fy24",
+    "analyst": "Rakesh Kumar",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst asks a technical question about LCR calculation and liquidity longevity without challenging management's performance."
+  },
+  {
+    "quarter": "q1fy24",
+    "analyst": "Saurabh Kumar",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst seeks to reconcile specific basis point movements in NIM, maintaining a neutral and analytical tone."
+  },
+  {
+    "quarter": "q2fy24",
+    "analyst": "Abhishek Murarka",
+    "sentiment_score": 0.2,
+    "label": "neutral",
+    "evidence": "The analyst begins with a congratulatory remark, though the inquiry regarding RBI caution and past pressure indicates a standard investigative tone."
+  },
+  {
+    "quarter": "q2fy24",
+    "analyst": "Chintan Joshi",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst uses neutral, matter-of-fact language to seek clarification on internal levers and strategic ceilings for the loan-to-deposit ratio."
+  },
+  {
+    "quarter": "q2fy24",
+    "analyst": "Jai Mundhra",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst maintains a neutral tone, focusing on technical clarification regarding the exclusion of specific expenses from the OPEX ratio."
+  },
+  {
+    "quarter": "q2fy24",
+    "analyst": "Kunal Shah",
+    "sentiment_score": -0.4,
+    "label": "skeptical",
+    "evidence": "The analyst expresses mild skepticism by highlighting that growth remains at a 'much lower pace' despite previous management assurances."
+  },
+  {
+    "quarter": "q2fy24",
+    "analyst": "Mahrukh Adajania",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst uses a direct, professional tone to request quantification of a specific non-recurring item in the OPEX."
+  },
+  {
+    "quarter": "q2fy24",
+    "analyst": "Nitin Aggarwal",
+    "sentiment_score": 0.1,
+    "label": "neutral",
+    "evidence": "The analyst adopts a neutral, forward-looking tone, seeking to understand the bank's strategy regarding branch expansion and cost guidance."
+  },
+  {
+    "quarter": "q2fy24",
+    "analyst": "Param Subramanian",
+    "sentiment_score": -0.3,
+    "label": "neutral",
+    "evidence": "The analyst adopts a slightly challenging tone by pointing out a 'disconnect' between the growth rates of card fees and credit card spends."
+  },
+  {
+    "quarter": "q2fy24",
+    "analyst": "Piran Engineer",
+    "sentiment_score": 0.2,
+    "label": "neutral",
+    "evidence": "The analyst opens with a congratulatory note and frames the question as a neutral inquiry into the bank's strategic shift toward better quality assets."
+  },
+  {
+    "quarter": "q2fy24",
+    "analyst": "Saurabh Kumar",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst maintains a neutral, analytical tone, focusing on the directional strategy for the unsecured book and credit cost mechanics."
+  },
+  {
+    "quarter": "q3fy24",
+    "analyst": "Chintan Joshi",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst asks for clarification on deposit growth constraints and liquidity in a direct, professional manner."
+  },
+  {
+    "quarter": "q3fy24",
+    "analyst": "Jai Mundhra",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst seeks clarification on the timeline for system-wide deposit and credit growth convergence without expressing bias."
+  },
+  {
+    "quarter": "q3fy24",
+    "analyst": "Kunal Shah",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst expresses slight frustration by noting they missed part of the conversation and challenges the bank's growth targets in light of deposit constraints."
+  },
+  {
+    "quarter": "q3fy24",
+    "analyst": "Mahrukh Adajania",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst asks a technical, fact-finding question regarding the impact of bulk deposit mobilization on costs."
+  },
+  {
+    "quarter": "q3fy24",
+    "analyst": "Param Subramanian",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst frames a question about government business and liquidity cycles in a neutral, inquiry-based tone."
+  },
+  {
+    "quarter": "q3fy24",
+    "analyst": "Piran Engineer",
+    "sentiment_score": -0.3,
+    "label": "neutral",
+    "evidence": "The analyst acknowledges they are 'harping' on the topic, indicating a persistent, slightly skeptical push for management to choose between two difficult trade-offs."
+  },
+  {
+    "quarter": "q3fy24",
+    "analyst": "Pranav Gundlapalle",
+    "sentiment_score": 0.1,
+    "label": "neutral",
+    "evidence": "The analyst asks a straightforward, technical question about the impact of risk weight changes on loan mix strategy."
+  },
+  {
+    "quarter": "q3fy24",
+    "analyst": "Rikin Shah",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst provides data points regarding repo-linked loans and asks for management's perspective in a neutral, analytical tone."
+  },
+  {
+    "quarter": "q3fy24",
+    "analyst": "Sameer Bhise",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst probes for potential negative outcomes, specifically asking if management is worried about asset quality issues due to liquidity tightness."
+  },
+  {
+    "quarter": "q3fy24",
+    "analyst": "Saurabh Kumar",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst asks for specific data regarding the quantum of written-off books and the duration of the recovery cycle."
+  },
+  {
+    "quarter": "q3fy24",
+    "analyst": "Shubranshu Mishra",
+    "sentiment_score": 0.1,
+    "label": "neutral",
+    "evidence": "The analyst asks a specific, clarifying question about credit card segment data presented on a slide."
+  },
+  {
+    "quarter": "q3fy24",
+    "analyst": "Suresh Ganapathy",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst points out a discrepancy between the bank's stated retail focus and the actual incremental deposit data, challenging the consistency of the strategy."
+  },
+  {
+    "quarter": "q4fy24",
+    "analyst": "Chintan Joshi",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst frames the question by highlighting a discrepancy between previous management guidance and the actual reported results, implying a lack of alignment."
+  },
+  {
+    "quarter": "q4fy24",
+    "analyst": "Jai Mundhra",
+    "sentiment_score": 0.2,
+    "label": "neutral",
+    "evidence": "The analyst acknowledges the improvement in the core fee-to-asset ratio as a positive trend before asking for forward-looking guidance."
+  },
+  {
+    "quarter": "q4fy24",
+    "analyst": "Kunal Shah",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst maintains a neutral, technical tone while seeking clarification on the composition of interest reversals and spreads."
+  },
+  {
+    "quarter": "q4fy24",
+    "analyst": "MB Mahesh",
+    "sentiment_score": -0.1,
+    "label": "neutral",
+    "evidence": "The analyst adopts a neutral but probing tone, focusing on the divergence between credit card outstanding growth and the sale book performance."
+  },
+  {
+    "quarter": "q4fy24",
+    "analyst": "Mahrukh Adajania",
+    "sentiment_score": 0.3,
+    "label": "neutral",
+    "evidence": "The analyst begins with a congratulatory remark and frames the question as a strategic inquiry into the bank's future LDR management."
+  },
+  {
+    "quarter": "q4fy24",
+    "analyst": "Param Subramanian",
+    "sentiment_score": 0.2,
+    "label": "neutral",
+    "evidence": "The analyst uses a constructive tone, noting the bank's improved deposit growth trajectory relative to the sector."
+  },
+  {
+    "quarter": "q4fy24",
+    "analyst": "Piran Engineer",
+    "sentiment_score": 0.3,
+    "label": "neutral",
+    "evidence": "The analyst opens with a congratulatory tone and seeks to clarify the bank's strategic shift in growth targets."
+  },
+  {
+    "quarter": "q4fy24",
+    "analyst": "Rikin Shah",
+    "sentiment_score": 0.2,
+    "label": "neutral",
+    "evidence": "The analyst uses positive framing, describing the improvement in deposit quality as 'phenomenal' before asking for further details."
+  },
+  {
+    "quarter": "q4fy24",
+    "analyst": "Sameer Bhise",
+    "sentiment_score": 0.4,
+    "label": "constructive",
+    "evidence": "The analyst explicitly compliments the bank's execution, stating 'Congrats on a good set of numbers' and 'good job on reducing the RIDF concentration'."
+  },
+  {
+    "quarter": "q4fy24",
+    "analyst": "Saurabh Kumar",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst maintains a purely analytical and neutral tone, focusing on the sustainability of negative net slippages and technical balance sheet items."
+  },
+  {
+    "quarter": "q1fy25",
+    "analyst": "Abhishek Murarka",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst challenges the bank's explanation of credit costs by performing their own calculation and noting that the results would still be higher than historical averages."
+  },
+  {
+    "quarter": "q1fy25",
+    "analyst": "Anand Dama",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst asks straightforward, data-seeking questions regarding the post-integration status of the Citi portfolio and future cost-to-asset ratios."
+  },
+  {
+    "quarter": "q1fy25",
+    "analyst": "Jai Mundhra",
+    "sentiment_score": -0.1,
+    "label": "neutral",
+    "evidence": "The analyst frames the question around a potential trade-off conflict, highlighting that loan growth is currently below system levels."
+  },
+  {
+    "quarter": "q1fy25",
+    "analyst": "Kunal Shah",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst seeks clarification on the bank's strategy regarding LDR expansion and corporate loan growth drivers."
+  },
+  {
+    "quarter": "q1fy25",
+    "analyst": "Mahrukh Adajania",
+    "sentiment_score": -0.3,
+    "label": "neutral",
+    "evidence": "The analyst probes specifically into the increase in 'BB and Below' assets and stress, questioning if the increase is concentrated in specific sectors or vintages."
+  },
+  {
+    "quarter": "q1fy25",
+    "analyst": "Piran Engineer",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst asks for a specific data breakdown of retail gross slippages, maintaining a neutral and inquisitive tone."
+  },
+  {
+    "quarter": "q1fy25",
+    "analyst": "Punit",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst asks a purely technical, data-keeping question regarding the breakup of term deposits."
+  },
+  {
+    "quarter": "q1fy25",
+    "analyst": "Rahul Jain",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst expresses confusion, stating they have a 'doubt' when trying to reconcile conflicting signals between card sourcing, PL growth, and corporate loan growth."
+  },
+  {
+    "quarter": "q1fy25",
+    "analyst": "Rikin Shah",
+    "sentiment_score": -0.1,
+    "label": "neutral",
+    "evidence": "The analyst points out that retail and SME growth is 'virtually almost flat' and probes for the specific levers pulled to reduce operating expenses."
+  },
+  {
+    "quarter": "q2fy25",
+    "analyst": "Chintan Joshi",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst uses neutral, inquiry-based language to seek clarification on asset quality trends and slippage peaks."
+  },
+  {
+    "quarter": "q2fy25",
+    "analyst": "Jai Mundhra",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst frames the question by highlighting a specific calculation of retail slippages that appears to challenge the bank's risk-adjusted focus."
+  },
+  {
+    "quarter": "q2fy25",
+    "analyst": "Kunal Shah",
+    "sentiment_score": -0.3,
+    "label": "neutral",
+    "evidence": "The analyst explicitly points out that the bank is 'still lagging' in several key segments, framing the question around underperformance."
+  },
+  {
+    "quarter": "q2fy25",
+    "analyst": "MB Mahesh",
+    "sentiment_score": -0.4,
+    "label": "skeptical",
+    "evidence": "The analyst directly challenges the bank's reporting by asking them to 'reconcile' a discrepancy in the contingent buffer figures."
+  },
+  {
+    "quarter": "q2fy25",
+    "analyst": "Mahrukh Adajania",
+    "sentiment_score": 0.4,
+    "label": "constructive",
+    "evidence": "The analyst begins with a compliment, stating the bank has 'done a good job in improving the quality of deposits'."
+  },
+  {
+    "quarter": "q2fy25",
+    "analyst": "Nitin Aggarwal",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst uses standard, professional phrasing to ask about threshold comfort levels and drivers of outflow rates."
+  },
+  {
+    "quarter": "q2fy25",
+    "analyst": "Param Subramanian",
+    "sentiment_score": -0.5,
+    "label": "skeptical",
+    "evidence": "The analyst adopts a skeptical tone by questioning the necessity of provisions, asking 'why are we making them' if there are no pressing issues."
+  },
+  {
+    "quarter": "q2fy25",
+    "analyst": "Pranav Gundlapalle",
+    "sentiment_score": -0.3,
+    "label": "neutral",
+    "evidence": "The analyst highlights that growth is '2 to 3 percentage points below the system' and asks what the bank is doing differently, implying a concern regarding competitive positioning."
+  },
+  {
+    "quarter": "q2fy25",
+    "analyst": "Rikin Shah",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst uses a neutral, investigative tone to understand the technical relationship between SLR investments and LCR requirements."
+  },
+  {
+    "quarter": "q2fy25",
+    "analyst": "Saurabh Kumar",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst asks straightforward, clarifying questions regarding CASA growth outlook and the potential impact of interest rate changes."
+  },
+  {
+    "quarter": "q3fy25",
+    "analyst": "Abhishek Murarka",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst uses neutral, inquiry-based language to explore the trade-off between deposit quality and loan growth constraints."
+  },
+  {
+    "quarter": "q3fy25",
+    "analyst": "Chintan Joshi",
+    "sentiment_score": 0.2,
+    "label": "neutral",
+    "evidence": "The analyst acknowledges the bank's work on the deposit franchise and shows improvement, framing the question as a constructive inquiry into recent trends."
+  },
+  {
+    "quarter": "q3fy25",
+    "analyst": "MB Mahesh",
+    "sentiment_score": -0.1,
+    "label": "neutral",
+    "evidence": "The analyst is focused on clarifying specific data points regarding bad loans, maintaining a neutral but probing tone."
+  },
+  {
+    "quarter": "q3fy25",
+    "analyst": "Mahrukh Adajania",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst challenges the bank's current growth strategy by questioning if they are 'okay' with low growth and suggesting the need for competitive schemes."
+  },
+  {
+    "quarter": "q3fy25",
+    "analyst": "Nitin Aggarwal",
+    "sentiment_score": 0.6,
+    "label": "constructive",
+    "evidence": "The analyst explicitly states they 'appreciate the tough steps' the bank is taking, framing the question with a supportive and complimentary tone."
+  },
+  {
+    "quarter": "q3fy25",
+    "analyst": "Param Subramanian",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst uses a straightforward, fact-finding approach to clarify the bank's perspective on liquidity and regulatory constraints."
+  },
+  {
+    "quarter": "q3fy25",
+    "analyst": "Prakhar Sharma",
+    "sentiment_score": 0.5,
+    "label": "constructive",
+    "evidence": "The analyst begins with positive reinforcement, stating it is 'good to hear' about the bank's management and noting the bank has been 'generally sensible'."
+  },
+  {
+    "quarter": "q3fy25",
+    "analyst": "Rikin Shah",
+    "sentiment_score": -0.3,
+    "label": "neutral",
+    "evidence": "The analyst highlights negative performance metrics, such as 'soft' fee income and negative year-over-year growth in subsegments, with a critical focus on identifying levers for improvement."
+  },
+  {
+    "quarter": "q3fy25",
+    "analyst": "Suresh Ganapathy",
+    "sentiment_score": -0.6,
+    "label": "skeptical",
+    "evidence": "The analyst adopts a skeptical and challenging tone by emphasizing that the bank is at 'multi-quarter lows' for growth and 'multi-quarter highs' for slippages and credit costs."
+  },
+  {
+    "quarter": "q4fy25",
+    "analyst": "Abhishek Murarka",
+    "sentiment_score": 0.1,
+    "label": "neutral",
+    "evidence": "The analyst uses a polite, professional tone while seeking data clarification regarding LCR regulations and growth."
+  },
+  {
+    "quarter": "q4fy25",
+    "analyst": "Akshat Agrawal",
+    "sentiment_score": 0.2,
+    "label": "neutral",
+    "evidence": "The analyst frames the question around the positive improvement in the credit-to-deposit ratio, maintaining a constructive tone."
+  },
+  {
+    "quarter": "q4fy25",
+    "analyst": "Anand Swaminathan",
+    "sentiment_score": 0.1,
+    "label": "neutral",
+    "evidence": "The analyst adopts a neutral, inquisitive tone, seeking to quantify the long-term benefits of the Citi integration."
+  },
+  {
+    "quarter": "q4fy25",
+    "analyst": "Ankit Bihani",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst asks a technical, matter-of-fact question regarding the impact of the number of days in the quarter on NIMs."
+  },
+  {
+    "quarter": "q4fy25",
+    "analyst": "Chintan Joshi",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst maintains a neutral, professional tone while asking for commentary on the rate cut cycle and transmission."
+  },
+  {
+    "quarter": "q4fy25",
+    "analyst": "Harsh Wardhan Modi",
+    "sentiment_score": -0.1,
+    "label": "neutral",
+    "evidence": "The analyst probes for potential future risks regarding trade, tariffs, and risk-weighting, reflecting a cautious but professional stance."
+  },
+  {
+    "quarter": "q4fy25",
+    "analyst": "Krishnan ASV",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst challenges the bank's logic by suggesting it is 'logical to assume' they must pass on rate cuts, implying a slight pushback."
+  },
+  {
+    "quarter": "q4fy25",
+    "analyst": "Kunal Shah",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst uses a neutral, clarifying tone to ensure they correctly understood management's previous comments on portfolio stabilization."
+  },
+  {
+    "quarter": "q4fy25",
+    "analyst": "MB Mahesh",
+    "sentiment_score": -0.3,
+    "label": "neutral",
+    "evidence": "The analyst presses management to quantify the materiality of provisioning changes, showing a desire to look past management's framing."
+  },
+  {
+    "quarter": "q4fy25",
+    "analyst": "Mahrukh Adajania",
+    "sentiment_score": -0.3,
+    "label": "neutral",
+    "evidence": "The analyst directly challenges the bank's provisioning policy, asking for quantification and questioning why changes are needed given existing standards."
+  },
+  {
+    "quarter": "q4fy25",
+    "analyst": "Piran Engineer",
+    "sentiment_score": 0.4,
+    "label": "constructive",
+    "evidence": "The analyst begins with a complimentary remark, 'congrats on the quarter in this tough environment,' before asking a forward-looking question."
+  },
+  {
+    "quarter": "q4fy25",
+    "analyst": "Rikin Shah",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst probes for specific 'tweaks' in accounts, reflecting a skeptical desire to understand the underlying drivers of asset quality changes."
+  },
+  {
+    "quarter": "q1fy26",
+    "analyst": "Abhishek Murarka",
+    "sentiment_score": -0.4,
+    "label": "skeptical",
+    "evidence": "The analyst explicitly challenges the bank's strategy by stating the current growth trend 'goes against the trend' of protecting margins."
+  },
+  {
+    "quarter": "q1fy26",
+    "analyst": "Chintan Joshi",
+    "sentiment_score": -0.3,
+    "label": "neutral",
+    "evidence": "The analyst describes credit costs as 'quite high' and presses for an explanation of the 'elevated level' with a tone of concern regarding future quarters."
+  },
+  {
+    "quarter": "q1fy26",
+    "analyst": "Jai Mundhra",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst asks for a specific data breakdown in a direct, matter-of-fact manner without expressing judgment."
+  },
+  {
+    "quarter": "q1fy26",
+    "analyst": "Kunal Shah",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst probes the underlying cause of policy changes, questioning if they were forced by 'regulatory inspections or audit' rather than voluntary prudence."
+  },
+  {
+    "quarter": "q1fy26",
+    "analyst": "MB Mahesh",
+    "sentiment_score": -0.1,
+    "label": "neutral",
+    "evidence": "The analyst seeks clarification on the criteria for one-time settlement offers, maintaining a neutral but inquisitive tone."
+  },
+  {
+    "quarter": "q1fy26",
+    "analyst": "Mahrukh Adajania",
+    "sentiment_score": -0.1,
+    "label": "neutral",
+    "evidence": "The analyst compares the bank's technical classification to other PSUs, seeking to understand the mechanics behind the classification."
+  },
+  {
+    "quarter": "q1fy26",
+    "analyst": "Nitin Aggarwal",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst asks a straightforward, data-driven question regarding deposit outflows following a rate cut."
+  },
+  {
+    "quarter": "q1fy26",
+    "analyst": "Param Subramanian",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst pushes for clarity on whether the technical recognition was a 'gap' identified by the bank or a reactive measure."
+  },
+  {
+    "quarter": "q1fy26",
+    "analyst": "Suraj Das",
+    "sentiment_score": -0.3,
+    "label": "neutral",
+    "evidence": "The analyst uses the phrase 'harping on this technical thing' and challenges the bank to confirm if the new policy will negatively impact future performance."
+  },
+  {
+    "quarter": "q1fy26",
+    "analyst": "Yy Tsai",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst asks for a ballpark estimate of credit cost impacts in a neutral, analytical tone."
+  },
+  {
+    "quarter": "q2fy26",
+    "analyst": "Adarsh Parasrampuria",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst uses a neutral, clarifying tone to understand the specific accounting mechanics behind the PSLC classification."
+  },
+  {
+    "quarter": "q2fy26",
+    "analyst": "Anand Swaminathan",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst highlights metrics reaching multi-year extremes, implying a need for justification regarding the bank's current risk posture."
+  },
+  {
+    "quarter": "q2fy26",
+    "analyst": "Chintan Joshi",
+    "sentiment_score": 0.1,
+    "label": "neutral",
+    "evidence": "The analyst explicitly states they are moving away from the one-time provision issue to focus on forward-looking strategic impacts, maintaining a professional and constructive tone."
+  },
+  {
+    "quarter": "q2fy26",
+    "analyst": "Harsh Wardhan Modi",
+    "sentiment_score": -0.1,
+    "label": "neutral",
+    "evidence": "The analyst points out that risk-weighted assets are higher than in previous quarters, framing the observation as a potential concern regarding growth composition."
+  },
+  {
+    "quarter": "q2fy26",
+    "analyst": "Kunal Shah",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst challenges the bank's margin outlook by contrasting it with the broader industry trend of bottoming out."
+  },
+  {
+    "quarter": "q2fy26",
+    "analyst": "Mahrukh Adajania",
+    "sentiment_score": -0.4,
+    "label": "skeptical",
+    "evidence": "The analyst directly questions the discrepancy between technical slippage and credit costs, suggesting the numbers do not reconcile logically."
+  },
+  {
+    "quarter": "q2fy26",
+    "analyst": "Pranav Gundlapalle",
+    "sentiment_score": -0.6,
+    "label": "skeptical",
+    "evidence": "The analyst explicitly compares the bank to peers and questions why the bank is experiencing recurring one-off credit costs, reflecting a skeptical tone."
+  },
+  {
+    "quarter": "q2fy26",
+    "analyst": "Rikin Shah",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst maintains a neutral, inquiry-based tone, seeking clarification on NII line items and growth drivers."
+  },
+  {
+    "quarter": "q2fy26",
+    "analyst": "Subramanian",
+    "sentiment_score": -0.3,
+    "label": "neutral",
+    "evidence": "The analyst probes into the uniqueness of the product and references an RBI letter of caution, indicating a critical line of questioning."
+  },
+  {
+    "quarter": "q2fy26",
+    "analyst": "Suresh Ganapathy",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst pushes back on the bank's explanation regarding asset classification and provisioning, suggesting the logic provided is insufficient."
+  },
+  {
+    "quarter": "q3fy26",
+    "analyst": "Abhishek Murarka",
+    "sentiment_score": 0.2,
+    "label": "neutral",
+    "evidence": "The analyst begins with a congratulatory tone and frames the question as an inquiry into strategic growth opportunities."
+  },
+  {
+    "quarter": "q3fy26",
+    "analyst": "Adarsh Parasrampuria",
+    "sentiment_score": 0.1,
+    "label": "neutral",
+    "evidence": "The analyst starts with a positive assessment of the numbers before pivoting to a neutral, data-driven inquiry regarding credit cost gaps."
+  },
+  {
+    "quarter": "q3fy26",
+    "analyst": "Chintan Joshi",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst maintains a neutral, professional tone while seeking clarification on the confidence level behind the bank's existing guidance."
+  },
+  {
+    "quarter": "q3fy26",
+    "analyst": "Jai Mundhra",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst uses a matter-of-fact, technical tone to inquire about the bank's PSL compliance strategy."
+  },
+  {
+    "quarter": "q3fy26",
+    "analyst": "Kunal Shah",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst adopts a slightly challenging tone by pointing out that recovery run rates have not met previous expectations."
+  },
+  {
+    "quarter": "q3fy26",
+    "analyst": "Mahrukh Adajania",
+    "sentiment_score": 0.1,
+    "label": "neutral",
+    "evidence": "The analyst opens with a congratulatory remark and proceeds with a neutral, fact-finding request regarding LCR movement."
+  },
+  {
+    "quarter": "q3fy26",
+    "analyst": "Param Subramanian",
+    "sentiment_score": -0.1,
+    "label": "neutral",
+    "evidence": "The analyst uses a neutral but probing tone to reconcile the reported NIM decline with the bank's loan and asset growth."
+  },
+  {
+    "quarter": "q3fy26",
+    "analyst": "Piran Engineer",
+    "sentiment_score": 0.1,
+    "label": "neutral",
+    "evidence": "The analyst begins with a congratulatory tone and asks a neutral, clarifying question regarding the bank's focus on LDR metrics."
+  },
+  {
+    "quarter": "q3fy26",
+    "analyst": "Rahul Jain",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst maintains a neutral, professional tone while asking for the bank's strategic outlook on retail asset growth."
+  },
+  {
+    "quarter": "q3fy26",
+    "analyst": "Rikin Shah",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst uses a neutral, direct tone to inquire about the drivers and sustainability of current account growth."
+  },
+  {
+    "quarter": "q4fy26",
+    "analyst": "Abhishek Murarka",
+    "sentiment_score": 0.2,
+    "label": "neutral",
+    "evidence": "The analyst uses a constructive tone by acknowledging the strong pickup in retail and SME segments while seeking strategic clarity on capital allocation."
+  },
+  {
+    "quarter": "q4fy26",
+    "analyst": "Chintan Joshi",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst maintains a neutral, matter-of-fact tone, focusing purely on technical clarifications regarding NIMs, rate cuts, and deposit repricing."
+  },
+  {
+    "quarter": "q4fy26",
+    "analyst": "Kunal Shah",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst adopts a slightly challenging tone by pointing out a potential discrepancy between the bank's stated NII growth target and the observed loan growth performance."
+  },
+  {
+    "quarter": "q4fy26",
+    "analyst": "MB Mahesh",
+    "sentiment_score": -0.1,
+    "label": "neutral",
+    "evidence": "The analyst uses a probing, analytical tone, questioning the transparency of the bank's RAROC metrics and attempting to triangulate the underlying ROE."
+  },
+  {
+    "quarter": "q4fy26",
+    "analyst": "Mahrukh Adajania",
+    "sentiment_score": -0.3,
+    "label": "neutral",
+    "evidence": "The analyst adopts a skeptical tone, questioning the logic behind the bank's buffer provision strategy and challenging the potential for future drawdown."
+  },
+  {
+    "quarter": "q4fy26",
+    "analyst": "Rikin Shah",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst pushes back on the bank's current strategy, suggesting that rising wholesale deposit rates may necessitate a shift in focus back to margins."
+  },
+  {
+    "quarter": "q1fy27",
+    "analyst": "Abhishek Murarka",
+    "sentiment_score": 0.1,
+    "label": "neutral",
+    "evidence": "The analyst asks a clarifying question about the NIM outlook and whether specific FCNR balances were accounted for in the structural guidance."
+  },
+  {
+    "quarter": "q1fy27",
+    "analyst": "Ankit Bihani",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst is seeking technical clarification regarding the relationship between the investment book size and investment yields."
+  },
+  {
+    "quarter": "q1fy27",
+    "analyst": "Chintan Joshi",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst is requesting specific color on the loan pricing bridge and the nature of corporate loan components."
+  },
+  {
+    "quarter": "q1fy27",
+    "analyst": "Kunal Shah",
+    "sentiment_score": -0.2,
+    "label": "neutral",
+    "evidence": "The analyst is probing for potential trade-offs, questioning if the shift in balance sheet mix will negatively impact overall growth."
+  },
+  {
+    "quarter": "q1fy27",
+    "analyst": "MB Mahesh",
+    "sentiment_score": -0.4,
+    "label": "skeptical",
+    "evidence": "The analyst is challenging management's previous strategic rationale, noting that the push for corporate loan growth has seemingly caused margin compression."
+  },
+  {
+    "quarter": "q1fy27",
+    "analyst": "Mahrukh Adajania",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst is asking for an update on the timeline for the structural NIM target, noting that cost of funds appears to have bottomed out."
+  },
+  {
+    "quarter": "q1fy27",
+    "analyst": "Piran Engineer",
+    "sentiment_score": 0.2,
+    "label": "neutral",
+    "evidence": "The analyst begins with a congratulatory remark and asks a technical question to reconcile a perceived mathematical discrepancy in NII growth."
+  },
+  {
+    "quarter": "q1fy27",
+    "analyst": "Rikin Shah",
+    "sentiment_score": 0.0,
+    "label": "neutral",
+    "evidence": "The analyst is requesting a detailed breakdown or 'walk' of the components expected to drive the projected NIM expansion."
+  },
+  {
+    "quarter": "q1fy27",
+    "analyst": "Zhixuan Gao",
+    "sentiment_score": -0.3,
+    "label": "neutral",
+    "evidence": "The analyst is questioning the feasibility of management's guidance, specifically asking how much of the mix change can realistically be reversed."
+  }
+]
