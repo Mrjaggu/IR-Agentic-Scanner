@@ -114,7 +114,9 @@ def reweight_for_analyst(analyst: str, overall_ranked_topics: list[str], pref: d
                          slot_extra: int | None = None, slot_cap: int | None = None,
                          sentiment_score: float | None = None,
                          anomaly_scores: dict | None = None,
-                         use_sentiment_signal: bool = False) -> list[str]:
+                         use_sentiment_signal: bool = False,
+                         news_signal: dict | None = None,
+                         use_news_signal: bool = False) -> list[str]:
     """Reorders the overall (global) ranked topics for this analyst and
     truncates to their slot count. A topic the analyst has essentially never
     engaged with sinks even if it's globally hot (the doc's worked example);
@@ -132,8 +134,21 @@ def reweight_for_analyst(analyst: str, overall_ranked_topics: list[str], pref: d
     candidate, if any, as a genuine EXTRA slot appended after the normal
     N+extra cutoff -- it never displaces a topic that earned its place on
     pref/disclosure score, same "never displaces top-N picks" discipline as
-    the legacy engine's novelty/peer signals."""
+    the legacy engine's novelty/peer signals.
+
+    use_news_signal=True (default False everywhere, and unlike
+    use_sentiment_signal this one is NOT backtest-promotable from this
+    module alone -- see src.signals.news_signal's module docstring for why:
+    there is no historical news archive to backtest against, full stop)
+    merges news_signal (src.signals.news_signal.news_topic_salience's
+    output, computed by the caller -- this function stays pure) into the
+    SAME disclosure-shaped signal dict below, so a strongly-covered topic
+    can enter the candidate pool exactly the way a disclosure-flagged topic
+    already can. Stays opt-in indefinitely, not "opt-in until backtested"."""
     signal = _disclosure_signal(disclosure)
+    if use_news_signal and news_signal:
+        for t, v in news_signal.items():
+            signal[t] = max(signal.get(t, 0.0), v)
 
     candidates = list(overall_ranked_topics)
     for t, v in signal.items():

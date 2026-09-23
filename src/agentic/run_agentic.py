@@ -23,6 +23,7 @@ from src.memory.history import get_global_rate, get_analyst_profile
 from src.signals.metrics_extractor import compute_topic_anomaly_scores
 from src.signals.persona_synthesis import synthesize_personas, apply_ask_patterns
 from src.signals.analyst_sentiment import sentiment_as_of
+from src.signals.news_signal import news_topic_salience
 from src.model_provider.llm_client import client
 from src.agentic.graph_app import run_pipeline
 
@@ -57,7 +58,8 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
                         holdout: bool = False, upcoming: dict | None = None,
                         cutoff_mode: str | None = None, bank_id: str = DEFAULT_BANK,
                         use_cross_bank_signal: bool = False,
-                        use_sentiment_signal: bool = False) -> dict:
+                        use_sentiment_signal: bool = False,
+                        use_news_signal: bool = False) -> dict:
     """Everything the pipeline needs, built once. Exposed separately from
     main() so the API layer can run just the Overall layer, or just one
     analyst's Analyst-Specific layer, without re-deriving all of this.
@@ -89,7 +91,20 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
     before val_quarter (src.signals.analyst_sentiment.sentiment_as_of) and
     hands it to analyst_layer.reweight_for_analyst's sentiment_extra_slot
     mechanism. Axis-only for now -- analyst_sentiment.py isn't bank-scoped
-    yet -- so this is a no-op (sentiment_scores all None) for Kotak/IndusInd."""
+    yet -- so this is a no-op (sentiment_scores all None) for Kotak/IndusInd.
+
+    use_news_signal=True (default False everywhere, and permanently opt-in
+    -- see src.signals.news_signal's module docstring: there is no
+    historical news archive, so this can never be backtested the way
+    use_sentiment_signal was) computes this bank's CURRENT news-derived
+    topic salience via src.signals.news_signal.news_topic_salience and hands
+    it to analyst_layer.reweight_for_analyst. Refused whenever holdout=True,
+    unconditionally, no matter what the caller passes -- news is always
+    "right now", so using it to score a HISTORICAL quarter would leak
+    today's headlines into a prediction about the past. A holdout call
+    therefore always gets news_signal={}, silently, rather than an error,
+    the same "no signal" convention every leak-free signal here uses when
+    it has nothing to contribute."""
     cutoff_mode = cutoff_mode or CUTOFF_MODE
     bank = get_bank(bank_id)
     paths = paths_for(bank_id)
@@ -161,6 +176,10 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
     if use_sentiment_signal:
         sentiment_scores = {a: sentiment_as_of(a, val_quarter) for a in active_analysts}
 
+    news_signal = {}
+    if use_news_signal and not holdout:  # never for a historical/backtest run -- see docstring above
+        news_signal = news_topic_salience(bank_id, bank.display_name)
+
     persona_stats = synthesize_personas(intent_path=paths.question_intent_path,
                                         exclude_quarters=persona_exclude, out_path=None)
     # Layer the hand-curated, cross-checked ask-pattern taxonomy on top -- see
@@ -181,6 +200,8 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
         "cross_bank_signal": use_cross_bank_signal,
         "sentiment_signal": use_sentiment_signal,
         "sentiment_scores": sentiment_scores,
+        "news_signal_enabled": use_news_signal and not holdout,
+        "news_signal": news_signal,
         "graph": graph,
         "dataset": dataset,
         "quarter_order": quarter_order,

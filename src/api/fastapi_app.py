@@ -897,7 +897,12 @@ def run_analyst(req: AnalystRunRequest):
                             content={"error": f"{req.analyst} is not an active analyst for {quarter}"})
 
     pref, N = state["analyst_prefs"][req.analyst]
-    ranked = reweight_for_analyst(req.analyst, overall["ranked_topics"], pref, N, disclosure=disclosure)
+    ranked = reweight_for_analyst(req.analyst, overall["ranked_topics"], pref, N, disclosure=disclosure,
+                                  sentiment_score=state.get("sentiment_scores", {}).get(req.analyst),
+                                  anomaly_scores=state.get("anomaly_scores"),
+                                  use_sentiment_signal=state.get("sentiment_signal", False),
+                                  news_signal=state.get("news_signal"),
+                                  use_news_signal=state.get("news_signal_enabled", False))
     style = state["persona_stats"].get(req.analyst, {}).get("style_note", "no measured style profile")
     pool = build_evidence_pool(req.analyst, ranked, state["graph"], set(state["prior_quarters"]),
                                state["global_rate"], state["anomaly_scores"],

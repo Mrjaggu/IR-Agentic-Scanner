@@ -68,7 +68,12 @@ def _analyst_specific_node(state: PipelineState) -> PipelineState:
     for analyst in state["active_analysts"]:
         pref, N = state["analyst_prefs"][analyst]
         ranked = reweight_for_analyst(analyst, state["overall"]["ranked_topics"], pref, N,
-                                      disclosure=state.get("upcoming"))
+                                      disclosure=state.get("upcoming"),
+                                      sentiment_score=state.get("sentiment_scores", {}).get(analyst),
+                                      anomaly_scores=state.get("anomaly_scores"),
+                                      use_sentiment_signal=state.get("sentiment_signal", False),
+                                      news_signal=state.get("news_signal"),
+                                      use_news_signal=state.get("news_signal_enabled", False))
         style_note = state["persona_stats"].get(analyst, {}).get(
             "style_note", "no measured style profile"
         )
