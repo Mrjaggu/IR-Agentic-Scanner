@@ -890,6 +890,8 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
         <span class="chip" id="briefCountChip">—</span>
         <div class="topbar-spacer"></div>
         <a class="btn btn-sm" id="briefExportBtn" href="/api/brief/export" download>Export as Markdown</a>
+        <a class="btn btn-sm" id="briefExportDocxBtn" href="/api/brief/export" download>Export as Word</a>
+        <a class="btn btn-sm" id="briefExportPdfBtn" href="/api/brief/export" download>Export as PDF</a>
         <button class="btn btn-sm" id="briefClearBtn">Clear all</button>
       </div>
       <div class="pad">
@@ -2522,8 +2524,16 @@ async function loadBrief() {
   STATE.briefCount = items.length;
   renderBriefNavBadge();
   $("#briefCountChip").textContent = `${items.length} pinned`;
-  $("#briefExportBtn").href = "/api/brief/export?quarter=" +
-    encodeURIComponent(STATE.targetQuarter || STATE.meta?.default_quarter || "axis");
+  {
+    // bank= was missing here before -- exporting always pulled Axis's brief
+    // even while looking at Kotak/IndusInd's workspace. Fixed for all three
+    // formats at once since they share this same query string.
+    const q = encodeURIComponent(STATE.targetQuarter || STATE.meta?.default_quarter || STATE.bank);
+    const b = encodeURIComponent(STATE.bank);
+    $("#briefExportBtn").href = `/api/brief/export?quarter=${q}&bank=${b}`;
+    $("#briefExportDocxBtn").href = `/api/brief/export?quarter=${q}&bank=${b}&fmt=docx`;
+    $("#briefExportPdfBtn").href = `/api/brief/export?quarter=${q}&bank=${b}&fmt=pdf`;
+  }
 
   if (!items.length) {
     host.innerHTML = `<div class="card"><div class="empty">

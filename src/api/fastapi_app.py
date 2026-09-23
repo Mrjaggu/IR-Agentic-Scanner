@@ -316,12 +316,30 @@ def api_clear_brief(bank: str = DEFAULT_BANK):
 
 
 @app.get("/api/brief/export")
-def api_export_brief(quarter: str = "", bank: str = DEFAULT_BANK):
-    from fastapi.responses import PlainTextResponse
+def api_export_brief(quarter: str = "", bank: str = DEFAULT_BANK, fmt: str = "md"):
+    """fmt: "md" (default, unchanged from before), "docx", or "pdf" -- all
+    three render from the exact same pinned items (grouped_brief_items()),
+    so a change to what's pinned shows up identically in whichever format
+    someone downloads. docx/pdf go through src.data.brief_export, which
+    keeps python-docx/reportlab as an isolated, optional dependency."""
+    from fastapi.responses import PlainTextResponse, Response
     bank_id = _bank(bank)
+    name = quarter or bank_id
+
+    if fmt == "docx":
+        from src.data.brief_export import brief_as_docx
+        data = brief_as_docx(quarter, bank_id=bank_id)
+        return Response(data, media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        headers={"Content-Disposition": f'attachment; filename="prep-brief-{name}.docx"'})
+    if fmt == "pdf":
+        from src.data.brief_export import brief_as_pdf
+        data = brief_as_pdf(quarter, bank_id=bank_id)
+        return Response(data, media_type="application/pdf",
+                        headers={"Content-Disposition": f'attachment; filename="prep-brief-{name}.pdf"'})
+
     md = brief_as_markdown(quarter, bank_id=bank_id)
     return PlainTextResponse(md, headers={
-        "Content-Disposition": f'attachment; filename="prep-brief-{quarter or bank_id}.md"'
+        "Content-Disposition": f'attachment; filename="prep-brief-{name}.md"'
     })
 
 

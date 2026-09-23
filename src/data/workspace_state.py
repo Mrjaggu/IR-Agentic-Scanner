@@ -139,23 +139,34 @@ def log_activity(kind: str, label: str, meta: dict | None = None,
         return d
 
 
+KIND_LABEL = {
+    "chat_answer": "Answers", "passage": "Source passages",
+    "predicted_question": "Predicted questions", "search_result": "Search results",
+}
+
+
+def grouped_brief_items(bank_id: str = DEFAULT_BANK) -> list[tuple[str, list[dict]]]:
+    """The brief's items grouped by kind, in KIND_LABEL's own display order --
+    the one grouping brief_as_markdown() built inline, now shared so
+    src/data/brief_export.py's docx/pdf renderers don't duplicate it (and so
+    all three export formats stay in sync by construction, not by hand)."""
+    items = get_state(bank_id)["brief_items"]
+    by_kind: dict[str, list[dict]] = {}
+    for it in items:
+        by_kind.setdefault(it["kind"], []).append(it)
+    ordered = [k for k in KIND_LABEL if k in by_kind] + [k for k in by_kind if k not in KIND_LABEL]
+    return [(k, by_kind[k]) for k in ordered]
+
+
 def brief_as_markdown(quarter_label: str = "", bank_id: str = DEFAULT_BANK) -> str:
     """Renders the current prep brief as a shareable markdown document —
     the review's "export/share prep brief" step."""
-    d = get_state(bank_id)
-    items = d["brief_items"]
+    items = get_state(bank_id)["brief_items"]
     lines = [f"# Prep brief{' — ' + quarter_label if quarter_label else ''}", ""]
     if not items:
         lines.append("_Nothing pinned yet._")
         return "\n".join(lines)
-    by_kind = {}
-    for it in items:
-        by_kind.setdefault(it["kind"], []).append(it)
-    KIND_LABEL = {
-        "chat_answer": "Answers", "passage": "Source passages",
-        "predicted_question": "Predicted questions", "search_result": "Search results",
-    }
-    for kind, its in by_kind.items():
+    for kind, its in grouped_brief_items(bank_id):
         lines.append(f"## {KIND_LABEL.get(kind, kind)}")
         lines.append("")
         for it in its:
