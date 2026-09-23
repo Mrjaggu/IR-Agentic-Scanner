@@ -147,10 +147,22 @@ def writable_data_dir(*parts: str) -> str:
     primary = os.path.join(_BASE_DIR, "data", rel) if rel else os.path.join(_BASE_DIR, "data")
     try:
         os.makedirs(primary, exist_ok=True)
+        # A FIXED probe name, written (not appended) and never deleted: some
+        # filesystems allow create+write but restrict unlink (a hardened
+        # on-prem mount, some sandboxed dev environments) -- discovered when
+        # this genuinely happened mid-session on a real deployment target.
+        # Writability is what this function promises, not "and I can also
+        # delete a probe file here", so a delete failure must never demote a
+        # perfectly writable directory to the /tmp fallback. Fixed name means
+        # repeated process starts overwrite the same harmless empty file
+        # instead of leaving one behind per restart.
         probe = os.path.join(primary, ".write_probe")
         with open(probe, "w") as f:
             f.write("")
-        os.remove(probe)
+        try:
+            os.remove(probe)
+        except OSError:
+            pass  # couldn't delete it -- irrelevant, the write above already proved this dir works
         _writable_dir_cache[rel] = primary
         return primary
     except OSError:

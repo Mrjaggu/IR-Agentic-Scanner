@@ -52,6 +52,7 @@ from src.agentic import pattern_retrieval
 from src.tts import piper_tts
 from src.news import news_api
 from src.audit import llm_audit
+from src.agentic import eval_history
 from src.signals.metrics_extractor import METRIC_TOPIC_MAP
 from src.agentic.question_framer import build_evidence_pool
 from src.agentic.eval_harness import (
@@ -836,6 +837,12 @@ def _cached_holdout(with_questions: bool = False, refresh: bool = False,
     key = f"{bank_id}:holdout:{with_questions}"
     if refresh or key not in _eval_cache:
         _eval_cache[key] = run_holdout_eval(with_questions=with_questions, bank_id=bank_id)
+        # Logged here, not at the route -- this is the one place a REAL (not
+        # cache-hit) topic-recall computation happens, so the continuous
+        # eval trend (src.agentic.eval_history, /api/eval/trend) gets a
+        # point every time this actually runs, including the ingest-commit
+        # trigger below, with no double-logging on a cache hit.
+        eval_history.log_run(_eval_cache[key], bank_id=bank_id, kind="topic")
     return _eval_cache[key]
 
 
@@ -850,6 +857,12 @@ def _cached_question_recall(refresh: bool = False, bank_id: str = DEFAULT_BANK) 
     key = f"{bank_id}:question_recall"
     if refresh or key not in _eval_cache:
         _eval_cache[key] = run_holdout_eval(score_question_recall=True, bank_id=bank_id)
+        # This is THE headline metric for the trend (see eval_history's
+        # module docstring) -- logged only here, the one call site that
+        # represents a full, real, held-out question-recall run, never for
+        # the scoped ad-hoc analyst/quarter checks below (their own
+        # docstring already says not to read those as the real result).
+        eval_history.log_run(_eval_cache[key], bank_id=bank_id, kind="question")
     return _eval_cache[key]
 
 
@@ -919,6 +932,19 @@ def eval_error_report(with_questions: bool = False, refresh: bool = False, bank:
     return research_errors(holdout)
 
 
+@app.get("/api/eval/trend")
+def eval_trend(limit: int = 60, bank: str = DEFAULT_BANK):
+    """The continuous eval loop's trend chart data: every REAL (non-cache-hit)
+    holdout computation this bank has ever run, oldest first. Question
+    recall is the headline series -- it's the objective this project
+    actually cares about (did the framed question text anticipate what got
+    asked, not just the topic bucket) -- and it's deliberately sparser than
+    topic recall, which is logged for free on every run. See
+    src.agentic.eval_history's module docstring for why both are kept and
+    why they're not treated as equally important."""
+    return eval_history.trend(bank_id=_bank(bank), limit=limit)
+
+
 class WeightBacktestRequest(BaseModel):
     weights: dict[str, float]
     with_questions: bool = False
@@ -974,6 +1000,16 @@ async def ingest_commit(file: UploadFile = File(...), overwrite: str = Form("fal
     result = commit_ingest(await file.read(), file.filename, overwrite=was_overwrite)
     if result.get("status") == "ok":
         _load_live(DEFAULT_BANK)
+        try:
+            # _load_live() already evicted this bank's _eval_cache entries
+            # above, so this is guaranteed to be a real computation (logged
+            # by _cached_holdout itself), not a stale cache hit -- exactly
+            # the "continuous eval loop" point: a fresh recall reading tied
+            # to the quarter that just landed, not just to whoever next
+            # opens the Evaluation tab.
+            _cached_holdout(bank_id=DEFAULT_BANK)
+        except Exception as e:
+            print(f"  [ingest] post-commit eval refresh failed (non-fatal): {e}")
     # Real audit entry for a real write to the archive — this is the one
     # action in the app that isn't a read, so it is the one that most needs a
     # record of who/when/what, per the review's governance gap.

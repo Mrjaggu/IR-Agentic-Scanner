@@ -64,3 +64,14 @@ data/tts_voices/
 # UTC day, generated at runtime, never committed. Same "runtime state, not
 # source" reasoning as workspace_state.json above.
 data/logs/
+
+# Continuous eval trend (src/agentic/eval_history.py) -- one JSONL per bank,
+# generated at runtime every time a real held-out eval computation happens.
+# Same "runtime state, not source" reasoning as data/logs/ above.
+data/eval_history/
+
+# writable_data_dir()'s own write-probe (src/config/settings.py) -- can land
+# in any data/ subdirectory it checks, including ones that ARE otherwise
+# tracked (e.g. data/outputs/<bank>/), so this is a blanket rule rather than
+# one per directory.
+**/.write_probe

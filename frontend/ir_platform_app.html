@@ -925,6 +925,14 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
 
     <div class="card">
       <div class="card-head">
+        <h3>Recall trend</h3>
+        <span class="muted xs">question recall is the objective this project actually optimizes for -- topic recall is free context, not the goal</span>
+      </div>
+      <div class="pad" id="evalTrendResult"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
         <h3>Error Researcher</h3>
         <span class="muted xs">not "the model was wrong" — which pipeline stage caused each miss</span>
         <div class="topbar-spacer"></div>
@@ -1339,6 +1347,7 @@ function show(view, syncRoute = true) {
   if (view === "eval" && !STATE.evalData) loadEval();
   if (view === "eval" && !STATE.errResearchLoaded) { STATE.errResearchLoaded = true; loadErrorResearch(); }
   if (view === "eval" && !STATE.skillsLoaded) { STATE.skillsLoaded = true; loadSkills(); }
+  if (view === "eval" && !STATE.evalTrendLoaded) { STATE.evalTrendLoaded = true; loadEvalTrend(); }
   if (view === "brief") loadBrief();
   if (view === "quarter" && !QV.loaded) { QV.loaded = true; loadQuarterView(); }
   if (view === "news" && !NEWS.loaded) { NEWS.loaded = true; loadNews(); }
@@ -2550,7 +2559,7 @@ $("#briefClearBtn").addEventListener("click", () => runTask(async () => {
 /* ═══════════════════════════════════════════════════════════════════════════
    Evaluation
    ═══════════════════════════════════════════════════════════════════════════ */
-$("#evalRefresh").addEventListener("click", () => loadEval(true));
+$("#evalRefresh").addEventListener("click", () => { loadEval(true); loadEvalTrend(); });
 async function loadEval(refresh) {
   const gen = STATE.bankGen;
   const host = $("#evalResult");
@@ -2670,6 +2679,96 @@ async function loadEval(refresh) {
   activateBars(host);
 }
 
+/* -- Recall trend: question recall is the headline series, topic recall is
+   free context (see src/agentic/eval_history.py's module docstring). Same
+   "one metric, one unit (recall %), one axis" shape as Quarter view's
+   chart -- two series sharing an axis is fine here since both are recall
+   fractions, not different units. */
+const EVAL_TREND_COLORS = { question: "var(--accent)", topic: "var(--s4)" };
+
+async function loadEvalTrend() {
+  const host = $("#evalTrendResult");
+  host.innerHTML = `<div class="empty small muted"><span class="spinner"></span> Loading recall trend…</div>`;
+  let d;
+  try { d = await api("/api/eval/trend?limit=60"); }
+  catch (err) { host.innerHTML = `<div class="empty small muted">Could not load: ${esc(err.message)}</div>`; return; }
+  if (!d.runs || !d.runs.length) {
+    host.innerHTML = `<div class="empty small muted">No eval runs logged yet for this bank -- run the held-out evaluation above (or ingest a quarter) to start the trend.</div>`;
+    return;
+  }
+  const tiles = `<div class="tiles" style="margin-bottom:14px;">
+      <div class="tile">
+        <div class="tile-label">Question recall (latest)</div>
+        <div class="tile-value">${d.latest_question_recall != null ? pct(d.latest_question_recall) : "—"}</div>
+        <div class="tile-delta">${d.question_recall_runs_logged} deliberate run${d.question_recall_runs_logged === 1 ? "" : "s"} logged -- the objective, not the proxy</div>
+      </div>
+      <div class="tile">
+        <div class="tile-label">Topic recall (latest)</div>
+        <div class="tile-value">${d.latest_topic_recall != null ? pct(d.latest_topic_recall) : "—"}</div>
+        <div class="tile-delta">free context on every run · ${d.total_runs_logged} total runs logged</div>
+      </div>
+    </div>`;
+  host.innerHTML = tiles + `<div id="evalTrendChartHost"></div>`;
+  drawEvalTrendChart($("#evalTrendChartHost"), d.runs);
+}
+
+function drawEvalTrendChart(host, runs) {
+  const W = 720, H = 220, padL = 40, padR = 16, padT = 14, padB = 24;
+  const innerW = W - padL - padR, innerH = H - padT - padB;
+  const xPos = i => padL + (runs.length > 1 ? (innerW * i) / (runs.length - 1) : innerW / 2);
+  const yPos = v => padT + innerH - v * innerH;   // recall is always 0..1
+
+  const gridLines = [0, 0.5, 1].map(t => {
+    const yy = padT + innerH * (1 - t);
+    return `<line x1="${padL}" y1="${yy.toFixed(1)}" x2="${W - padR}" y2="${yy.toFixed(1)}" stroke="var(--hairline)" stroke-width="1"/>
+            <text x="${padL - 6}" y="${(yy + 3.5).toFixed(1)}" text-anchor="end" font-size="10.5" fill="var(--ink-muted)">${(t * 100).toFixed(0)}%</text>`;
+  }).join("");
+
+  function series(key, color) {
+    let d = "", drawing = false;
+    const dots = [];
+    runs.forEach((r, i) => {
+      const v = r[key];
+      if (v == null) { drawing = false; return; }
+      d += (drawing ? " L " : "M ") + xPos(i).toFixed(1) + " " + yPos(v).toFixed(1);
+      drawing = true;
+      dots.push(`<circle cx="${xPos(i).toFixed(1)}" cy="${yPos(v).toFixed(1)}" r="3" fill="${color}"
+        data-i="${i}" data-key="${key}"/>`);
+    });
+    return `<path d="${d}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>${dots.join("")}`;
+  }
+
+  host.innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible;" id="evalTrendSvg">
+      ${gridLines}
+      ${series("mean_recall", EVAL_TREND_COLORS.topic)}
+      ${series("mean_question_recall", EVAL_TREND_COLORS.question)}
+    </svg>
+    <div class="row" style="gap:14px;margin-top:10px;flex-wrap:wrap;">
+      <span class="small" style="display:inline-flex;align-items:center;gap:5px;color:var(--ink-2);">
+        <span style="display:inline-block;width:12px;height:2px;background:${EVAL_TREND_COLORS.question};"></span>Question recall (headline)</span>
+      <span class="small" style="display:inline-flex;align-items:center;gap:5px;color:var(--ink-2);">
+        <span style="display:inline-block;width:12px;height:2px;background:${EVAL_TREND_COLORS.topic};"></span>Topic recall (context)</span>
+    </div>
+    <div class="xs muted" style="margin-top:6px;">Hover a point for the run's date and metric. Question-recall points are sparser by design -- see the panel above.</div>`;
+
+  const svg = $("#evalTrendSvg");
+  svg.querySelectorAll("circle").forEach(c => {
+    c.addEventListener("pointermove", e => {
+      const i = Number(c.dataset.i), key = c.dataset.key;
+      const r = runs[i];
+      const label = key === "mean_question_recall" ? "Question recall" : "Topic recall";
+      tip.innerHTML = `<div style="font-weight:600;margin-bottom:4px;">${esc((r.ts || "").slice(0, 10))}</div>
+        <div>${label}: <b>${pct(r[key])}</b></div>
+        <div class="muted small">${esc((r.test_quarters || []).join(", "))}</div>`;
+      tip.style.opacity = 1;
+      tip.style.left = Math.min(e.clientX + 12, innerWidth - tip.offsetWidth - 8) + "px";
+      tip.style.top = (e.clientY - tip.offsetHeight - 8) + "px";
+    });
+    c.addEventListener("pointerleave", () => { tip.style.opacity = 0; });
+  });
+}
+
 /* ── Error Researcher ─────────────────────────────────────────────────────── */
 $("#errResearchRefresh").addEventListener("click", () => loadErrorResearch(true));
 async function loadErrorResearch(refresh) {
@@ -2729,6 +2828,7 @@ $("#qrRunBtn").addEventListener("click", async () => {
   try { d = await api("/api/eval/question-recall?refresh=true"); }
   catch (err) { host.innerHTML = `<div class="card"><div class="empty">Could not run: ${esc(err.message)}</div></div>`; btn.disabled = false; return; }
   btn.disabled = false;
+  loadEvalTrend();   // this run just logged a real question-recall point -- refresh the trend chart above
 
   const mqr = d.summary && d.summary.mean_question_recall;
   const mr = d.summary && d.summary.mean_recall;
