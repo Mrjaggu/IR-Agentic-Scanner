@@ -1,0 +1,92 @@
+{
+  "axis": {
+    "articles": [
+      {
+        "title": "Axis Bank Q1 FY27 slides: profit surges 23% as NIM hits cycle low",
+        "description": "Axis Bank's Q1 FY27 results showed a 23% jump in profit even as net interest margin touched a cycle low, per the bank's own results presentation.",
+        "url": "https://www.investing.com/news/company-news/axis-bank-q1-fy27-slides-profit-surges-23-as-nim-hits-cycle-low-93CH-4799638",
+        "author": "investing.com",
+        "published": "2026-07",
+        "image": null
+      },
+      {
+        "title": "Axis Bank Q1 Results: At Rs 7,114 crore, PAT beats analyst estimates -- key takeaways for investors",
+        "description": "Axis Bank reported a quarterly profit after tax of Rs 7,114 crore for Q1 FY27, ahead of analyst estimates, with commentary on the drivers.",
+        "url": "https://www.zeebiz.com/companies/news-axis-bank-quarterly-results-q1-fy27-earnings-explained-highlights-399013/amp",
+        "author": "zeebiz.com",
+        "published": "2026-07",
+        "image": null
+      },
+      {
+        "title": "Axis Bank Q1 FY27 Results: PAT up 22% YoY, asset quality improves as GNPA falls to 1.28%",
+        "description": "Axis Bank's gross NPA ratio improved to 1.28% in Q1 FY27 alongside a 22% year-on-year rise in profit after tax.",
+        "url": "https://www.sahi.com/blogs/axis-bank-q1-fy27-results",
+        "author": "sahi.com",
+        "published": "2026-07",
+        "image": null
+      },
+      {
+        "title": "Axis Bank Marginally Increases Share Capital Through ESOP Allotment",
+        "description": "Axis Bank disclosed a small increase in paid-up share capital following an allotment of shares under its employee stock option scheme.",
+        "url": "https://www.tipranks.com/news/company-announcements/axis-bank-marginally-increases-share-capital-through-esop-allotment",
+        "author": "tipranks.com",
+        "published": "2026-09-18",
+        "image": null
+      },
+      {
+        "title": "Axis Bank (AXB) Engages Investors at Jefferies 5th India Forum in Gurgaon",
+        "description": "Axis Bank management took part in investor meetings at the Jefferies 5th India Forum held in Gurgaon on September 18, 2026.",
+        "url": "https://kalkinemedia.com/uk/news/announcements/axis-bank-axb-engages-investors-at-jefferies-5th-india-forum-in-gurgaon-on-september-18-2026",
+        "author": "kalkinemedia.com",
+        "published": "2026-09-18",
+        "image": null
+      },
+      {
+        "title": "REG - Axis Bank Ltd (AXBA) - Update",
+        "description": "A Reuters-sourced regulatory update on Axis Bank Ltd, carried via TradingView's news wire.",
+        "url": "https://www.tradingview.com/news/reuters.com,2026-09-18:newsml_RSR4456Va:0-reg-axis-bank-ltd-axis-bank-ltd-axba-update/",
+        "author": "tradingview.com",
+        "published": "2026-09-18",
+        "image": null
+      }
+    ],
+    "fetched_at": 1790154700.0613382,
+    "error": null
+  },
+  "kotak": {
+    "articles": [
+      {
+        "title": "Kotak Mahindra Bank Upgraded to Buy by MarketsMOJO on Strong Technical and Financial Performance",
+        "description": "MarketsMOJO upgraded its rating on Kotak Mahindra Bank to 'Buy', citing improving technical and financial indicators.",
+        "url": "https://www.marketsmojo.com/news/stock-recommendation/kotak-mahindra-bank-upgraded-to-buy-by-marketsmojo-on-strong-technical-and-financial-performance-4201785",
+        "author": "marketsmojo.com",
+        "published": "2026-09",
+        "image": null
+      },
+      {
+        "title": "Kotak Mahindra Bank Ltd Technical Momentum Shifts Signal Mildly Bullish Outlook",
+        "description": "A technical read on Kotak Mahindra Bank's stock momentum points to a mildly bullish near-term outlook, per MarketsMOJO.",
+        "url": "https://www.marketsmojo.com/news/stocks-in-action/kotak-mahindra-bank-ltd-technical-momentum-shifts-signal-mildly-bullish-outlook-4201694",
+        "author": "marketsmojo.com",
+        "published": "2026-09",
+        "image": null
+      }
+    ],
+    "fetched_at": 1790154700.0613382,
+    "error": null
+  },
+  "indusind": {
+    "articles": [
+      {
+        "title": "IndusInd Bank stock slips as market weighs banking risks",
+        "description": "IndusInd Bank shares came under pressure as investors weighed broader risks facing the banking sector.",
+        "url": "https://www.ad-hoc-news.de/boerse/news/nebenwerte/indusind-bank-stock-slips-as-market-weighs-banking-risks/70160723",
+        "author": "ad-hoc-news.de",
+        "published": "2026-09",
+        "image": null
+      }
+    ],
+    "fetched_at": 1790154700.0613382,
+    "error": null
+  }
+}

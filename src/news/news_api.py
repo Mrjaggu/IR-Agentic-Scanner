@@ -39,6 +39,16 @@ No caching library, no background scheduler -- a plain in-memory dict is
 enough here: this is headlines, not anything that needs to survive a
 restart, and every other short-lived cache in this codebase (_tts_cache,
 _eval_cache, _cache in fastapi_app.py) follows the same in-memory convention.
+
+The one exception: a cold start (a fresh process, or Vercel's usual case --
+a fresh /tmp-only filesystem per invocation, see settings.writable_data_dir's
+docstring) means an empty _cache and nothing to show until the first live
+call lands, which costs part of the daily budget just to paint the tab.
+data/news_seed.json -- a small, committed, real set of headlines captured
+once by hand -- primes an empty cache on first use per bank so the News tab
+never opens blank. It's a starting point, not a live feed: the very next
+budget-permitting request still replaces it with a real fetch, same as any
+other stale cache entry.
 """
 
 import json
@@ -65,6 +75,29 @@ ARTICLES_PER_CALL = 3  # the free plan's own per-request cap; asking for more ju
 _lock = threading.Lock()
 _cache: dict[tuple, dict] = {}        # (bank_id, days) -> {"articles": [...], "fetched_at": float, "error": str|None}
 _daily_calls = {"date": None, "count": 0}
+
+SEED_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__)))), "data", "news_seed.json")
+_seed_data: dict | None = None   # loaded once, lazily -- None until first access, {} if the file is missing/bad
+
+
+def _load_seed(bank_id: str) -> dict | None:
+    """A one-time, real (not synthetic) headline capture per bank, used only
+    to prime an empty cache -- see the module docstring's "one exception"
+    paragraph. Never raises: a missing or malformed seed file just means no
+    priming, not a broken News tab."""
+    global _seed_data
+    if _seed_data is None:
+        try:
+            with open(SEED_PATH) as f:
+                _seed_data = json.load(f)
+        except (OSError, json.JSONDecodeError):
+            _seed_data = {}
+    entry = _seed_data.get(bank_id)
+    if not entry:
+        return None
+    return {"articles": entry.get("articles", []), "fetched_at": entry.get("fetched_at"),
+            "error": entry.get("error")}
 
 
 def is_available() -> bool:
@@ -148,14 +181,29 @@ def get_news(bank_id: str, bank_name: str, force_refresh: bool = False, days: in
     combined. On a cache miss that fails (budget exhausted, network error,
     bad response), the last good cache for that same range is returned
     with a `note` explaining why it's stale, rather than an error --
-    headlines that are a few hours old beat a broken tab."""
-    if not is_available():
-        return {"available": False, "articles": [], "fetched_at": None,
-                "error": "no TheNewsAPI token configured (THE_NEWS_API_TOKEN)"}
+    headlines that are a few hours old beat a broken tab.
 
+    The seed (see _load_seed / the module docstring) is checked even when no
+    token is configured at all -- a deploy that hasn't been given
+    THE_NEWS_API_TOKEN yet still gets real pre-loaded headlines instead of
+    a bare "not configured" error, which is the whole point of shipping one."""
     cache_key = (bank_id, days)
     with _lock:
         cached = _cache.get(cache_key)
+        if cached is None and not force_refresh:
+            seed = _load_seed(bank_id)
+            if seed:
+                _cache[cache_key] = seed
+                cached = seed
+
+    if not is_available():
+        if cached:
+            return {"available": True, **cached,
+                    "note": "no TheNewsAPI token configured -- showing pre-loaded headlines"}
+        return {"available": False, "articles": [], "fetched_at": None,
+                "error": "no TheNewsAPI token configured (THE_NEWS_API_TOKEN)"}
+
+    with _lock:
         fresh_enough = bool(cached) and (time.time() - cached["fetched_at"] < CACHE_TTL_SECONDS)
         if cached and fresh_enough and not force_refresh:
             return {"available": True, **cached}
