@@ -288,3 +288,16 @@ class EngineConfig:
     # Same extra-slot mechanism as novelty — never displaces top-N picks.
     PEER_MIN_SALIENCE = 0.5       # ignore topics peer analysts barely touched
     PEER_AFFINITY_FLOOR = 0.04    # analyst's blended pref must clear this to get the slot
+    # Analyst-sentiment signal (opt-in, use_sentiment_signal=False by default
+    # everywhere -- see src/agentic/analyst_layer.py's sentiment_extra_slot()
+    # docstring for the mechanism and src/signals/analyst_sentiment.py's
+    # module docstring for why display-only was the original, more cautious
+    # default). Same extra-slot mechanism as novelty/peer above: an analyst
+    # whose running-average sentiment (leak-free, computed strictly before
+    # the target quarter) has been trending skeptical gets ONE extra,
+    # non-displacing slot filled with the most anomalous topic they have any
+    # real history on -- the hypothesis being that a more skeptical analyst
+    # is more likely to probe whatever looks weakest this quarter, not that
+    # sentiment predicts WHICH topic on its own (it has no topic dimension).
+    SENTIMENT_SKEPTICAL_THRESHOLD = -0.2  # running-avg sentiment at/below this counts as "trending skeptical"
+    SENTIMENT_AFFINITY_FLOOR = 0.04       # analyst's own pref on the candidate topic must clear this to get the slot

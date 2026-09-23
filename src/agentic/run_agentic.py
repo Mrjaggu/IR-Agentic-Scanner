@@ -22,6 +22,7 @@ from src.data.loader import load_dataset, load_graph, get_active_analysts
 from src.memory.history import get_global_rate, get_analyst_profile
 from src.signals.metrics_extractor import compute_topic_anomaly_scores
 from src.signals.persona_synthesis import synthesize_personas, apply_ask_patterns
+from src.signals.analyst_sentiment import sentiment_as_of
 from src.model_provider.llm_client import client
 from src.agentic.graph_app import run_pipeline
 
@@ -55,7 +56,8 @@ def _compute_momentum(graph: dict, quarter_order: list[str], val_ord: int) -> di
 def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
                         holdout: bool = False, upcoming: dict | None = None,
                         cutoff_mode: str | None = None, bank_id: str = DEFAULT_BANK,
-                        use_cross_bank_signal: bool = False) -> dict:
+                        use_cross_bank_signal: bool = False,
+                        use_sentiment_signal: bool = False) -> dict:
     """Everything the pipeline needs, built once. Exposed separately from
     main() so the API layer can run just the Overall layer, or just one
     analyst's Analyst-Specific layer, without re-deriving all of this.
@@ -79,7 +81,15 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
     active analyst's topic history on OTHER registered banks into their
     own-bank preference, the same additive-prior pattern already used for the
     hand-curated PERSONAS topic_prior. Leak-free: only cross-bank history
-    strictly before this run's own train_cutoff is used."""
+    strictly before this run's own train_cutoff is used.
+
+    use_sentiment_signal=True (default False everywhere -- opt-in only, same
+    backtest-before-promote discipline as use_cross_bank_signal) computes
+    each active analyst's leak-free running-average sentiment as of strictly
+    before val_quarter (src.signals.analyst_sentiment.sentiment_as_of) and
+    hands it to analyst_layer.reweight_for_analyst's sentiment_extra_slot
+    mechanism. Axis-only for now -- analyst_sentiment.py isn't bank-scoped
+    yet -- so this is a no-op (sentiment_scores all None) for Kotak/IndusInd."""
     cutoff_mode = cutoff_mode or CUTOFF_MODE
     bank = get_bank(bank_id)
     paths = paths_for(bank_id)
@@ -147,6 +157,10 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
             for a, (pref, N) in analyst_prefs.items()
         }
 
+    sentiment_scores = {}
+    if use_sentiment_signal:
+        sentiment_scores = {a: sentiment_as_of(a, val_quarter) for a in active_analysts}
+
     persona_stats = synthesize_personas(intent_path=paths.question_intent_path,
                                         exclude_quarters=persona_exclude, out_path=None)
     # Layer the hand-curated, cross-checked ask-pattern taxonomy on top -- see
@@ -165,6 +179,8 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
         "bank_id": bank_id,
         "bank_name": bank.display_name,
         "cross_bank_signal": use_cross_bank_signal,
+        "sentiment_signal": use_sentiment_signal,
+        "sentiment_scores": sentiment_scores,
         "graph": graph,
         "dataset": dataset,
         "quarter_order": quarter_order,

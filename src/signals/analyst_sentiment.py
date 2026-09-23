@@ -258,5 +258,26 @@ def sentiment_trend(analyst: str, path: str = ANALYST_SENTIMENT_PATH) -> dict:
     return {"analyst": analyst, "points": points}
 
 
+def sentiment_as_of(analyst: str, as_of_quarter: str, path: str = ANALYST_SENTIMENT_PATH) -> float | None:
+    """This analyst's running-average sentiment using ONLY quarters strictly
+    before `as_of_quarter` -- the leak-free cut a prediction signal needs
+    (same discipline as build_initial_state's train/target split and
+    cross_bank_persona.cross_bank_topic_prior's as_of_quarter filter).
+    sentiment_trend() above is for DISPLAY, where showing the trend through
+    the most recent scored quarter is exactly the point; a signal that will
+    influence what gets predicted FOR a quarter must not have seen that
+    quarter's own scores. Returns None (not 0.0) when there's no prior
+    history at all, so a caller can tell "genuinely no signal" apart from
+    "a signal that happens to average to neutral"."""
+    if not os.path.exists(path):
+        return None
+    with open(path) as f:
+        history = json.load(f)
+    cutoff = _quarter_sort_key(as_of_quarter)
+    scores = [h["sentiment_score"] for h in history
+             if h["analyst"] == analyst and _quarter_sort_key(h["quarter"]) < cutoff]
+    return round(sum(scores) / len(scores), 3) if scores else None
+
+
 if __name__ == "__main__":
     compute_analyst_sentiment_recent()

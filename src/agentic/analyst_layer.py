@@ -36,7 +36,7 @@ DISCLOSURE_BLEND = 0.25
 # is also what RESULTS_V2.md found independently: its N+1 boost was
 # cross-validated across all 15 training quarters (recall 45.4%->59.5%) and
 # adopted as the deterministic engine's default.
-from src.config.settings import SLOT_EXTRA, SLOT_CAP, TOPICS_LIST
+from src.config.settings import SLOT_EXTRA, SLOT_CAP, TOPICS_LIST, EngineConfig
 
 
 def _disclosure_signal(disclosure: dict | None) -> dict[str, float]:
@@ -52,9 +52,69 @@ def _disclosure_signal(disclosure: dict | None) -> dict[str, float]:
     return signal
 
 
+def sentiment_extra_slot(sentiment_score: float | None, anomaly_scores: dict | None,
+                         pref: dict, already_in: set[str]) -> str | None:
+    """The ONE candidate a trending-skeptical analyst's sentiment can add,
+    never more -- same extra-slot shape as NOVELTY_SCORES/PEER_SALIENCE in
+    the legacy deterministic engine (src/engine.py), ported to this
+    pipeline's own additive-candidate mechanism (the disclosure-signal loop
+    just above, which is what actually lets a topic enter the pool here,
+    not a multiplicative reweight).
+
+    sentiment_score must already be the analyst's LEAK-FREE running-average
+    tone as of strictly before the target quarter (see
+    src.signals.analyst_sentiment.sentiment_as_of) -- this function does not
+    fetch it itself, so it stays pure and easy to unit-test/backtest.
+
+    The hypothesis, stated plainly because it's the part that's actually
+    being tested here: sentiment has no topic dimension of its own (a
+    running average is one number, not a topic distribution), so it can't
+    say WHICH topic an analyst will ask about. What it can plausibly do is
+    say a more skeptical analyst is more likely to probe whatever looks
+    weakest THIS quarter -- so the candidate it adds is simply the highest
+    anomaly-scored topic not already selected, gated by the same anti-spray
+    rule the disclosure signal uses (SENTIMENT_AFFINITY_FLOOR: the analyst
+    needs SOME real history on it, not zero, or this would spray the same
+    topic at every skeptical analyst regardless of whether they've ever
+    asked about it).
+
+    MEASURED RESULT (2026-09, via eval_harness.run_holdout_eval and a
+    broader walk-forward sweep -- same method as cross_bank_persona.py's own
+    honest write-up): on the 2 official TEST_QUARTERS, zero effect at all --
+    every analyst whose sentiment cleared SENTIMENT_SKEPTICAL_THRESHOLD that
+    quarter turned out not to be a SCORED analyst (they didn't ask a
+    topic-tagged question that quarter, so ground_truth excludes them from
+    the aggregate). Widening to a 17-quarter walk-forward sweep (144
+    analyst-quarter observations, same window rank_position_calibration
+    uses) found the gate firing on exactly ONE scored observation, adding
+    one extra prediction that turned out to be a miss: mean_recall unchanged
+    (0.8081 both ways), mean_precision -0.0002. The mechanism is sound and
+    the anti-spray guard is doing its job, but the anomaly-topic-as-proxy
+    hypothesis just doesn't fire often enough among analysts who are BOTH
+    skeptical AND active that quarter to move any number. Left off by
+    default for this reason -- not a bug, a null result -- same as
+    cross_bank_persona.py's CROSS_BANK_MIX. Revisit if a richer proxy than
+    "most anomalous topic" is found, or once more quarters of sentiment
+    history exist to test against."""
+    if sentiment_score is None or sentiment_score > EngineConfig.SENTIMENT_SKEPTICAL_THRESHOLD:
+        return None
+    if not anomaly_scores:
+        return None
+    ranked = sorted(anomaly_scores.items(), key=lambda kv: -kv[1])
+    for topic, _ in ranked:
+        if topic in already_in:
+            continue
+        if pref.get(topic, 0.0) >= EngineConfig.SENTIMENT_AFFINITY_FLOOR:
+            return topic
+    return None
+
+
 def reweight_for_analyst(analyst: str, overall_ranked_topics: list[str], pref: dict, N: int,
                          disclosure: dict | None = None,
-                         slot_extra: int | None = None, slot_cap: int | None = None) -> list[str]:
+                         slot_extra: int | None = None, slot_cap: int | None = None,
+                         sentiment_score: float | None = None,
+                         anomaly_scores: dict | None = None,
+                         use_sentiment_signal: bool = False) -> list[str]:
     """Reorders the overall (global) ranked topics for this analyst and
     truncates to their slot count. A topic the analyst has essentially never
     engaged with sinks even if it's globally hot (the doc's worked example);
@@ -64,7 +124,15 @@ def reweight_for_analyst(analyst: str, overall_ranked_topics: list[str], pref: d
     When a disclosure is supplied, topics it flags can ENTER this analyst's
     candidate pool even if they fell outside the global top-N -- that is the
     only path by which a theme with no historical base rate (a subsidiary
-    result, a one-off charge) can reach the brief at all."""
+    result, a one-off charge) can reach the brief at all.
+
+    use_sentiment_signal=True (default False everywhere -- opt-in only,
+    same pattern as build_initial_state's use_cross_bank_signal, until a
+    backtest actually promotes it) adds sentiment_extra_slot()'s one
+    candidate, if any, as a genuine EXTRA slot appended after the normal
+    N+extra cutoff -- it never displaces a topic that earned its place on
+    pref/disclosure score, same "never displaces top-N picks" discipline as
+    the legacy engine's novelty/peer signals."""
     signal = _disclosure_signal(disclosure)
 
     candidates = list(overall_ranked_topics)
@@ -97,7 +165,14 @@ def reweight_for_analyst(analyst: str, overall_ranked_topics: list[str], pref: d
     extra = SLOT_EXTRA if slot_extra is None else slot_extra
     cap = SLOT_CAP if slot_cap is None else slot_cap
     slots = max(1, min(cap, N + extra))
-    return sorted(candidates, key=lambda t: -score(t))[:slots]
+    result = sorted(candidates, key=lambda t: -score(t))[:slots]
+
+    if use_sentiment_signal:
+        bonus = sentiment_extra_slot(sentiment_score, anomaly_scores, pref, set(result))
+        if bonus:
+            result = result + [bonus]  # genuine extra slot -- appended, never displacing the slots above
+
+    return result
 
 
 def _bridge_tension(val_quarter_metrics: dict) -> dict | None:
