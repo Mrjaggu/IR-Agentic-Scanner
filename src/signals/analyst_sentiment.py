@@ -196,7 +196,14 @@ def compute_analyst_sentiment(quarter: str, path: str = ANALYST_SENTIMENT_PATH,
 
 
 def compute_analyst_sentiment_recent(n: int = LAST_N_QUARTERS, path: str = ANALYST_SENTIMENT_PATH,
-                                     analysts: set[str] | None = None):
+                                     analysts: set[str] | None = None, force: bool = False):
+    """force=False (the default) skips any quarter that already has at least
+    one persisted row -- a bulk --all/--quarters backfill run after an
+    earlier partial run shouldn't re-spend LLM calls re-scoring quarters
+    that are already there. A quarter targeted directly via
+    compute_analyst_sentiment() (the CLI's --quarter path) always recomputes
+    regardless -- that's an explicit, single-quarter request, not a bulk
+    backfill, so idempotent-replace-on-recompute still applies there."""
     graph = _load_graph()
     quarter_order = _quarter_order(graph)
     quarters = quarter_order[-n:]
@@ -207,6 +214,19 @@ def compute_analyst_sentiment_recent(n: int = LAST_N_QUARTERS, path: str = ANALY
                     and node["properties"]["analyst"] in analysts):
                 relevant.add(node["properties"]["quarter"])
         quarters = [q for q in quarters if q in relevant]
+
+    if not force and os.path.exists(path):
+        with open(path) as f:
+            already_scored = {h["quarter"] for h in json.load(f)}
+        skip = [q for q in quarters if q in already_scored]
+        quarters = [q for q in quarters if q not in already_scored]
+        if skip:
+            print(f"[analyst-sentiment] skipping {len(skip)} already-scored quarter(s): "
+                  f"{skip} (pass --force to rescore them too)")
+
+    if not quarters:
+        print("[analyst-sentiment] nothing to do -- every targeted quarter is already scored.")
+        return
     for q in quarters:
         compute_analyst_sentiment(q, path=path, analysts=analysts)
 

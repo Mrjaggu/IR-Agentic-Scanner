@@ -95,6 +95,10 @@ def main():
     sentiment_parser.add_argument("--all", action="store_true",
                                   help="Score every quarter with data, regardless of how far back "
                                        "it goes (equivalent to --quarters <all of them>)")
+    sentiment_parser.add_argument("--force", action="store_true",
+                                  help="With --quarters/--all: also re-score quarters that "
+                                       "already have a persisted result (default: skip them, "
+                                       "so a re-run after a partial backfill only fills gaps)")
     sentiment_parser.add_argument("--analysts", type=str, default=None,
                                   help="Comma-separated analyst names to scope down to, e.g. "
                                        "'MB Mahesh,Piran Engineer'")
@@ -206,11 +210,11 @@ def main():
             # 10_000 is just "more quarters than any bank will ever have" --
             # compute_analyst_sentiment_recent slices quarter_order[-n:], which
             # is a no-op past the list's actual length.
-            compute_analyst_sentiment_recent(n=10_000, analysts=analysts)
+            compute_analyst_sentiment_recent(n=10_000, analysts=analysts, force=args.force)
         elif args.quarters:
-            compute_analyst_sentiment_recent(n=args.quarters, analysts=analysts)
+            compute_analyst_sentiment_recent(n=args.quarters, analysts=analysts, force=args.force)
         else:
-            compute_analyst_sentiment_recent(analysts=analysts)
+            compute_analyst_sentiment_recent(analysts=analysts, force=args.force)
 
     elif args.command == "personas-derived":
         from src.signals.persona_synthesis import synthesize_personas
