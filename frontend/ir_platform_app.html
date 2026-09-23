@@ -3188,15 +3188,43 @@ function drawQuarterChart(host, unit) {
   svg.addEventListener("pointerleave", () => { tip.style.opacity = 0; $("#qvCrosshair").style.display = "none"; });
 }
 
+// QoQ delta -- computed client-side straight from the value series already
+// in QV.metricsByQuarter, because the backend's own delta/direction/period
+// fields (metrics_extractor's regex-extracted numbers) are YOY only, not a
+// quarter-over-quarter diff. quarters[] is chronological (oldest first, per
+// STATE.meta.quarters), so idx-1 is always the immediately prior quarter --
+// no gap-skipping, a quarter with nothing extracted just breaks the chain
+// and that cell shows no delta rather than a comparison across a gap.
+function qvQoqDelta(quarters, byQuarter, metric, idx) {
+  if (idx === 0) return null;
+  const cur = byQuarter[quarters[idx]]?.[metric];
+  const prev = byQuarter[quarters[idx - 1]]?.[metric];
+  if (!cur || !prev || cur.value == null || prev.value == null) return null;
+  return { diff: Number(cur.value) - Number(prev.value), unit: cur.value_unit || prev.value_unit || "" };
+}
+
+function qvFmtDelta(d) {
+  if (!d) return "";
+  if (Math.abs(d.diff) < 0.005) return "flat vs prior Q";
+  const mag = Math.abs(d.diff) >= 100 ? Math.abs(d.diff).toFixed(0) : Math.abs(d.diff).toFixed(2);
+  const u = d.unit === "crore" ? " cr" : (d.unit || "");
+  return `${d.diff > 0 ? "▲" : "▼"} ${mag}${u} vs prior Q`;
+}
+
 function drawQuarterTable(host) {
   const quarters = QV.quarters;
   host.innerHTML = `<div style="overflow-x:auto;"><table>
     <thead><tr><th>Quarter</th>${QV.selected.map(m => `<th class="num">${esc(m.replace(/_/g, " "))}</th>`).join("")}</tr></thead>
-    <tbody>${quarters.map(q => `<tr><td>${esc(QU(q))}</td>${QV.selected.map(m => {
+    <tbody>${quarters.map((q, qi) => `<tr><td>${esc(QU(q))}</td>${QV.selected.map(m => {
       const rec = QV.metricsByQuarter[q]?.[m];
-      return `<td class="num" style="font-variant-numeric:tabular-nums;">${rec ? esc(qvFmt(rec.value, rec.value_unit)) : "—"}</td>`;
+      const delta = qvQoqDelta(quarters, QV.metricsByQuarter, m, qi);
+      return `<td class="num" style="font-variant-numeric:tabular-nums;">
+        ${rec ? esc(qvFmt(rec.value, rec.value_unit)) : "—"}
+        ${delta ? `<div class="xs muted" style="font-weight:400;">${esc(qvFmtDelta(delta))}</div>` : ""}
+      </td>`;
     }).join("")}</tr>`).join("")}</tbody>
-  </table></div>`;
+  </table></div>
+  <div class="xs muted" style="margin-top:6px;">Δ vs prior Q compares each quarter to the one immediately before it (skips a quarter with nothing extracted rather than comparing across the gap). Separate from the YOY change shown elsewhere in this platform.</div>`;
 }
 
 /* ── News feeds: bank coverage + analyst-mention coverage (TheNewsAPI) ────────
