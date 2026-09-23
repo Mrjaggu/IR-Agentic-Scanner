@@ -86,7 +86,15 @@ def main():
              "+1 constructive), writes data/outputs/<bank>/analyst_sentiment.json. "
              "Display-only (UI trend chart) -- not wired into prediction weights.")
     sentiment_parser.add_argument("--quarter", type=str, default=None,
-                                  help="Single target quarter (default: loop over last 8 quarters)")
+                                  help="Single target quarter (default: loop over last 8 quarters, "
+                                       "or see --quarters / --all for a wider backfill)")
+    sentiment_parser.add_argument("--quarters", type=int, default=None,
+                                  help="How many of the most recent quarters to score instead of "
+                                       "the default 8 -- e.g. --quarters 21 for full history back "
+                                       "to your earliest transcript")
+    sentiment_parser.add_argument("--all", action="store_true",
+                                  help="Score every quarter with data, regardless of how far back "
+                                       "it goes (equivalent to --quarters <all of them>)")
     sentiment_parser.add_argument("--analysts", type=str, default=None,
                                   help="Comma-separated analyst names to scope down to, e.g. "
                                        "'MB Mahesh,Piran Engineer'")
@@ -194,6 +202,13 @@ def main():
         # settings.py shim (axis only) -- --bank accepted for CLI consistency.
         if args.quarter:
             compute_analyst_sentiment(args.quarter, analysts=analysts)
+        elif args.all:
+            # 10_000 is just "more quarters than any bank will ever have" --
+            # compute_analyst_sentiment_recent slices quarter_order[-n:], which
+            # is a no-op past the list's actual length.
+            compute_analyst_sentiment_recent(n=10_000, analysts=analysts)
+        elif args.quarters:
+            compute_analyst_sentiment_recent(n=args.quarters, analysts=analysts)
         else:
             compute_analyst_sentiment_recent(analysts=analysts)
 
