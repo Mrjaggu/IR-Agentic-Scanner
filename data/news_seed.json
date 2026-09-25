@@ -2,6 +2,14 @@
   "axis": {
     "articles": [
       {
+        "title": "IRDAI draft norms to cap insurance distribution commissions, curb loan-linked insurance sales",
+        "description": "IRDAI proposed draft rules capping commissions insurers pay distributors (including bancassurance channels) and restricting the bundling/sale of insurance tied to loan disbursement. The move hit insurance stocks hard (PB Fintech -36%) and dragged down bank and NBFC stocks on fears of reduced bancassurance fee income. IIFL Securities has previously estimated a bancassurance commission cap could impact banks net profit by 1-2%.",
+        "url": "https://www.moneycontrol.com/news/business/irdai-draft-norms-insurance-distribution-commission-cap",
+        "author": "moneycontrol.com",
+        "published": "2026-09",
+        "image": null
+      },
+      {
         "title": "Axis Bank Q1 FY27 slides: profit surges 23% as NIM hits cycle low",
         "description": "Axis Bank's Q1 FY27 results showed a 23% jump in profit even as net interest margin touched a cycle low, per the bank's own results presentation.",
         "url": "https://www.investing.com/news/company-news/axis-bank-q1-fy27-slides-profit-surges-23-as-nim-hits-cycle-low-93CH-4799638",
@@ -88,6 +96,14 @@
   "kotak": {
     "articles": [
       {
+        "title": "IRDAI draft norms to cap insurance distribution commissions, curb loan-linked insurance sales",
+        "description": "IRDAI proposed draft rules capping commissions insurers pay distributors (including bancassurance channels) and restricting the bundling/sale of insurance tied to loan disbursement. The move hit insurance stocks hard (PB Fintech -36%) and dragged down bank and NBFC stocks on fears of reduced bancassurance fee income. IIFL Securities has previously estimated a bancassurance commission cap could impact banks net profit by 1-2%.",
+        "url": "https://www.moneycontrol.com/news/business/irdai-draft-norms-insurance-distribution-commission-cap",
+        "author": "moneycontrol.com",
+        "published": "2026-09",
+        "image": null
+      },
+      {
         "title": "Kotak Mahindra Bank Upgraded to Buy by MarketsMOJO on Strong Technical and Financial Performance",
         "description": "MarketsMOJO upgraded its rating on Kotak Mahindra Bank to 'Buy', citing improving technical and financial indicators.",
         "url": "https://www.marketsmojo.com/news/stock-recommendation/kotak-mahindra-bank-upgraded-to-buy-by-marketsmojo-on-strong-technical-and-financial-performance-4201785",
@@ -120,5 +136,9 @@
     ],
     "fetched_at": 1790154700.0613382,
     "error": null
+  },
+  "_meta": {
+    "captured_at": "2026-09-25",
+    "method": "manual web search (hand-verified, not from TheNewsAPI live feed) -- added per user request to flag IRDAI Sep 24 2026 distribution-commission/loan-linked-insurance draft norms and their bancassurance fee-income read-through for banks; see src/news/news_api.py get_news() docstring for seed-vs-live precedence"
   }
 }
