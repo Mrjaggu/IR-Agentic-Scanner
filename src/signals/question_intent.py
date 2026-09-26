@@ -41,8 +41,8 @@ NARR_CHAR_BUDGET = 3500   # our Groq tier caps at 8000 TPM per request — stay 
 QUESTION_CHAR_BUDGET = 300
 
 
-def _load_graph():
-    with open(GRAPH_PATH) as f:
+def _load_graph(graph_path: str = GRAPH_PATH):
+    with open(graph_path) as f:
         return json.load(f)
 
 
@@ -52,7 +52,8 @@ def _quarter_order(graph: dict) -> list[str]:
     return [n["id"] for n in q_nodes]
 
 
-def _build_prompt(quarter: str, narration_text: str, blocks: list[dict]) -> str:
+def _build_prompt(quarter: str, narration_text: str, blocks: list[dict],
+                  bank_name: str = "Axis Bank") -> str:
     blocks_fmt = json.dumps([
         {"index": i, "analyst": b["analyst"], "topics": b["topics"],
          "question_text": b["question_text"][:QUESTION_CHAR_BUDGET],
@@ -60,7 +61,7 @@ def _build_prompt(quarter: str, narration_text: str, blocks: list[dict]) -> str:
         for i, b in enumerate(blocks)
     ], indent=2)
 
-    return f"""You are analyzing an Axis Bank earnings call to understand WHY each analyst
+    return f"""You are analyzing a {bank_name} earnings call to understand WHY each analyst
 asked what they asked — not just what topic it falls under.
 
 ### {quarter} management opening remarks (narration):
@@ -134,8 +135,10 @@ def _group_quarter_blocks(graph: dict, quarter: str, quarter_order: list[str],
 
 
 def compute_question_intent(quarter: str, path: str = QUESTION_INTENT_PATH,
-                            analysts: set[str] | None = None) -> list[dict]:
-    graph = _load_graph()
+                            graph_path: str | None = None,
+                            analysts: set[str] | None = None,
+                            bank_name: str = "Axis Bank") -> list[dict]:
+    graph = _load_graph(graph_path or GRAPH_PATH)
     quarter_order = _quarter_order(graph)
     if quarter not in quarter_order:
         raise SystemExit(f"Unknown quarter '{quarter}'. Known: {quarter_order}")
@@ -150,8 +153,8 @@ def compute_question_intent(quarter: str, path: str = QUESTION_INTENT_PATH,
     if not active:
         raise SystemExit("No working LLM API (set GROQ_API_KEY / GEMINI_API_KEY in .env).")
 
-    raw = client.call_llm(_build_prompt(quarter, narration_text, blocks), temperature=0.0,
-                          purpose="question_intent")
+    raw = client.call_llm(_build_prompt(quarter, narration_text, blocks, bank_name=bank_name),
+                          temperature=0.0, purpose="question_intent")
     if not raw:
         raise SystemExit(f"[intent] {quarter}: LLM call failed.")
 
@@ -195,8 +198,10 @@ def compute_question_intent(quarter: str, path: str = QUESTION_INTENT_PATH,
 
 
 def compute_question_intent_recent(n: int = LAST_N_QUARTERS, path: str = QUESTION_INTENT_PATH,
-                                   analysts: set[str] | None = None):
-    graph = _load_graph()
+                                   graph_path: str | None = None,
+                                   analysts: set[str] | None = None,
+                                   bank_name: str = "Axis Bank"):
+    graph = _load_graph(graph_path or GRAPH_PATH)
     quarter_order = _quarter_order(graph)
     quarters = quarter_order[-n:]
     if analysts is not None:
@@ -208,7 +213,8 @@ def compute_question_intent_recent(n: int = LAST_N_QUARTERS, path: str = QUESTIO
                 relevant.add(node["properties"]["quarter"])
         quarters = [q for q in quarters if q in relevant]
     for q in quarters:
-        compute_question_intent(q, path=path, analysts=analysts)
+        compute_question_intent(q, path=path, graph_path=graph_path, analysts=analysts,
+                                bank_name=bank_name)
 
 
 if __name__ == "__main__":

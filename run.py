@@ -193,33 +193,48 @@ def main():
 
     elif args.command == "intent":
         from src.signals.question_intent import compute_question_intent, compute_question_intent_recent
+        from src.config.settings import paths_for
+        from src.config.banks import DEFAULT_BANK, get_bank
         analysts = set(a.strip() for a in args.analysts.split(",")) if args.analysts else None
-        # NOTE: question_intent.py itself isn't bank-threaded yet (still reads/
-        # writes via the settings.py shim, i.e. axis) -- --bank is accepted here
-        # for CLI consistency with the other data-building commands but is not
-        # yet wired further. Threading it through is future work if/when a
-        # non-axis bank needs its own LLM-classified question_intent.json.
+        bank_id = args.bank or DEFAULT_BANK
+        paths = paths_for(bank_id)
+        bank_name = get_bank(bank_id).display_name
         if args.quarter:
-            compute_question_intent(args.quarter, analysts=analysts)
+            compute_question_intent(args.quarter, path=paths.question_intent_path,
+                                     graph_path=paths.graph_path, analysts=analysts,
+                                     bank_name=bank_name)
         else:
-            compute_question_intent_recent(analysts=analysts)
+            compute_question_intent_recent(path=paths.question_intent_path,
+                                            graph_path=paths.graph_path, analysts=analysts,
+                                            bank_name=bank_name)
 
     elif args.command == "analyst-sentiment":
         from src.signals.analyst_sentiment import compute_analyst_sentiment, compute_analyst_sentiment_recent
+        from src.config.settings import paths_for
+        from src.config.banks import DEFAULT_BANK, get_bank
         analysts = set(a.strip() for a in args.analysts.split(",")) if args.analysts else None
-        # Same bank-threading note as "intent" above: not yet threaded past the
-        # settings.py shim (axis only) -- --bank accepted for CLI consistency.
+        bank_id = args.bank or DEFAULT_BANK
+        paths = paths_for(bank_id)
+        bank_name = get_bank(bank_id).display_name
         if args.quarter:
-            compute_analyst_sentiment(args.quarter, analysts=analysts)
+            compute_analyst_sentiment(args.quarter, path=paths.analyst_sentiment_path,
+                                       graph_path=paths.graph_path, analysts=analysts,
+                                       bank_name=bank_name)
         elif args.all:
             # 10_000 is just "more quarters than any bank will ever have" --
             # compute_analyst_sentiment_recent slices quarter_order[-n:], which
             # is a no-op past the list's actual length.
-            compute_analyst_sentiment_recent(n=10_000, analysts=analysts, force=args.force)
+            compute_analyst_sentiment_recent(n=10_000, path=paths.analyst_sentiment_path,
+                                              graph_path=paths.graph_path, analysts=analysts,
+                                              force=args.force, bank_name=bank_name)
         elif args.quarters:
-            compute_analyst_sentiment_recent(n=args.quarters, analysts=analysts, force=args.force)
+            compute_analyst_sentiment_recent(n=args.quarters, path=paths.analyst_sentiment_path,
+                                              graph_path=paths.graph_path, analysts=analysts,
+                                              force=args.force, bank_name=bank_name)
         else:
-            compute_analyst_sentiment_recent(analysts=analysts, force=args.force)
+            compute_analyst_sentiment_recent(path=paths.analyst_sentiment_path,
+                                              graph_path=paths.graph_path, analysts=analysts,
+                                              force=args.force, bank_name=bank_name)
 
     elif args.command == "personas-derived":
         from src.signals.persona_synthesis import synthesize_personas

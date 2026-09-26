@@ -13,8 +13,10 @@ near-miss from the peer-bank sourcing today): every event must carry a real,
 checkable source_url actually returned by a search — never fabricate or guess
 one. Summarize in your own words, don't reproduce scraped article text
 (copyright). Mark confidence "confirmed" only if the source clearly concerns
-Axis Bank / the named sector event; use "plausible" for anything inferred or
-uncertain, so downstream reasoning (question_intent.py) can weight it.
+the bank this event is being curated for (see src/config/banks.py's
+registry -- Axis, Kotak, etc.) / the named sector event; use "plausible" for
+anything inferred or uncertain, so downstream reasoning (question_intent.py)
+can weight it.
 
 Output: data/inputs/external_context_history.json
     [{"quarter": "q1fy27", "call_date": "July 18, 2026",

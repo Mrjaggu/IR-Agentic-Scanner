@@ -255,7 +255,14 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
 
     sentiment_scores = {}
     if use_sentiment_signal:
-        sentiment_scores = {a: sentiment_as_of(a, val_quarter) for a in active_analysts}
+        # bank-scoped path: sentiment_as_of()'s own default is the flat,
+        # axis-only ANALYST_SENTIMENT_PATH -- without this, a non-axis bank
+        # would silently score against AXIS's sentiment file (mostly a
+        # near-total no-op for analyst-name mismatches, never a correct
+        # signal). See claude/agentic-core-build-notes.md's "Continual
+        # learning"-adjacent Phase 5 note for the fuller writeup.
+        sentiment_scores = {a: sentiment_as_of(a, val_quarter, path=paths.analyst_sentiment_path)
+                            for a in active_analysts}
 
     news_signal = {}
     if use_news_signal and not holdout:  # never for a historical/backtest run -- see docstring above

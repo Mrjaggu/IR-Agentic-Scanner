@@ -70,8 +70,8 @@ def _quarter_sort_key(quarter: str) -> tuple[int, int]:
     return (int(m.group(2)), int(m.group(1)))
 
 
-def _load_graph():
-    with open(GRAPH_PATH) as f:
+def _load_graph(graph_path: str = GRAPH_PATH):
+    with open(graph_path) as f:
         return json.load(f)
 
 
@@ -99,14 +99,14 @@ def _group_quarter_blocks(graph: dict, quarter: str,
             for a, texts in sorted(by_analyst.items())]
 
 
-def _build_prompt(quarter: str, blocks: list[dict]) -> str:
+def _build_prompt(quarter: str, blocks: list[dict], bank_name: str = "Axis Bank") -> str:
     blocks_fmt = json.dumps([
         {"index": i, "analyst": b["analyst"], "question_text": b["question_text"]}
         for i, b in enumerate(blocks)
     ], indent=2)
 
-    return f"""You are analyzing the TONE of each sell-side analyst's questions on an
-Axis Bank earnings call for {quarter} -- not the topic, the tone.
+    return f"""You are analyzing the TONE of each sell-side analyst's questions on a
+{bank_name} earnings call for {quarter} -- not the topic, the tone.
 
 ### Question blocks this quarter (index, analyst, that analyst's question text
 ### for the quarter, concatenated with " || " between separate questions):
@@ -134,8 +134,10 @@ One entry per block index, same order."""
 
 
 def compute_analyst_sentiment(quarter: str, path: str = ANALYST_SENTIMENT_PATH,
-                              analysts: set[str] | None = None) -> list[dict]:
-    graph = _load_graph()
+                              graph_path: str | None = None,
+                              analysts: set[str] | None = None,
+                              bank_name: str = "Axis Bank") -> list[dict]:
+    graph = _load_graph(graph_path or GRAPH_PATH)
     quarter_order = _quarter_order(graph)
     if quarter not in quarter_order:
         raise SystemExit(f"Unknown quarter '{quarter}'. Known: {quarter_order}")
@@ -150,7 +152,7 @@ def compute_analyst_sentiment(quarter: str, path: str = ANALYST_SENTIMENT_PATH,
     if not active:
         raise SystemExit("No working LLM API (set GROQ_API_KEY / GEMINI_API_KEY in .env).")
 
-    raw = client.call_llm(_build_prompt(quarter, blocks), temperature=0.0,
+    raw = client.call_llm(_build_prompt(quarter, blocks, bank_name=bank_name), temperature=0.0,
                           purpose="analyst_sentiment")
     if not raw:
         raise SystemExit(f"[analyst-sentiment] {quarter}: LLM call failed.")
@@ -196,7 +198,9 @@ def compute_analyst_sentiment(quarter: str, path: str = ANALYST_SENTIMENT_PATH,
 
 
 def compute_analyst_sentiment_recent(n: int = LAST_N_QUARTERS, path: str = ANALYST_SENTIMENT_PATH,
-                                     analysts: set[str] | None = None, force: bool = False):
+                                     graph_path: str | None = None,
+                                     analysts: set[str] | None = None, force: bool = False,
+                                     bank_name: str = "Axis Bank"):
     """force=False (the default) skips any quarter that already has at least
     one persisted row -- a bulk --all/--quarters backfill run after an
     earlier partial run shouldn't re-spend LLM calls re-scoring quarters
@@ -204,7 +208,7 @@ def compute_analyst_sentiment_recent(n: int = LAST_N_QUARTERS, path: str = ANALY
     compute_analyst_sentiment() (the CLI's --quarter path) always recomputes
     regardless -- that's an explicit, single-quarter request, not a bulk
     backfill, so idempotent-replace-on-recompute still applies there."""
-    graph = _load_graph()
+    graph = _load_graph(graph_path or GRAPH_PATH)
     quarter_order = _quarter_order(graph)
     quarters = quarter_order[-n:]
     if analysts is not None:
@@ -228,7 +232,8 @@ def compute_analyst_sentiment_recent(n: int = LAST_N_QUARTERS, path: str = ANALY
         print("[analyst-sentiment] nothing to do -- every targeted quarter is already scored.")
         return
     for q in quarters:
-        compute_analyst_sentiment(q, path=path, analysts=analysts)
+        compute_analyst_sentiment(q, path=path, graph_path=graph_path, analysts=analysts,
+                                  bank_name=bank_name)
 
 
 def sentiment_trend(analyst: str, path: str = ANALYST_SENTIMENT_PATH) -> dict:
