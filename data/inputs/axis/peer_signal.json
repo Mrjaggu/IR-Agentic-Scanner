@@ -1,0 +1,32 @@
+{
+  "quarter": "q1fy27",
+  "target_bank_id": "axis",
+  "peers": [
+    "indusind",
+    "kotak"
+  ],
+  "topic_salience": {
+    "Loan & Advances Growth": 0.444,
+    "Slippages & Asset Quality": 0.222,
+    "NIM & Yields": 1.0,
+    "Credit Cost & Provisions": 0.111,
+    "Deposits & CASA": 0.667,
+    "Citibank Integration": 0.111,
+    "Profitability & Returns": 0.444,
+    "Credit Cards & Spends": 0.111,
+    "Opex & Cost-to-Income": 0.111,
+    "Strategy & Competitive Positioning": 0.222
+  },
+  "peer_analyst_counts": {
+    "Loan & Advances Growth": 4,
+    "Slippages & Asset Quality": 2,
+    "NIM & Yields": 9,
+    "Credit Cost & Provisions": 1,
+    "Deposits & CASA": 6,
+    "Citibank Integration": 1,
+    "Profitability & Returns": 4,
+    "Credit Cards & Spends": 1,
+    "Opex & Cost-to-Income": 1,
+    "Strategy & Competitive Positioning": 2
+  }
+}

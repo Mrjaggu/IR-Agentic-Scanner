@@ -109,6 +109,106 @@ def sentiment_extra_slot(sentiment_score: float | None, anomaly_scores: dict | N
     return None
 
 
+def peer_extra_slot(peer_salience: dict | None, pref: dict, already_in: set[str]) -> str | None:
+    """The ONE candidate a peer-bank signal can add, never more -- faithful
+    port of src/engine.py's PEER_SALIENCE extra-slot block (search "Peer-bank
+    extra slot" there) into this pipeline's own additive-candidate mechanism.
+    That block existed in the legacy deterministic engine but was never
+    ported to this agentic pipeline until now -- "peer" appeared nowhere in
+    run_agentic.py/analyst_layer.py/graph_app.py before this.
+
+    Motivation (src.signals.peer_signal's module docstring): Axis reports
+    mid-to-late in results season, so peer banks that report earlier give
+    analysts a first look at sector-wide themes before Axis's own call --
+    genuinely new information relative to Axis's own question history, not
+    more arithmetic on it.
+
+    Unlike sentiment, this signal IS already topic-shaped (peer_salience is
+    a per-topic dict from src.signals.peer_signal.compute_peer_signal, not a
+    scalar), so unlike sentiment_extra_slot it doesn't need an
+    anomaly-scores proxy -- it picks straight from its own topics, highest
+    salience first, tie-broken by this analyst's own affinity, the exact
+    order src/engine.py used.
+
+    Gated by EngineConfig.PEER_MIN_SALIENCE (ignore weakly-covered topics)
+    and PEER_AFFINITY_FLOOR (anti-spray: this analyst needs SOME real
+    history on the topic, or a peer-hot theme would get sprayed at every
+    analyst regardless of whether they've ever cared about it).
+
+    MEASURED RESULT (2026-09, via eval_harness.evaluate_quarter on both
+    official TEST_QUARTERS, using real peer transcripts for q4fy26 AND
+    q1fy27 -- src.signals.peer_signal ported to read kotak/indusind's own
+    multi-quarter archives means this is the first time this signal has
+    ever been measurable for both held-out quarters, not just q1fy27):
+    ZERO effect, mean_recall/mean_precision byte-identical with the signal
+    on or off (0.9375/0.3678). Root-caused precisely, not just observed: a
+    per-analyst diagnostic across all 49 active-analyst-quarters (24 in
+    q4fy26, 25 in q1fy27) found a qualifying peer-salient candidate for
+    EVERY single one (never blocked by "no candidate clears the floors"),
+    but in every single case that candidate was ALREADY inside the
+    analyst's own top-N picks before the peer signal ran -- 49/49 blocked
+    by "already in", 0/49 by "no candidate". This quarter's peer-salient
+    topics (NIM & Yields, Credit Cost & Provisions, Deposits & CASA, Loan
+    Growth, Profitability) are exactly the perennially-hot topics the base
+    model already ranks highly for nearly every analyst from their own
+    history, so peer salience is DIRECTIONALLY CORRECT (it flags real
+    topics analysts do ask about) but never finds new ground to add -- same
+    "mechanism sound, hypothesis doesn't fire often enough" shape as
+    sentiment_extra_slot's own null result, and same reason to leave
+    use_peer_signal off by default rather than call it a bug. Would plausibly
+    fire on a quarter where peer banks surface something genuinely OFF an
+    analyst's usual pattern (a fresh policy/news shock hitting a topic they
+    don't already cover) -- worth re-testing once such a quarter exists,
+    rather than concluding this mechanism can never help from one null
+    result on ordinary quarters."""
+    if not peer_salience:
+        return None
+    cand = [(t, sv) for t, sv in peer_salience.items()
+            if sv >= EngineConfig.PEER_MIN_SALIENCE
+            and t not in already_in
+            and pref.get(t, 0.0) >= EngineConfig.PEER_AFFINITY_FLOOR]
+    if not cand:
+        return None
+    cand.sort(key=lambda x: (-x[1], -pref.get(x[0], 0.0)))
+    return cand[0][0]
+
+
+def macro_event_extra_slot(macro_signal: dict | None, pref: dict, already_in: set[str]) -> str | None:
+    """The ONE candidate a verified external macro/policy/news event can
+    add, never more -- same extra-slot shape as peer_extra_slot/
+    sentiment_extra_slot above. macro_signal is {topic: severity in [0,1]},
+    already filtered and scored by the caller
+    (src.signals.external_context.macro_topic_signal) from curated events --
+    see that module's docstring for the event schema (real source_url,
+    own-words summary, confirmed/plausible confidence) and verification
+    discipline.
+
+    Same anti-spray floor as peer/sentiment: this analyst needs SOME real
+    history on the affected topic, or a single curated event would spray
+    the same extra slot at every active analyst regardless of whether
+    they've ever asked about that topic.
+
+    VALIDATION CEILING, stated up front because it's the honest thing to do
+    here (same discipline as src.signals.news_signal's module docstring):
+    there is no historical archive of verified-macro-event ->
+    next-quarter-question pairs, so this cannot be walk-forward backtested
+    the way sentiment/adaptive-decay were -- only real curated events
+    accumulate going forward, starting from whatever gets curated today.
+    Permanently opt-in for that reason. The caller (run_agentic.
+    build_initial_state) refuses this signal unconditionally in holdout
+    mode, same reasoning news_signal already documents: using an event
+    curated with hindsight to score a historical quarter would leak."""
+    if not macro_signal:
+        return None
+    cand = [(t, sv) for t, sv in macro_signal.items()
+            if t not in already_in
+            and pref.get(t, 0.0) >= EngineConfig.MACRO_EVENT_AFFINITY_FLOOR]
+    if not cand:
+        return None
+    cand.sort(key=lambda x: (-x[1], -pref.get(x[0], 0.0)))
+    return cand[0][0]
+
+
 def reweight_for_analyst(analyst: str, overall_ranked_topics: list[str], pref: dict, N: int,
                          disclosure: dict | None = None,
                          slot_extra: int | None = None, slot_cap: int | None = None,
@@ -116,7 +216,11 @@ def reweight_for_analyst(analyst: str, overall_ranked_topics: list[str], pref: d
                          anomaly_scores: dict | None = None,
                          use_sentiment_signal: bool = False,
                          news_signal: dict | None = None,
-                         use_news_signal: bool = False) -> list[str]:
+                         use_news_signal: bool = False,
+                         peer_salience: dict | None = None,
+                         use_peer_signal: bool = False,
+                         macro_signal: dict | None = None,
+                         use_macro_signal: bool = False) -> list[str]:
     """Reorders the overall (global) ranked topics for this analyst and
     truncates to their slot count. A topic the analyst has essentially never
     engaged with sinks even if it's globally hot (the doc's worked example);
@@ -144,7 +248,27 @@ def reweight_for_analyst(analyst: str, overall_ranked_topics: list[str], pref: d
     output, computed by the caller -- this function stays pure) into the
     SAME disclosure-shaped signal dict below, so a strongly-covered topic
     can enter the candidate pool exactly the way a disclosure-flagged topic
-    already can. Stays opt-in indefinitely, not "opt-in until backtested"."""
+    already can. Stays opt-in indefinitely, not "opt-in until backtested".
+
+    use_peer_signal=True (default False everywhere -- opt-in until a
+    backtest promotes it, same discipline as use_sentiment_signal/
+    use_adaptive_decay -- UNLIKE use_news_signal this one CAN be
+    backtested: peer_salience for a historical quarter comes from that same
+    quarter's own real peer-bank transcripts, not "right now", so scoring a
+    held-out quarter with it doesn't leak) adds peer_extra_slot()'s one
+    candidate, if any, as a genuine extra slot -- same non-displacing
+    mechanism as sentiment, faithfully ported from src/engine.py's
+    PEER_SALIENCE block (the legacy engine's own peer signal, which this
+    pipeline never had until now).
+
+    use_macro_signal=True (default False everywhere, and like
+    use_news_signal this one is NOT backtest-promotable from this module
+    alone -- see src.signals.external_context.macro_topic_signal's
+    docstring for why: curated events have no historical archive to test
+    against either) adds macro_event_extra_slot()'s one candidate from a
+    verified external macro/policy/news event tagged with topic+severity.
+    Refused in holdout mode by the caller (build_initial_state), same
+    reasoning as use_news_signal."""
     signal = _disclosure_signal(disclosure)
     if use_news_signal and news_signal:
         for t, v in news_signal.items():
@@ -186,6 +310,16 @@ def reweight_for_analyst(analyst: str, overall_ranked_topics: list[str], pref: d
         bonus = sentiment_extra_slot(sentiment_score, anomaly_scores, pref, set(result))
         if bonus:
             result = result + [bonus]  # genuine extra slot -- appended, never displacing the slots above
+
+    if use_peer_signal:
+        bonus = peer_extra_slot(peer_salience, pref, set(result))
+        if bonus:
+            result = result + [bonus]  # same non-displacing shape, ported from src/engine.py
+
+    if use_macro_signal:
+        bonus = macro_event_extra_slot(macro_signal, pref, set(result))
+        if bonus:
+            result = result + [bonus]  # same non-displacing shape; permanently opt-in, see docstring
 
     return result
 

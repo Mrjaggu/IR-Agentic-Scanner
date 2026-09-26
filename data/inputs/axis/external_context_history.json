@@ -1,0 +1,21 @@
+[
+  {
+    "quarter": "q2fy27",
+    "call_date": "TBD (Axis Q2FY27 call expected ~Oct/Nov 2026; this event predates it, curated 2026-09-25)",
+    "events": [
+      {
+        "date": "2026-09-24",
+        "headline": "IRDAI draft norms to cap insurance distribution commissions, curb loan-linked insurance sales",
+        "summary": "IRDAI proposed draft rules capping the commissions insurers pay distributors (including bancassurance channels) and restricting the bundling/sale of insurance tied to loan disbursement. The move hit insurance stocks hard (PB Fintech -36%) and dragged bank/NBFC stocks down on fears of reduced bancassurance fee income. IIFL Securities has previously estimated a bancassurance commission cap could impact banks' net profit by 1-2%.",
+        "source_url": "https://www.moneycontrol.com/news/business/irdai-draft-norms-insurance-distribution-commission-cap",
+        "confidence": "confirmed",
+        "topics": [
+          "Subsidiaries' Performance",
+          "Profitability & Returns"
+        ],
+        "severity": "high",
+        "direction": "negative"
+      }
+    ]
+  }
+]

@@ -24,6 +24,7 @@ from src.signals.metrics_extractor import compute_topic_anomaly_scores
 from src.signals.persona_synthesis import synthesize_personas, apply_ask_patterns
 from src.signals.analyst_sentiment import sentiment_as_of
 from src.signals.news_signal import news_topic_salience
+from src.signals.external_context import macro_topic_signal
 from src.model_provider.llm_client import client
 from src.agentic.graph_app import run_pipeline
 
@@ -60,7 +61,9 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
                         use_cross_bank_signal: bool = False,
                         use_sentiment_signal: bool = False,
                         use_news_signal: bool = False,
-                        use_adaptive_decay: bool = True) -> dict:
+                        use_adaptive_decay: bool = True,
+                        use_peer_signal: bool = False,
+                        use_macro_signal: bool = False) -> dict:
     """Everything the pipeline needs, built once. Exposed separately from
     main() so the API layer can run just the Overall layer, or just one
     analyst's Analyst-Specific layer, without re-deriving all of this.
@@ -106,6 +109,28 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
     therefore always gets news_signal={}, silently, rather than an error,
     the same "no signal" convention every leak-free signal here uses when
     it has nothing to contribute.
+
+    use_peer_signal=True (default False everywhere -- opt-in until a
+    backtest promotes it, same discipline as use_sentiment_signal) computes
+    this bank's peer-salience file (src.signals.peer_signal.compute_peer_signal,
+    now ported to read every OTHER registered bank's own transcript archive
+    -- see that module's docstring) for val_quarter and hands it to
+    analyst_layer.reweight_for_analyst's peer_extra_slot mechanism. UNLIKE
+    use_news_signal, this is NOT refused in holdout mode: a historical
+    quarter's peer signal comes from that SAME quarter's real, already-
+    reported peer transcripts, so it is leak-free the same way the rest of
+    this leak-free split is, and can be walk-forward backtested.
+
+    use_macro_signal=True (default False everywhere, and permanently opt-in
+    like use_news_signal -- see src.signals.external_context.macro_topic_signal's
+    docstring for why: curated events have no historical archive to
+    validate against either) reads this bank's verified external
+    macro/policy/news context for val_quarter
+    (src.signals.external_context.macro_topic_signal) and hands it to
+    analyst_layer.reweight_for_analyst's macro_event_extra_slot mechanism.
+    Refused whenever holdout=True, unconditionally, same reasoning and same
+    silent-empty-signal convention as use_news_signal -- an event curated
+    with hindsight scoring a historical quarter would leak.
 
     use_adaptive_decay=True (DEFAULT since 2026-09, promoted -- was opt-in
     while being backtested, same discipline as use_sentiment_signal, and
@@ -209,6 +234,21 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
     if use_news_signal and not holdout:  # never for a historical/backtest run -- see docstring above
         news_signal = news_topic_salience(bank_id, bank.display_name)
 
+    peer_salience = {}
+    if use_peer_signal:
+        # Leak-free even in holdout: a historical quarter's peer file (if
+        # computed for it -- see src.signals.peer_signal) is built from that
+        # SAME quarter's real peer transcripts, not "right now", unlike news.
+        if os.path.exists(paths.peer_signal_path):
+            with open(paths.peer_signal_path) as _pf:
+                _peer = json.load(_pf)
+            if _peer.get("quarter") == val_quarter:
+                peer_salience = _peer.get("topic_salience", {})
+
+    macro_signal = {}
+    if use_macro_signal and not holdout:  # never for a historical run -- same reasoning as news_signal
+        macro_signal = macro_topic_signal(val_quarter, path=paths.external_context_path)
+
     persona_stats = synthesize_personas(intent_path=paths.question_intent_path,
                                         exclude_quarters=persona_exclude, out_path=None)
     # Layer the hand-curated, cross-checked ask-pattern taxonomy on top -- see
@@ -231,6 +271,10 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
         "sentiment_scores": sentiment_scores,
         "news_signal_enabled": use_news_signal and not holdout,
         "news_signal": news_signal,
+        "peer_signal_enabled": use_peer_signal,
+        "peer_salience": peer_salience,
+        "macro_signal_enabled": use_macro_signal and not holdout,
+        "macro_signal": macro_signal,
         "adaptive_decay_enabled": use_adaptive_decay,
         "analyst_decay": analyst_decay,
         "graph": graph,

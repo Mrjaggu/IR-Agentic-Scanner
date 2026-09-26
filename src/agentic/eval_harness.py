@@ -232,7 +232,8 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
                      bank_id: str = DEFAULT_BANK,
                      use_cross_bank_signal: bool = False,
                      use_sentiment_signal: bool = False,
-                     use_adaptive_decay: bool = True) -> dict:
+                     use_adaptive_decay: bool = True,
+                     use_peer_signal: bool = False) -> dict:
     """Run the agentic pipeline for one quarter under held-out conditions and
     score it. with_questions=True also runs the Question Framer + Verifier to
     measure grounding rate (costs LLM calls); default False keeps topic
@@ -276,11 +277,20 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
     docstring for the mechanism. Pass False explicitly to reproduce the old
     global-decay behavior for comparison.
 
+    use_peer_signal=True (default False -- opt-in until a backtest
+    promotes it, see src.agentic.analyst_layer.peer_extra_slot's docstring)
+    lets a peer-bank-salient topic add ONE extra, non-displacing candidate
+    slot per analyst. UNLIKE the news/macro signals this one IS meaningful
+    to score here: a historical quarter's peer file (if computed for it --
+    see src.signals.peer_signal) reflects that same quarter's real,
+    already-reported peer transcripts, not "right now".
+
     Passed straight through to build_initial_state."""
     state = build_initial_state(quarter, probe=with_questions, holdout=holdout, upcoming=upcoming,
                                 bank_id=bank_id, use_cross_bank_signal=use_cross_bank_signal,
                                 use_sentiment_signal=use_sentiment_signal,
-                                use_adaptive_decay=use_adaptive_decay)
+                                use_adaptive_decay=use_adaptive_decay,
+                                use_peer_signal=use_peer_signal)
     bundles, tool_log = run_planning_agent(
         state["anomaly_scores"], state["graph"], state["prior_quarters"], state["global_rate"]
     )
@@ -321,7 +331,9 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
                                          slot_extra=slot_extra, slot_cap=slot_cap,
                                          sentiment_score=state.get("sentiment_scores", {}).get(analyst),
                                          anomaly_scores=state["anomaly_scores"],
-                                         use_sentiment_signal=use_sentiment_signal)
+                                         use_sentiment_signal=use_sentiment_signal,
+                                         peer_salience=state.get("peer_salience"),
+                                         use_peer_signal=use_peer_signal)
         score = prf(predicted, truth[analyst])
         per_analyst[analyst] = score
 
@@ -430,7 +442,8 @@ def run_holdout_eval(with_questions: bool = False, score_question_recall: bool =
                      bank_id: str = DEFAULT_BANK,
                      use_cross_bank_signal: bool = False,
                      use_sentiment_signal: bool = False,
-                     use_adaptive_decay: bool = True) -> dict:
+                     use_adaptive_decay: bool = True,
+                     use_peer_signal: bool = False) -> dict:
     """The headline result: q4fy26 and q1fy27 scored independently against a
     training cutoff of q3fy26, with the spread between them made explicit.
 
@@ -443,14 +456,19 @@ def run_holdout_eval(with_questions: bool = False, score_question_recall: bool =
     change (topic-ranking metrics stay full-set; only per-analyst numbers
     narrow). Only meant for ad-hoc verification; the promotion-gate checks
     below still run against whatever `results` this scoping produces, so a
-    scoped run's gate verdict should not be read as the real gate result."""
+    scoped run's gate verdict should not be read as the real gate result.
+
+    use_cross_bank_signal/use_sentiment_signal/use_adaptive_decay/
+    use_peer_signal are passed straight through to evaluate_quarter -- see
+    its docstring for each."""
     with_questions = with_questions or score_question_recall
     results = [evaluate_quarter(q, holdout=True, with_questions=with_questions,
                                 score_question_recall=score_question_recall,
                                 analysts=analysts, bank_id=bank_id,
                                 use_cross_bank_signal=use_cross_bank_signal,
                                 use_sentiment_signal=use_sentiment_signal,
-                                use_adaptive_decay=use_adaptive_decay)
+                                use_adaptive_decay=use_adaptive_decay,
+                                use_peer_signal=use_peer_signal)
                for q in (quarters or TEST_QUARTERS)]
 
     # None entries happen when a quarter has zero scored analysts (e.g. a

@@ -39,6 +39,15 @@ class PipelineState(TypedDict, total=False):
     val_quarter_metrics: dict
     client: object
 
+    sentiment_signal: bool
+    sentiment_scores: dict
+    news_signal_enabled: bool
+    news_signal: dict
+    peer_signal_enabled: bool
+    peer_salience: dict
+    macro_signal_enabled: bool
+    macro_signal: dict
+
     evidence_bundles: dict
     tool_log: list
     overall: dict
@@ -73,7 +82,11 @@ def _analyst_specific_node(state: PipelineState) -> PipelineState:
                                       anomaly_scores=state.get("anomaly_scores"),
                                       use_sentiment_signal=state.get("sentiment_signal", False),
                                       news_signal=state.get("news_signal"),
-                                      use_news_signal=state.get("news_signal_enabled", False))
+                                      use_news_signal=state.get("news_signal_enabled", False),
+                                      peer_salience=state.get("peer_salience"),
+                                      use_peer_signal=state.get("peer_signal_enabled", False),
+                                      macro_signal=state.get("macro_signal"),
+                                      use_macro_signal=state.get("macro_signal_enabled", False))
         style_note = state["persona_stats"].get(analyst, {}).get(
             "style_note", "no measured style profile"
         )

@@ -62,10 +62,14 @@ def main():
     # 6b. Peer signal (cross-bank topic salience)
     peers_parser = subparsers.add_parser(
         "peers",
-        help="Tag peer-bank transcripts (earnings_transcript/peers/) and compute topic "
-             "salience (writes data/inputs/peer_signal.json, auto-consumed by predict)")
+        help="Tag peer-bank transcripts (every other registered bank's own archive, plus "
+             "earnings_transcript/peers/) and compute topic salience (writes "
+             "data/inputs/<bank>/peer_signal.json, auto-consumed by predict + the agentic pipeline)")
     peers_parser.add_argument("--quarter", type=str, default=None,
                               help="Target quarter (default: VAL_QUARTER from settings)")
+    peers_parser.add_argument("--bank", type=str, default=None,
+                              help="Bank whose prep sheet this serves (default: axis) -- peers "
+                                   "are every OTHER registered bank plus earnings_transcript/peers/")
 
     # 6c. Question intent (why did the analyst ask that)
     intent_parser = subparsers.add_parser(
@@ -184,7 +188,8 @@ def main():
 
     elif args.command == "peers":
         from src.signals.peer_signal import compute_peer_signal
-        compute_peer_signal(args.quarter)
+        from src.config.banks import DEFAULT_BANK as _DEFAULT_BANK
+        compute_peer_signal(args.quarter, target_bank_id=args.bank or _DEFAULT_BANK)
 
     elif args.command == "intent":
         from src.signals.question_intent import compute_question_intent, compute_question_intent_recent

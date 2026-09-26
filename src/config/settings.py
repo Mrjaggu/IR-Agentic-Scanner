@@ -104,13 +104,17 @@ PREP_SHEET_PATH = _DEFAULT_PATHS.prep_sheet_path
 CROSSVAL_PATH = _DEFAULT_PATHS.crossval_path
 SEMANTIC_EVAL_PATH = _DEFAULT_PATHS.semantic_eval_path
 EARNINGS_TRANSCRIPT_DIR = _DEFAULT_PATHS.earnings_transcript_dir
-# PEER_TRANSCRIPT_DIR is NOT bank-scoped -- src/signals/peer_signal.py's whole
-# purpose is reading OTHER banks' transcripts as a side signal for the active
-# bank's prep sheet, so it deliberately stays pointed at the shared peers/
-# folder rather than any one bank's own transcript dir. Untouched by the
-# migration in scripts/migrate_to_bank_layout.py (that script COPIES, not
-# moves, kotak/indusind PDFs into their new per-bank dirs, leaving the
-# originals here so peer_signal.py keeps working unmodified).
+# PEER_TRANSCRIPT_DIR is NOT bank-scoped. Originally src/signals/peer_signal.py's
+# ONLY transcript source; as of 2026-09 it's a SECONDARY source, kept for any
+# peer that isn't a fully-onboarded registered bank (e.g. HDFC, ICICI -- named
+# in that module's own motivation but never added as full BankConfig entries
+# in src/config/banks.py). Every bank that IS registered (kotak, indusind) is
+# now read straight from its own paths_for(bank_id).earnings_transcript_dir
+# instead -- see peer_signal.py's _peer_files_for_quarter, which merges both
+# sources and dedupes by peer id. This folder still holds the kotak/indusind
+# q1fy27 copies scripts/migrate_to_bank_layout.py left here (that script
+# COPIES, not moves, into the new per-bank dirs) -- harmless leftovers now
+# that those two are covered by source (1), not double-counted.
 PEER_TRANSCRIPT_DIR = os.path.join(_BASE_DIR, "earnings_transcript", "peers")
 
 # ── Writable runtime-state directory (Vercel and similar read-only deploys) ──
@@ -312,3 +316,11 @@ class EngineConfig:
     # own history actually shows.
     ADAPTIVE_DECAY_MIN = 0.20   # highly topic-repeating analyst (propensity -> 1.0): old history stays informative
     ADAPTIVE_DECAY_MAX = 0.60   # highly topic-shifting analyst (propensity -> 0.0): weight recent quarters much more
+    # Macro/policy/news event signal (opt-in, PERMANENTLY -- like
+    # NEWS_SIGNAL, not backtest-promotable the way adaptive decay was: no
+    # historical archive of verified-event -> next-quarter-question pairs
+    # exists to test against, only what src/signals/external_context.py
+    # accumulates going forward. See src/agentic/analyst_layer.py's
+    # macro_event_extra_slot() docstring for the mechanism.
+    MACRO_EVENT_MIN_SEVERITY = "medium"  # ignore low-severity curated events
+    MACRO_EVENT_AFFINITY_FLOOR = 0.04    # analyst's own pref on the event's topic must clear this to get the slot
