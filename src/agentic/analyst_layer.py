@@ -209,6 +209,73 @@ def macro_event_extra_slot(macro_signal: dict | None, pref: dict, already_in: se
     return cand[0][0]
 
 
+def cross_bank_pullin_candidates(cross_bank_pref: dict | None, N: float,
+                                 already_in: set[str]) -> list[str]:
+    """Topics the RAW (unblended) cross-bank prior can pull into this
+    analyst's candidate pool even though nothing in this bank's own
+    anomaly/momentum signals put them there -- the missing half of
+    cross_bank_persona.py's mechanism (see that module's docstring):
+    blend_cross_bank_prior already lets cross-bank history reweight a topic
+    that's ALREADY a candidate, but nothing previously let it ADD one. Per
+    claude/cross-bank-candidate-pool-scope.md.
+
+    Unlike sentiment/peer/macro's single-slot mechanism above, this can
+    return MORE than one topic -- it mirrors the disclosure-signal shape a
+    few lines into reweight_for_analyst below (entries ADDED to the
+    candidate pool, still competing on score in that function's own
+    ranking, not a guaranteed extra slot), per the scope doc's proposed
+    code.
+
+    Deliberately NOT gated on the blended `pref` dict being nonzero on a
+    candidate topic, even though every other extra-slot mechanism in this
+    file uses exactly that anti-spray check. Blended pref =
+    (1-w)*own + w*cross (cross_bank_persona.blend_cross_bank_prior); once a
+    topic has already cleared CROSS_BANK_PULLIN_THRESHOLD on the RAW cross
+    value below, blended pref on it is then guaranteed >= w*THRESHOLD > 0 --
+    checking blended pref again would be a vacuous anti-spray gate, not a
+    real one (it would always pass whenever the eligibility check already
+    passed). The anti-spray floor used instead is CROSS_BANK_PULLIN_MAX_N:
+    this analyst's own-bank expected question count N (the same N that
+    sizes their slot budget) must be at or below the floor -- i.e. pull-in
+    only activates for genuinely thin-own-history analysts, the exact
+    population the empirical case in cross_bank_persona.py's docstring is
+    about (an overlapping analyst whose OWN-bank track record is too
+    sparse to have built a reliable topic profile from it alone). N is an
+    imperfect thinness proxy -- it is "expected questions this quarter",
+    not literally "quarters of history on file" -- but it's already
+    computed leak-free by the caller and needs no new plumbing; documented
+    here as an approximation, not hidden.
+
+    MEASURED RESULT (2026-09, via a walk-forward sweep over Kotak's and
+    IndusInd's own TRAINING quarters -- 15 and 9 scored quarters
+    respectively, TEST_QUARTERS never touched during the sweep): at the
+    chosen (THRESHOLD=0.18, MAX_N=2.5), mean topic recall averaged
+    +1.1pp over both the no-cross-bank baseline AND the already-committed
+    reorder-only blend (CROSS_BANK_MIX alone), with precision essentially
+    flat -- a real, if modest, improvement, and the first sign this
+    mechanism does what the reorder-only blend structurally cannot (see
+    this module's own docstring above). That uplift did NOT reproduce on
+    the 2 official TEST_QUARTERS: byte-identical to reorder-only for both
+    banks. Root-caused, not just observed: on q4fy26/q1fy27, the mechanism
+    fires (adds a pulled-in candidate) for only 0-4 of 19-23 active
+    analysts per quarter, and in every firing instance on those two
+    quarters, either the analyst wasn't in the SCORED set that quarter
+    (asked no topic-tagged question at all, so invisible to macro
+    recall/precision regardless of what gets predicted for them) or the
+    pulled-in topic wasn't their actual asked topic, so the swap changed
+    their predicted list without changing their score. Same "mechanism
+    sound, doesn't fire often enough on this particular small sample" shape
+    as peer_extra_slot's own null result above -- left off by default
+    (allow_cross_bank_pullin=False everywhere) for that reason, not a bug.
+    Worth re-testing as more quarters accumulate in the official held-out
+    set, or if this is ever run against a bank with a thinner own-history
+    analyst roster than Kotak/IndusInd's current one."""
+    if not cross_bank_pref or N > EngineConfig.CROSS_BANK_PULLIN_MAX_N:
+        return []
+    return [t for t, v in cross_bank_pref.items()
+            if t not in already_in and v >= EngineConfig.CROSS_BANK_PULLIN_THRESHOLD]
+
+
 def reweight_for_analyst(analyst: str, overall_ranked_topics: list[str], pref: dict, N: int,
                          disclosure: dict | None = None,
                          slot_extra: int | None = None, slot_cap: int | None = None,
@@ -220,7 +287,9 @@ def reweight_for_analyst(analyst: str, overall_ranked_topics: list[str], pref: d
                          peer_salience: dict | None = None,
                          use_peer_signal: bool = False,
                          macro_signal: dict | None = None,
-                         use_macro_signal: bool = False) -> list[str]:
+                         use_macro_signal: bool = False,
+                         cross_bank_pref: dict | None = None,
+                         allow_cross_bank_pullin: bool = False) -> list[str]:
     """Reorders the overall (global) ranked topics for this analyst and
     truncates to their slot count. A topic the analyst has essentially never
     engaged with sinks even if it's globally hot (the doc's worked example);
@@ -268,7 +337,26 @@ def reweight_for_analyst(analyst: str, overall_ranked_topics: list[str], pref: d
     against either) adds macro_event_extra_slot()'s one candidate from a
     verified external macro/policy/news event tagged with topic+severity.
     Refused in holdout mode by the caller (build_initial_state), same
-    reasoning as use_news_signal."""
+    reasoning as use_news_signal.
+
+    allow_cross_bank_pullin=True (default False everywhere; only
+    meaningful when use_cross_bank_signal is ALSO True, since
+    cross_bank_pref is only ever populated in that case -- see
+    build_initial_state's docstring) is the stronger, still-ungated
+    mechanism claude/cross-bank-candidate-pool-scope.md scoped out from
+    use_cross_bank_signal's original reorder-only blend: it lets
+    cross_bank_pullin_candidates() add topics to `candidates` BEFORE the
+    slot cutoff below, the same "enters the pool, still competes on score"
+    shape as the disclosure-signal loop just above -- unlike
+    sentiment/peer/macro's guaranteed, non-displacing extra slot. This is
+    deliberately NOT exposed anywhere in run_agentic.main, graph_app's live
+    call, or any FastAPI route/frontend toggle -- reachable only by calling
+    build_initial_state / eval_harness.evaluate_quarter directly with the
+    kwarg, same guardrail already documented on use_cross_bank_signal
+    itself, because letting cross-bank data manufacture a prediction that
+    wouldn't otherwise exist is the stronger use Section 8 flags as pending
+    legal sign-off -- reordering an already-visible list (the committed
+    CROSS_BANK_MIX path) is the milder one that shipped already."""
     signal = _disclosure_signal(disclosure)
     if use_news_signal and news_signal:
         for t, v in news_signal.items():
@@ -292,6 +380,10 @@ def reweight_for_analyst(analyst: str, overall_ranked_topics: list[str], pref: d
             # "this didn't exist before", not "this analyst doesn't care", so
             # the anti-spray rule above doesn't apply. A strong disclosure
             # signal is itself the reason to surface it.
+            candidates.append(t)
+
+    if allow_cross_bank_pullin:
+        for t in cross_bank_pullin_candidates(cross_bank_pref, N, set(candidates)):
             candidates.append(t)
 
     max_pref = max((pref.get(t, 0.0) for t in candidates), default=0.0) or 1.0

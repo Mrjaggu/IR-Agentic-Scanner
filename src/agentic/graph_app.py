@@ -47,6 +47,8 @@ class PipelineState(TypedDict, total=False):
     peer_salience: dict
     macro_signal_enabled: bool
     macro_signal: dict
+    cross_bank_pullin_enabled: bool
+    cross_bank_prefs: dict
 
     evidence_bundles: dict
     tool_log: list
@@ -86,7 +88,9 @@ def _analyst_specific_node(state: PipelineState) -> PipelineState:
                                       peer_salience=state.get("peer_salience"),
                                       use_peer_signal=state.get("peer_signal_enabled", False),
                                       macro_signal=state.get("macro_signal"),
-                                      use_macro_signal=state.get("macro_signal_enabled", False))
+                                      use_macro_signal=state.get("macro_signal_enabled", False),
+                                      cross_bank_pref=state.get("cross_bank_prefs", {}).get(analyst),
+                                      allow_cross_bank_pullin=state.get("cross_bank_pullin_enabled", False))
         style_note = state["persona_stats"].get(analyst, {}).get(
             "style_note", "no measured style profile"
         )

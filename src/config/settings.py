@@ -283,6 +283,26 @@ class EngineConfig:
     # the sign-off this project's build notes flag it as needing (Section 8,
     # "cross-bank coverage graph, pending legal sign-off").
     CROSS_BANK_MIX = 0.25
+    # Cross-bank candidate-pool PULL-IN (2026-09) -- a separate, more
+    # consequential mechanism than CROSS_BANK_MIX just above. CROSS_BANK_MIX
+    # only ever reorders topics already in the bank's own global candidate
+    # pool; it measured ~0pp effect on Kotak/IndusInd (see this class's own
+    # comment above and cross_bank_persona.py's docstring) precisely because
+    # reordering an already-adequate pool can't surface a topic that was
+    # never in it. These two constants instead gate analyst_layer.
+    # reweight_for_analyst's separate pull-in path (see
+    # claude/cross-bank-candidate-pool-scope.md), which CAN add a topic the
+    # bank's own signals never surfaced -- the stronger, still-ungated use
+    # of cross-bank data Section 8 flags as pending legal sign-off. See
+    # analyst_layer.cross_bank_pullin_candidates' docstring for why N (not
+    # blended pref) is the anti-spray floor, and reweight_for_analyst's
+    # allow_cross_bank_pullin docstring paragraph for the walk-forward sweep
+    # (Kotak/IndusInd TRAINING quarters only) that set these two values, and
+    # for why the training-quarter uplift (+1.1pp mean recall) did NOT
+    # reproduce on the 2-quarter official held-out set -- root-caused, not
+    # just observed, same discipline as this file's other null results.
+    CROSS_BANK_PULLIN_THRESHOLD = 0.18  # walk-forward-swept on training quarters
+    CROSS_BANK_PULLIN_MAX_N = 2.5       # walk-forward-swept on training quarters
     RECENT_WIN = 6.0    # Recent history window (quarters)
     # LLM narration-novelty (active only when narration_novelty.json exists for VAL_QUARTER).
     # Applied as ONE extra prep slot per analyst — never displaces top-N picks.

@@ -63,7 +63,8 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
                         use_news_signal: bool = False,
                         use_adaptive_decay: bool = True,
                         use_peer_signal: bool = False,
-                        use_macro_signal: bool = False) -> dict:
+                        use_macro_signal: bool = False,
+                        allow_cross_bank_pullin: bool = False) -> dict:
     """Everything the pipeline needs, built once. Exposed separately from
     main() so the API layer can run just the Overall layer, or just one
     analyst's Analyst-Specific layer, without re-deriving all of this.
@@ -120,6 +121,20 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
     quarter's peer signal comes from that SAME quarter's real, already-
     reported peer transcripts, so it is leak-free the same way the rest of
     this leak-free split is, and can be walk-forward backtested.
+
+    allow_cross_bank_pullin=True (default False everywhere; requires
+    use_cross_bank_signal=True too, since it has nothing to pull from
+    otherwise -- see claude/cross-bank-candidate-pool-scope.md and
+    analyst_layer.cross_bank_pullin_candidates' docstring) additionally
+    captures each active analyst's RAW (unblended) cross-bank topic prior
+    -- separately from the blended one already folded into analyst_prefs
+    just below, so the pull-in strength check isn't circular -- and hands
+    it to reweight_for_analyst as cross_bank_pref. NOT reachable from
+    main()/the CLI, any FastAPI route, or the frontend: this stays a
+    strictly opt-in kwarg for eval_harness.py and ad-hoc scripts until the
+    Section-8 sign-off this module's own docstring flags lands, same
+    guardrail use_cross_bank_signal already documents for the milder
+    reorder-only blend.
 
     use_macro_signal=True (default False everywhere, and permanently opt-in
     like use_news_signal -- see src.signals.external_context.macro_topic_signal's
@@ -219,8 +234,20 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
                                       decay_override=analyst_decay.get(a))
         analyst_prefs[a] = (pref, N)
 
+    cross_bank_prefs = {}
     if use_cross_bank_signal:
-        from src.signals.cross_bank_persona import blend_cross_bank_prior
+        from src.signals.cross_bank_persona import blend_cross_bank_prior, cross_bank_topic_prior
+        # Raw (unblended) prior, captured separately from the blended `pref`
+        # built below -- reweight_for_analyst's pull-in path needs the RAW
+        # value so its strength check isn't circular against the very pref
+        # it would be feeding into (see analyst_layer.
+        # cross_bank_pullin_candidates' docstring). Cheap to compute twice:
+        # cross_bank_topic_prior reads cross_bank_persona's process-lifetime
+        # graph cache on this second call, not disk.
+        cross_bank_prefs = {
+            a: cross_bank_topic_prior(a, bank_id, as_of_quarter=train_cutoff)
+            for a in analyst_prefs
+        }
         analyst_prefs = {
             a: (blend_cross_bank_prior(a, bank_id, pref, as_of_quarter=train_cutoff), N)
             for a, (pref, N) in analyst_prefs.items()
@@ -267,6 +294,8 @@ def build_initial_state(val_quarter: str = VAL_QUARTER, probe: bool = True,
         "bank_id": bank_id,
         "bank_name": bank.display_name,
         "cross_bank_signal": use_cross_bank_signal,
+        "cross_bank_pullin_enabled": use_cross_bank_signal and allow_cross_bank_pullin,
+        "cross_bank_prefs": cross_bank_prefs,
         "sentiment_signal": use_sentiment_signal,
         "sentiment_scores": sentiment_scores,
         "news_signal_enabled": use_news_signal and not holdout,

@@ -233,7 +233,8 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
                      use_cross_bank_signal: bool = False,
                      use_sentiment_signal: bool = False,
                      use_adaptive_decay: bool = True,
-                     use_peer_signal: bool = False) -> dict:
+                     use_peer_signal: bool = False,
+                     allow_cross_bank_pullin: bool = False) -> dict:
     """Run the agentic pipeline for one quarter under held-out conditions and
     score it. with_questions=True also runs the Question Framer + Verifier to
     measure grounding rate (costs LLM calls); default False keeps topic
@@ -285,12 +286,22 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
     see src.signals.peer_signal) reflects that same quarter's real,
     already-reported peer transcripts, not "right now".
 
+    allow_cross_bank_pullin=True (default False, requires
+    use_cross_bank_signal=True too -- see run_agentic.build_initial_state's
+    docstring and claude/cross-bank-candidate-pool-scope.md) lets a
+    cross-bank-salient topic enter the candidate pool even when nothing in
+    this bank's own signals put it there, rather than only reordering an
+    already-present topic. This is the ONE place in the whole codebase
+    that can set it to True beyond an ad-hoc script -- no route, no
+    frontend toggle, by design, until Section 8's sign-off lands.
+
     Passed straight through to build_initial_state."""
     state = build_initial_state(quarter, probe=with_questions, holdout=holdout, upcoming=upcoming,
                                 bank_id=bank_id, use_cross_bank_signal=use_cross_bank_signal,
                                 use_sentiment_signal=use_sentiment_signal,
                                 use_adaptive_decay=use_adaptive_decay,
-                                use_peer_signal=use_peer_signal)
+                                use_peer_signal=use_peer_signal,
+                                allow_cross_bank_pullin=allow_cross_bank_pullin)
     bundles, tool_log = run_planning_agent(
         state["anomaly_scores"], state["graph"], state["prior_quarters"], state["global_rate"]
     )
@@ -333,7 +344,9 @@ def evaluate_quarter(quarter: str, holdout: bool = True,
                                          anomaly_scores=state["anomaly_scores"],
                                          use_sentiment_signal=use_sentiment_signal,
                                          peer_salience=state.get("peer_salience"),
-                                         use_peer_signal=use_peer_signal)
+                                         use_peer_signal=use_peer_signal,
+                                         cross_bank_pref=state.get("cross_bank_prefs", {}).get(analyst),
+                                         allow_cross_bank_pullin=state.get("cross_bank_pullin_enabled", False))
         score = prf(predicted, truth[analyst])
         per_analyst[analyst] = score
 
@@ -443,7 +456,8 @@ def run_holdout_eval(with_questions: bool = False, score_question_recall: bool =
                      use_cross_bank_signal: bool = False,
                      use_sentiment_signal: bool = False,
                      use_adaptive_decay: bool = True,
-                     use_peer_signal: bool = False) -> dict:
+                     use_peer_signal: bool = False,
+                     allow_cross_bank_pullin: bool = False) -> dict:
     """The headline result: q4fy26 and q1fy27 scored independently against a
     training cutoff of q3fy26, with the spread between them made explicit.
 
@@ -460,7 +474,8 @@ def run_holdout_eval(with_questions: bool = False, score_question_recall: bool =
 
     use_cross_bank_signal/use_sentiment_signal/use_adaptive_decay/
     use_peer_signal are passed straight through to evaluate_quarter -- see
-    its docstring for each."""
+    its docstring for each. allow_cross_bank_pullin is documented on
+    evaluate_quarter too -- this is the one entry point meant to set it."""
     with_questions = with_questions or score_question_recall
     results = [evaluate_quarter(q, holdout=True, with_questions=with_questions,
                                 score_question_recall=score_question_recall,
@@ -468,7 +483,8 @@ def run_holdout_eval(with_questions: bool = False, score_question_recall: bool =
                                 use_cross_bank_signal=use_cross_bank_signal,
                                 use_sentiment_signal=use_sentiment_signal,
                                 use_adaptive_decay=use_adaptive_decay,
-                                use_peer_signal=use_peer_signal)
+                                use_peer_signal=use_peer_signal,
+                                allow_cross_bank_pullin=allow_cross_bank_pullin)
                for q in (quarters or TEST_QUARTERS)]
 
     # None entries happen when a quarter has zero scored analysts (e.g. a
@@ -514,6 +530,7 @@ def run_holdout_eval(with_questions: bool = False, score_question_recall: bool =
     return {
         "bank_id": bank_id,
         "cross_bank_signal": use_cross_bank_signal,
+        "cross_bank_pullin": allow_cross_bank_pullin,
         "sentiment_signal": use_sentiment_signal,
         "adaptive_decay": use_adaptive_decay,
         "train_cutoff": {r["quarter"]: r["train_cutoff"] for r in results},
