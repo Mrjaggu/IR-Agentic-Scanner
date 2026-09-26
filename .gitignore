@@ -70,6 +70,13 @@ data/logs/
 # Same "runtime state, not source" reasoning as data/logs/ above.
 data/eval_history/
 
+# Continual-learning proposal log (src/agentic/continual_learning.py) -- one
+# JSON file per bank, generated whenever propose_weight_adjustment() runs,
+# mutated in place as a human reviews each proposal. Same "runtime state,
+# not source" reasoning as data/eval_history/ above -- see
+# claude/continual-learning-loop-scope.md.
+data/continual_learning/
+
 # Cached corpus embedding vectors (src/search/embeddings.py's embed_many
 # cache_path) -- a pure, deterministic function of each bank's corpus
 # text, regenerated automatically (and correctly, via a content

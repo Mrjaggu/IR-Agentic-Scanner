@@ -13,6 +13,7 @@ from src.agentic.question_framer import frame_questions
 from src.agentic.verifier import grounding_gate
 from src.data.upcoming import attach_novel_themes
 from src.agentic.eval_harness import research_errors, backtest_and_promote_weights
+from src.agentic.continual_learning import propose_weight_adjustment
 from src.agentic.question_eval import evaluate_analyst_questions
 
 register(
@@ -99,4 +100,17 @@ register(
     fn=evaluate_analyst_questions,
     category="diagnostics",
     llm=True,
+)
+
+register(
+    name="continual_learning_propose",
+    description="The missing 'propose' step of the continual-learning loop: turns this run's "
+                "topic_ranked_low misses into ONE concrete, backtested composite-weight "
+                "candidate and logs it with status=pending_review for a human to approve or "
+                "reject -- see claude/continual-learning-loop-scope.md. Never edits production "
+                "weights itself, same boundary weight_backtest already draws.",
+    module="src.agentic.continual_learning",
+    fn=propose_weight_adjustment,
+    category="continual_learning",
+    llm=False,
 )

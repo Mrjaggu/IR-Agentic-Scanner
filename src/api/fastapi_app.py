@@ -62,6 +62,7 @@ from src.agentic.eval_harness import (
 )
 from src.agentic.skills import definitions as _skills_definitions  # noqa: F401 -- populates the skill registry
 from src.agentic.skills.registry import list_skills
+from src.agentic.continual_learning import propose_weight_adjustment, list_proposals, review_proposal
 
 from src.model_provider.llm_client import client, stats as llm_stats, reset_stats as llm_reset, RATE_LIMITS
 
@@ -1124,6 +1125,67 @@ def get_skills():
     -- does not run anything, and the pipeline's own routes above still call
     these functions directly rather than through this registry."""
     return {"skills": list_skills()}
+
+
+# ── Continual learning: propose -> backtest -> human review gate ───────────
+# See claude/continual-learning-loop-scope.md. The "propose" and "review
+# gate" steps did not exist anywhere before this -- backtest-and-gate itself
+# (POST /api/eval/backtest-weights, above) already existed but required a
+# human to invent the candidate weights by hand and never persisted the
+# result. None of these routes ever write to overall_layer.py's
+# DEFAULT_WEIGHTS, including on approval -- see review_proposal()'s
+# docstring for why that boundary is deliberate.
+class ProposeWeightAdjustmentRequest(BaseModel):
+    with_questions: bool = False
+    bank: str = DEFAULT_BANK
+
+
+@app.post("/api/continual-learning/propose")
+def continual_learning_propose(req: ProposeWeightAdjustmentRequest):
+    """Turns the current held-out run's topic_ranked_low misses into ONE
+    concrete, backtested composite-weight candidate (bootstrap confidence
+    included) and logs it with status=pending_review. May return
+    result="no_actionable_misses" or "no_closeable_misses" instead of a
+    proposal -- both are honest null results, not errors; see
+    propose_weight_adjustment()'s docstring. Body takes a `bank` field (not
+    a query param) so the frontend's postJSON() helper -- which always
+    injects {bank: STATE.bank, ...} into the POST body -- works unchanged."""
+    bank_id = _bank(req.bank)
+    return propose_weight_adjustment(bank_id=bank_id, with_questions=req.with_questions)
+
+
+@app.get("/api/continual-learning/proposals")
+def continual_learning_list_proposals(bank: str = DEFAULT_BANK):
+    """Every weight-change proposal on file for this bank, most recent
+    first -- the durable record a bare backtest never had: what was
+    proposed, why (which misses it targeted), the backtest + bootstrap
+    result, and its review status."""
+    bank_id = _bank(bank)
+    return {"bank_id": bank_id, "proposals": list_proposals(bank_id)}
+
+
+class ReviewProposalRequest(BaseModel):
+    decision: str   # "approved" or "rejected"
+    reviewer: str
+    note: str | None = None
+    bank: str = DEFAULT_BANK
+
+
+@app.post("/api/continual-learning/proposals/{proposal_id}/review")
+def continual_learning_review(proposal_id: str, req: ReviewProposalRequest):
+    """THE human review gate. Records who decided and why -- does not apply
+    the candidate weights anywhere. Applying an approved proposal to
+    overall_layer.py's DEFAULT_WEIGHTS stays a deliberate, separate step an
+    engineer takes by hand after reading this record (see
+    claude/continual-learning-loop-scope.md's "what this deliberately does
+    not do")."""
+    bank_id = _bank(req.bank)
+    try:
+        return review_proposal(bank_id, proposal_id, req.decision, req.reviewer, note=req.note)
+    except KeyError as e:
+        return JSONResponse(status_code=404, content={"error": str(e)})
+    except ValueError as e:
+        return JSONResponse(status_code=400, content={"error": str(e)})
 
 
 # ── Ingestion ───────────────────────────────────────────────────────────────

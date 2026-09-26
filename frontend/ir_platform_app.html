@@ -972,6 +972,31 @@ blockquote{margin:5px 0 0; padding-left:11px; border-left:2px solid var(--baseli
 
     <div class="card">
       <div class="card-head">
+        <h3>Continual learning — propose, backtest, review</h3>
+        <span class="muted xs">closes the loop the Framework Loop stops short of: generates the candidate from this run's own misses and keeps a reviewable record instead of letting the result vanish on refresh</span>
+      </div>
+      <div class="pad">
+        <p class="small dim" style="max-width:78ch;">
+          Reads this run's <code>topic_ranked_low</code> misses (the one failure category a weight change can fix
+          — see Error Researcher above), works out which single weight would close the most of them within a
+          safety cap, and backtests that ONE candidate the same way the Framework Loop above does, plus a bootstrap
+          confidence signal on the recall delta. Every proposal is logged below with status
+          <b>pending review</b> until a human approves or rejects it. Approving never edits this app's production
+          weights by itself — that stays a deliberate step an engineer takes by hand afterward.
+        </p>
+        <div class="row" style="gap:10px;align-items:center;flex-wrap:wrap;">
+          <label class="small muted" for="clReviewerName">Reviewing as</label>
+          <input type="text" id="clReviewerName" placeholder="your name" style="max-width:160px;padding:6px 9px;border-radius:var(--r-sm);border:1px solid var(--hairline);background:var(--surface);color:var(--ink);font-size:13px;">
+          <div class="topbar-spacer"></div>
+          <button class="btn btn-sm" id="clProposeBtn">Propose a weight change</button>
+        </div>
+      </div>
+    </div>
+    <div id="clProposeResult"></div>
+    <div id="clProposalsResult"></div>
+
+    <div class="card">
+      <div class="card-head">
         <h3>Question Recall</h3>
         <span class="muted xs">did the framed QUESTION TEXT anticipate what they actually asked — not just whether the topic bucket matched</span>
         <div class="topbar-spacer"></div>
@@ -1360,6 +1385,7 @@ function show(view, syncRoute = true) {
   if (view === "eval" && !STATE.errResearchLoaded) { STATE.errResearchLoaded = true; loadErrorResearch(); }
   if (view === "eval" && !STATE.skillsLoaded) { STATE.skillsLoaded = true; loadSkills(); }
   if (view === "eval" && !STATE.evalTrendLoaded) { STATE.evalTrendLoaded = true; loadEvalTrend(); }
+  if (view === "eval" && !STATE.clProposalsLoaded) { STATE.clProposalsLoaded = true; loadContinualLearningProposals(); }
   if (view === "brief") loadBrief();
   if (view === "quarter" && !QV.loaded) { QV.loaded = true; loadQuarterView(); }
   if (view === "news" && !NEWS.loaded) { NEWS.loaded = true; loadNews(); }
@@ -3652,6 +3678,102 @@ $("#wtBacktestBtn").addEventListener("click", async () => {
     </div></div>`;
 });
 
+/* ── Continual learning: propose -> backtest -> human review gate ─────────
+   See claude/continual-learning-loop-scope.md. Generates the Framework
+   Loop's candidate FROM this run's own topic_ranked_low misses instead of a
+   human typing five numbers by hand, and persists every proposal with a
+   review status instead of letting the backtest result vanish on refresh.
+   Approving a proposal here never edits this app's production weights --
+   that stays a deliberate step taken by hand afterward. */
+try { $("#clReviewerName").value = localStorage.getItem("ir-reviewer-name") || ""; } catch (e) {}
+$("#clReviewerName").addEventListener("change", () => {
+  try { localStorage.setItem("ir-reviewer-name", $("#clReviewerName").value.trim()); } catch (e) {}
+});
+
+function clBadge(status) {
+  if (status === "approved") return `<span class="verdict-badge verdict-promote">APPROVED</span>`;
+  if (status === "rejected") return `<span class="verdict-badge verdict-reject">REJECTED</span>`;
+  return `<span class="chip">PENDING REVIEW</span>`;
+}
+
+function clProposalCard(p) {
+  const bt = p.backtest || {};
+  const bl = bt.baseline || {}, cd = bt.candidate || {}, bs = bt.bootstrap || {};
+  const misses = (p.diagnosis && p.diagnosis.misses_addressed) || [];
+  const candVal = (p.candidate_weights || {})[p.proposed_weight];
+  const reviewedLine = p.status === "pending_review"
+    ? `<div class="row" style="gap:8px;margin-top:10px;">
+        <button class="btn btn-sm" data-cl-approve="${esc(p.id)}">Approve</button>
+        <button class="btn btn-sm" data-cl-reject="${esc(p.id)}">Reject</button>
+      </div>`
+    : `<div class="small muted" style="margin-top:10px;">${esc(p.status)} by <b>${esc(p.reviewer || "unknown")}</b>${p.decided_at ? " on " + esc(String(p.decided_at).slice(0, 10)) : ""}${p.review_note ? ` — "${esc(p.review_note)}"` : ""}</div>`;
+
+  return `<div class="card"><div class="pad">
+      <div class="row" style="align-items:center;gap:10px;flex-wrap:wrap;">
+        ${clBadge(p.status)}
+        <span class="verdict-badge ${bt.verdict === "PROMOTE" ? "verdict-promote" : "verdict-reject"}">${esc(bt.verdict || "—")}</span>
+        <span class="chip">${esc(p.proposed_weight)} +${f2(p.proposed_delta)} (${f2(p.baseline_weight_value)} → ${f2(candVal)})</span>
+        <span class="small muted">${esc(String(p.created_at || "").replace("T", " ").slice(0, 16))}Z</span>
+      </div>
+      <div class="small dim" style="margin-top:8px;max-width:80ch;">
+        Targets ${misses.length} of ${p.diagnosis ? p.diagnosis.total_misses_this_run : "?"} topic_ranked_low miss(es) this run:
+        ${misses.map(m => `<span class="chip">${esc(m.topic)} — ${esc(m.analyst)}, ${QU(m.quarter)}</span>`).join(" ")}
+      </div>
+      <div class="small" style="margin-top:8px;">
+        baseline recall ${pct(bl.mean_recall)} → candidate ${pct(cd.mean_recall)}
+        ${bs.resamples ? ` · bootstrap mean Δ ${f2(bs.bootstrap_mean_delta)}, 95% CI [${f2((bs.ci_95 || [])[0])}, ${f2((bs.ci_95 || [])[1])}], candidate-not-worse in ${pct(bs.share_candidate_not_worse)} of resamples` : ""}
+      </div>
+      ${reviewedLine}
+    </div></div>`;
+}
+
+async function loadContinualLearningProposals() {
+  const gen = STATE.bankGen;
+  const host = $("#clProposalsResult");
+  let d;
+  try { d = await api("/api/continual-learning/proposals"); }
+  catch (err) { if (gen !== STATE.bankGen) return; host.innerHTML = `<div class="card"><div class="empty">Could not load proposals: ${esc(err.message)}</div></div>`; return; }
+  if (gen !== STATE.bankGen) return;   // a bank switch happened while this was loading
+
+  const proposals = d.proposals || [];
+  if (!proposals.length) {
+    host.innerHTML = `<div class="card"><div class="pad small muted">No proposals logged yet for this bank — click "Propose a weight change" above.</div></div>`;
+    return;
+  }
+  host.innerHTML = proposals.map(clProposalCard).join("");
+
+  host.querySelectorAll("[data-cl-approve]").forEach(b => b.addEventListener("click", () => clReview(b.dataset.clApprove, "approved")));
+  host.querySelectorAll("[data-cl-reject]").forEach(b => b.addEventListener("click", () => clReview(b.dataset.clReject, "rejected")));
+}
+
+async function clReview(proposalId, decision) {
+  const reviewer = ($("#clReviewerName").value || "").trim();
+  if (!reviewer) { alert('Enter your name in "Reviewing as" before approving or rejecting.'); return; }
+  let note = null;
+  if (decision === "rejected") note = prompt("Optional note for this rejection (why?):") || null;
+  try { await postJSON(`/api/continual-learning/proposals/${proposalId}/review`, { decision, reviewer, note }); }
+  catch (err) { alert("Could not record review: " + err.message); return; }
+  loadContinualLearningProposals();
+}
+
+$("#clProposeBtn").addEventListener("click", async () => {
+  const btn = $("#clProposeBtn");
+  const host = $("#clProposeResult");
+  btn.disabled = true;
+  host.innerHTML = `<div class="card"><div class="empty"><span class="spinner"></span> Diagnosing misses and backtesting a candidate…</div></div>`;
+  let d;
+  try { d = await postJSON("/api/continual-learning/propose", {}); }
+  catch (err) { host.innerHTML = `<div class="card"><div class="empty">Could not run: ${esc(err.message)}</div></div>`; btn.disabled = false; return; }
+  btn.disabled = false;
+
+  if (d.result !== "proposed") {
+    host.innerHTML = `<div class="card"><div class="pad small muted">${esc(d.message || "Nothing to propose.")}</div></div>`;
+    return;
+  }
+  host.innerHTML = `<div class="card"><div class="pad small dim">New proposal logged below — <b>pending review</b>.</div></div>`;
+  loadContinualLearningProposals();
+});
+
 /* ═══════════════════════════════════════════════════════════════════════════
    Ingest
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -3754,7 +3876,7 @@ async function switchBank(bankId) {
     STATE.bankGen++;
     try { localStorage.setItem("ir-bank", bankId); } catch (e) {}
     STATE.disclosure = null; STATE.evalData = null; STATE.errResearchLoaded = false;
-    STATE.skillsLoaded = false; STATE.dossier = null; STATE.selected = null;
+    STATE.skillsLoaded = false; STATE.clProposalsLoaded = false; STATE.dossier = null; STATE.selected = null;
     STATE.briefCount = null;
     QV.loaded = false; NEWS.loaded = false; CALIB.loaded = false;   // re-fetch on next visit to this bank's tab
     chatHistory = [];

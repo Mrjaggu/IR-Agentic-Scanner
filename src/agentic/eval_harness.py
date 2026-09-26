@@ -31,6 +31,7 @@ information at all.
 """
 
 import statistics
+import random
 
 from src.config.settings import (
     TEST_QUARTERS, TRAIN_CUTOFF, PromotionGate, F_BETA, SLOT_EXTRA, SLOT_CAP, paths_for,
@@ -630,6 +631,65 @@ def research_errors(holdout_result: dict | None = None, top_n: int = 5) -> dict:
     }
 
 
+# ── Bootstrap-replay: a confidence signal on a 2-quarter point delta ───────
+#
+# backtest_and_promote_weights() below compares candidate vs baseline on
+# exactly TEST_QUARTERS (2 quarters) -- a bare point difference with no sense
+# of how much it would move if a different draw of analysts had been held
+# out. This resamples the (analyst, quarter) recall pairs evaluate_quarter_
+# with_weights() already computes (no new eval runs, no new LLM calls) to
+# give that delta a rough sensitivity indicator. See "The honest gap in
+# bootstrap-replay" in claude/continual-learning-loop-scope.md for why this
+# is deliberately NOT presented as a rigorous confidence interval -- 15-20
+# pairs is a thin sample, and resampling it doesn't manufacture power the
+# held-out set doesn't have.
+def bootstrap_recall_delta(baseline_per_quarter: list[dict], candidate_per_quarter: list[dict],
+                           n_resamples: int = 2000, seed: int = 42) -> dict:
+    """Pools per-analyst recall from both weight runs' per_quarter results,
+    resamples pairs with replacement (fixed seed for reproducibility), and
+    reports the mean delta, a 95% percentile interval, and the share of
+    resamples where the candidate is not worse than baseline."""
+    pairs = []
+    for base_q, cand_q in zip(baseline_per_quarter, candidate_per_quarter):
+        base_pa = base_q.get("per_analyst", {})
+        cand_pa = cand_q.get("per_analyst", {})
+        for analyst in sorted(set(base_pa) & set(cand_pa)):
+            pairs.append((base_pa[analyst]["recall"], cand_pa[analyst]["recall"]))
+
+    observed_delta = (round(sum(c for _, c in pairs) / len(pairs) - sum(b for b, _ in pairs) / len(pairs), 4)
+                      if pairs else None)
+
+    if len(pairs) < 4:
+        return {"n_pairs": len(pairs), "observed_delta": observed_delta, "resamples": 0,
+                "note": "Too few (analyst, quarter) pairs to resample meaningfully -- "
+                        "reporting the observed point delta only."}
+
+    rng = random.Random(seed)
+    deltas = []
+    for _ in range(n_resamples):
+        sample = [pairs[rng.randrange(len(pairs))] for _ in range(len(pairs))]
+        b_mean = sum(b for b, _ in sample) / len(sample)
+        c_mean = sum(c for _, c in sample) / len(sample)
+        deltas.append(c_mean - b_mean)
+    deltas.sort()
+
+    def _pct(p):
+        idx = min(len(deltas) - 1, max(0, int(round(p * (len(deltas) - 1)))))
+        return round(deltas[idx], 4)
+
+    return {
+        "n_pairs": len(pairs),
+        "observed_delta": observed_delta,
+        "resamples": n_resamples,
+        "bootstrap_mean_delta": round(sum(deltas) / len(deltas), 4),
+        "ci_95": [_pct(0.025), _pct(0.975)],
+        "share_candidate_not_worse": round(sum(1 for d in deltas if d >= 0) / len(deltas), 4),
+        "note": (f"Resampled {len(pairs)} (analyst, quarter) recall pairs with replacement -- "
+                 "a rough sensitivity indicator given this bank's held-out set, not a rigorous "
+                 "confidence interval. See claude/continual-learning-loop-scope.md."),
+    }
+
+
 # ── Framework Loop: backtest a candidate weight set before it can be promoted
 #
 # "The harness proposes changes; evaluation decides whether they deserve
@@ -677,6 +737,7 @@ def backtest_and_promote_weights(candidate_weights: dict[str, float],
         },
     }
     verdict = "PROMOTE" if all(c["pass"] for c in checks.values()) else "REJECT"
+    bootstrap = bootstrap_recall_delta(baseline["per_quarter"], candidate["per_quarter"])
 
     return {
         "candidate_weights": {**DEFAULT_WEIGHTS, **candidate_weights},
@@ -685,6 +746,7 @@ def backtest_and_promote_weights(candidate_weights: dict[str, float],
         "candidate": candidate,
         "checks": checks,
         "verdict": verdict,
+        "bootstrap": bootstrap,
         "note": "Scored on the SAME held-out quarters as production (TEST_QUARTERS) using the "
                 "existing PromotionGate thresholds -- this never edits production weights itself, "
                 "it only tells you whether the candidate would clear the bar production already has to.",
@@ -754,7 +816,11 @@ def evaluate_quarter_with_weights(quarter: str, weights: dict[str, float],
         return round(sum(vals) / len(vals), 4) if vals else None
 
     return {"quarter": quarter, "macro": {"precision": _macro("precision"), "recall": _macro("recall"),
-                                          "f1": _macro("f1"), "f2": _macro("f2")}}
+                                          "f1": _macro("f1"), "f2": _macro("f2")},
+            # Added for continual_learning.py's bootstrap resampling -- the only
+            # existing caller (backtest_and_promote_weights) reads only "macro",
+            # so this is purely additive. See claude/continual-learning-loop-scope.md.
+            "per_analyst": per_analyst}
 
 
 if __name__ == "__main__":
