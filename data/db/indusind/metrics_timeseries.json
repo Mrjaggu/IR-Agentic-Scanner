@@ -1,6 +1,64 @@
 {
-  "q4fy22": {},
-  "q3fy23": {},
+  "q4fy22": {
+    "Cost_to_Income": {
+      "value": 42.6,
+      "value_unit": "%",
+      "delta": 100.0,
+      "delta_unit": "bps",
+      "direction": "increase",
+      "period": "QOQ"
+    },
+    "NNPA": {
+      "value": 0.64,
+      "value_unit": "%",
+      "delta": 7.0,
+      "delta_unit": "bps",
+      "direction": "decrease",
+      "period": "QOQ"
+    },
+    "PAT": {
+      "value": 1401.0,
+      "value_unit": "crore",
+      "delta": 13.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "QOQ"
+    }
+  },
+  "q3fy23": {
+    "Net_Credit_Cost": {
+      "value": 40.0,
+      "value_unit": "bps",
+      "delta": 4.0,
+      "delta_unit": "bps",
+      "direction": "decrease",
+      "period": "QOQ"
+    },
+    "NIM": {
+      "value": 4.27,
+      "value_unit": "%",
+      "delta": 28.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "YOY"
+    },
+    "GNPA": {
+      "value": 2.06,
+      "value_unit": "%",
+      "delta": 5.0,
+      "delta_unit": "bps",
+      "direction": "decrease",
+      "period": "QOQ"
+    },
+    "PAT": {
+      "value": 1964.0,
+      "value_unit": "crore",
+      "delta": 9.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "QOQ"
+    }
+  },
   "q4fy23": {
     "NIM": {
       "value": 4.28,
@@ -17,11 +75,53 @@
       "delta_unit": "%",
       "direction": "increase",
       "period": "YOY"
+    },
+    "Net_Credit_Cost": {
+      "value": 142.0,
+      "value_unit": "bps",
+      "delta": 14.0,
+      "delta_unit": "bps",
+      "direction": "decrease",
+      "period": "QOQ"
     }
   },
   "q1fy24": {},
-  "q2fy24": {},
-  "q3fy24": {},
+  "q2fy24": {
+    "NIM": {
+      "value": 4.29,
+      "value_unit": "%",
+      "delta": 4.24,
+      "delta_unit": "%",
+      "direction": "improve",
+      "period": "QOQ"
+    },
+    "PAT": {
+      "value": 2202.0,
+      "value_unit": "crore",
+      "delta": 4.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "QOQ"
+    }
+  },
+  "q3fy24": {
+    "NIM": {
+      "value": 4.29,
+      "value_unit": "%",
+      "delta": 4.27,
+      "delta_unit": "%",
+      "direction": "improve",
+      "period": "YOY"
+    },
+    "PAT": {
+      "value": 2301.0,
+      "value_unit": "crore",
+      "delta": 5.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "QOQ"
+    }
+  },
   "q4fy24": {
     "CET1": {
       "value": 15.82,
@@ -32,13 +132,132 @@
       "period": "YOY"
     }
   },
-  "q1fy25": {},
-  "q2fy25": {},
-  "q3fy25": {},
+  "q1fy25": {
+    "NIM": {
+      "value": 4.25,
+      "value_unit": "%",
+      "delta": 1.0,
+      "delta_unit": "bps",
+      "direction": "decrease",
+      "period": "QOQ"
+    }
+  },
+  "q2fy25": {
+    "NIM": {
+      "value": 4.08,
+      "value_unit": "%",
+      "delta": 17.0,
+      "delta_unit": "bps",
+      "direction": "decrease",
+      "period": "QOQ"
+    }
+  },
+  "q3fy25": {
+    "ROA": {
+      "value": 1.03,
+      "value_unit": "%",
+      "delta": 3.0,
+      "delta_unit": "bps",
+      "direction": "increase",
+      "period": "QOQ"
+    },
+    "NIM": {
+      "value": 3.93,
+      "value_unit": "%",
+      "delta": 15.0,
+      "delta_unit": "bps",
+      "direction": "decrease",
+      "period": "QOQ"
+    },
+    "PAT": {
+      "value": 1402.0,
+      "value_unit": "crore",
+      "delta": 5.0,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "QOQ"
+    }
+  },
   "q4fy25": {},
-  "q1fy26": {},
-  "q2fy26": {},
+  "q1fy26": {
+    "CET1": {
+      "value": 15.48,
+      "value_unit": "%",
+      "delta": 38.0,
+      "delta_unit": "bps",
+      "direction": "increase",
+      "period": "QOQ"
+    }
+  },
+  "q2fy26": {
+    "NIM": {
+      "value": 3.32,
+      "value_unit": "%",
+      "delta": 3.0,
+      "delta_unit": "bps",
+      "direction": "decrease",
+      "period": "QOQ"
+    },
+    "GNPA": {
+      "value": 3.6,
+      "value_unit": "%",
+      "delta": 6660.0,
+      "delta_unit": "bps",
+      "direction": "decrease",
+      "period": "QOQ"
+    },
+    "NNPA": {
+      "value": 3.6,
+      "value_unit": "%",
+      "delta": 6660.0,
+      "delta_unit": "bps",
+      "direction": "decrease",
+      "period": "QOQ"
+    },
+    "PCR": {
+      "value": 3.6,
+      "value_unit": "%",
+      "delta": 6640.0,
+      "delta_unit": "bps",
+      "direction": "decrease",
+      "period": "QOQ"
+    }
+  },
   "q3fy26": {},
-  "q4fy26": {},
-  "q1fy27": {}
+  "q4fy26": {
+    "PAT": {
+      "value": 594.0,
+      "value_unit": "crore",
+      "delta": 364.06,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "QOQ"
+    }
+  },
+  "q1fy27": {
+    "NIM": {
+      "value": 3.35,
+      "value_unit": "%",
+      "delta": 4.0,
+      "delta_unit": "bps",
+      "direction": "decrease",
+      "period": "QOQ"
+    },
+    "PAT": {
+      "value": 1037.0,
+      "value_unit": "crore",
+      "delta": 74.58,
+      "delta_unit": "%",
+      "direction": "increase",
+      "period": "QOQ"
+    },
+    "ROA": {
+      "value": 0.63,
+      "value_unit": "%",
+      "delta": 18.0,
+      "delta_unit": "bps",
+      "direction": "increase",
+      "period": "QOQ"
+    }
+  }
 }

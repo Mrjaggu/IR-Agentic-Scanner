@@ -46,18 +46,37 @@ BANKS: dict[str, BankConfig] = {
         bank_id="kotak",
         display_name="Kotak Mahindra Bank",
         legal_name="Kotak Mahindra Bank Limited",
-        subsidiary_keywords=[],  # unresearched -- no false-classification risk from
-                                  # inheriting axis's names since those now live above,
-                                  # but kotak's own subsidiary names (e.g. Kotak
-                                  # Securities, Kotak AMC, Kotak Life, Kotak Prime)
-                                  # aren't yet enumerated here. Add them when/if that
-                                  # topic bucket is validated for this bank.
+        # Researched 2026-09 (Kotak/IndusInd extraction tuning): unlike Axis,
+        # Kotak's narration does a "lending subsidiaries"-style walkthrough
+        # most quarters, so getting this list right materially affects which
+        # sentences metrics_extractor.py treats as subsidiary- vs bank-level.
+        # Names below are ones actually observed appearing in the transcripts
+        # (grep'd across all 21 quarters of narration text, not guessed from
+        # general knowledge of the group's structure) -- both the short and
+        # "Mahindra"-qualified forms are listed separately where both occur,
+        # since "kotak mahindra prime" is not a substring of "kotak prime"
+        # (or vice versa) for the keyword-matching this list feeds.
+        subsidiary_keywords=[
+            "kotak securities", "kotak prime", "kotak mahindra prime",
+            "kotak amc", "kotak mahindra asset management", "kotak mahindra mutual fund",
+            "kotak life", "kotak mahindra capital", "kotak investments",
+            "kotak mahindra investments", "kotak general insurance", "kotak alternate assets",
+        ],
     ),
     "indusind": BankConfig(
         bank_id="indusind",
         display_name="IndusInd Bank",
         legal_name="IndusInd Bank Limited",
-        subsidiary_keywords=[],  # same caveat as kotak above.
+        # Researched 2026-09, same pass as kotak above -- but actually left
+        # EMPTY, not unresearched: grepping all 16 quarters of narration for
+        # "IndusInd <Capitalized word>" turned up only "IndusInd Easycredit"
+        # (2 mentions, ambiguous -- reads like an internal product/vertical
+        # name rather than a distinct subsidiary entity being reported on)
+        # and no repeated, clearly-separate subsidiary breakdown pattern like
+        # Kotak's. Guessing names not actually observed in this bank's own
+        # transcripts risks wrongly filtering real bank-level sentences, so
+        # this stays empty until a transcript actually narrates one.
+        subsidiary_keywords=[],
     ),
 }
 

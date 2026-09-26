@@ -235,7 +235,8 @@ def main():
         from src.config.banks import DEFAULT_BANK
         bank_id = args.bank or DEFAULT_BANK
         paths = paths_for(bank_id)
-        build_metrics_timeseries(path=paths.metrics_timeseries_path, graph_path=paths.graph_path)
+        build_metrics_timeseries(path=paths.metrics_timeseries_path, graph_path=paths.graph_path,
+                                  bank_id=bank_id)
 
     elif args.command == "agentic":
         from src.agentic.run_agentic import main as agentic_main
