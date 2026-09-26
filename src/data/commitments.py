@@ -229,6 +229,134 @@ def by_topic(commitments: list[dict]) -> dict:
     return out
 
 
+# --- Graph-native path (2026-09) --------------------------------------------
+# Everything above reads dataset.json's shape (per-quarter {narration, qa}
+# records) -- what moves.py/move_planner.py already use for the
+# guidance_callback move. The functions below read graph.json directly
+# instead: it already carries the same prepared-remarks (NarrationSegment)
+# and Q&A-answer (Answer) text, PLUS a quarter's proper chronological order
+# (Quarter.sort_key) and pre-computed per-node topic tags -- so this path
+# needs no dataset.json load and is naturally bank-correct (the caller
+# already loaded the right bank's own graph; there is nothing bank-specific
+# left for this module to get wrong). Built for
+# src.agentic.tools.commitments_tool -- see that module for why grounding
+# the Planning Agent's retrieval in this, rather than a bare keyword scan
+# over commitment-sounding verbs, was the point.
+#
+# A `resolved` status (a commitment management has since delivered on) was
+# attempted and deliberately pulled back out: the only signal available
+# without a full target-vs-actual reconciliation engine was "a later,
+# same-topic sentence uses achievement language ('delivered', 'in line
+# with', ...)", optionally near a similar number. Tested against real
+# extracted commitments and it produced clear false positives on the first
+# quarters checked -- e.g. a pledge to "cover the entire Bank" with credit
+# cards was marked resolved by an unrelated sentence about deposit growth
+# that merely shared the topic tag and the word "delivered"; a "5% of
+# business, growing 3-4x by FY27" pledge was marked resolved by a
+# coincidental, unrelated "5%" elsewhere on the same broad topic. Topic
+# tags are too coarse and achievement language too generic in this
+# narration for either signal to reliably confirm the SAME claim was met,
+# and a false "resolved" is worse than no resolved detection at all here --
+# it would silently hide a still-live commitment from the tool this feeds
+# (src.agentic.tools.commitments_tool). Left at open/due/stale, same as the
+# dataset-driven path above; a real fix would compare each pledge's parsed
+# target and direction against the actual metric series
+# (metrics_extractor.METRIC_TOPIC_MAP) rather than re-reading narration text
+# a second time, which is a project of its own.
+
+
+def _quarter_index_from_graph(graph: dict) -> dict[str, int]:
+    """{quarter_id: chronological index}, ordered by the Quarter node's own
+    sort_key (e.g. Q1FY22 -> 221, Q2FY22 -> 222, Q1FY23 -> 231) rather than
+    re-deriving order from the quarter_id string -- robust regardless of
+    spelling, and the same ordering every other bank-aware module trusts."""
+    quarters = sorted(
+        (n for n in graph.get("nodes", []) if n["type"] == "Quarter"),
+        key=lambda n: n["properties"]["sort_key"],
+    )
+    return {n["id"]: i for i, n in enumerate(quarters)}
+
+
+def extract_commitments_from_graph(graph: dict) -> list[dict]:
+    """extract_commitments()'s dataset-driven logic, adapted to read
+    NarrationSegment (prepared remarks) and Answer (Q&A) nodes straight from
+    the graph instead of dataset.json's {narration, qa} records -- same
+    _PLEDGE/_VALUE/_HORIZON rules, same output shape (made_in/sort_key/
+    q_index/speaker/source/text/topic/value/horizon_phrase/quarters_ahead),
+    so by_topic() and the pressure ranking below work identically either
+    way. Topic attribution prefers the sentence-level _attribute_topic
+    (same reasoning as extract_commitments: the number is often in a
+    different sentence than the metric name) but falls back to the node's
+    own pre-computed `topics` tag when that finds nothing at all -- the
+    dataset-driven path has no equivalent signal to fall back to."""
+    q_index = _quarter_index_from_graph(graph)
+    records = [
+        (n["properties"]["quarter"], n["properties"].get("speaker") or "MANAGEMENT",
+         n["properties"]["text"], n["properties"].get("topics") or [], "prepared_remarks")
+        for n in graph.get("nodes", []) if n["type"] == "NarrationSegment"
+    ] + [
+        (n["properties"]["quarter"], "MANAGEMENT",
+         n["properties"]["text"], n["properties"].get("topics") or [], "qa_answer")
+        for n in graph.get("nodes", []) if n["type"] == "Answer"
+    ]
+    out = []
+    for qid, speaker, text, node_topics, source in records:
+        if qid not in q_index:
+            continue
+        sents = _sentences(text)
+        for i, sent in enumerate(sents):
+            if len(sent.split()) < 6 or not _PLEDGE.search(sent):
+                continue
+            context = " ".join(sents[max(0, i - 2):i + 2])
+            value = _VALUE.search(sent)
+            horizon = _HORIZON.search(sent)
+            if not value and not horizon:
+                continue          # unverifiable optimism, not a commitment
+            topic = _attribute_topic(sent, context)
+            if not topic and node_topics:
+                topic = next((t for t in node_topics if t in _TOPIC_TERMS), None)
+            out.append({
+                "made_in": qid,
+                "sort_key": q_index[qid],
+                "q_index": q_index[qid],
+                "speaker": speaker.strip(),
+                "source": source,
+                "text": sent,
+                "topic": topic,
+                "value": value.group(0).strip() if value else None,
+                "horizon_phrase": horizon.group(0).strip() if horizon else None,
+                "quarters_ahead": _quarters_ahead(sent),
+            })
+    return out
+
+
+def open_commitments_as_of_graph(graph: dict, cutoff_quarter: str,
+                                 min_quarters_old: int = 1,
+                                 max_quarters_old: int = 12) -> list[dict]:
+    """Graph-native counterpart to open_commitments_as_of -- same cutoff
+    semantics (a commitment made in or after cutoff_quarter can never leak
+    into what this returns) and the same status/pressure ranking. No
+    `resolved` state (see the note above this section for why)."""
+    q_index = _quarter_index_from_graph(graph)
+    if cutoff_quarter not in q_index:
+        return []
+    cut = q_index[cutoff_quarter]
+    rows = []
+    for c in extract_commitments_from_graph(graph):
+        if c["q_index"] > cut:
+            continue                     # future — cannot leak into a prediction
+        elapsed = cut - c["q_index"]
+        if not (min_quarters_old <= elapsed <= max_quarters_old):
+            continue                     # made on the cutoff call, or long obsolete
+        c = dict(c)
+        c["quarters_elapsed"] = elapsed
+        c["status"] = status_as_of(c, elapsed)
+        c["pressure"] = _pressure(c)
+        rows.append(c)
+    rows.sort(key=lambda c: -c["pressure"])
+    return rows
+
+
 if __name__ == "__main__":
     data = json.loads(Path("data/db/dataset.json").read_text())
     rows = open_commitments_as_of(data, "q4fy26")

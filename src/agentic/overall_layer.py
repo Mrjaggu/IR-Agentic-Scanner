@@ -85,8 +85,17 @@ def _format_evidence(topic: str, evidence_bundles: dict, global_rate: dict,
     if "history" in bundle:
         lines.append(f"- raised {bundle['history']['times_raised_in_history']} times across historical transcripts")
     if bundle.get("commitments"):
+        # 2026-09: commitments_tool now returns src.data.commitments's real
+        # structured shape (made_in/status/quarters_elapsed/value), not the
+        # old {quarter, text} pair -- surface the status and stated target
+        # too, since "this is DUE, not just outstanding" is exactly the kind
+        # of grounding that makes a guidance_callback question specific.
         for c in bundle["commitments"][:2]:
-            lines.append(f"- commitment/plan language in {c['quarter']}: \"{c['text']}\"")
+            target = f", target {c['value']}" if c.get("value") else ""
+            lines.append(
+                f"- outstanding commitment from {c['made_in']} "
+                f"({c['status']}, {c['quarters_elapsed']}q ago{target}): \"{c['text']}\""
+            )
     if bundle.get("policy"):
         lines.append(f"- policy signal: {bundle['policy']['note']}")
     if bundle.get("disclosure"):
